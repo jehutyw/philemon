@@ -15,11 +15,25 @@ function run(check) {
     check("SSD retains its filesystem label", found[1].label, "512GB")
     ssd.hotplug = false
     check("USB transport alone recognizes a fixed-media SSD", rows([ssd]).length, 1)
-    ssd.tran = "nvme"
-    ssd.hotplug = true
-    check("hotplug detects non-USB external disks", rows([ssd])[0].kind, "volume")
-    ssd.hotplug = 1
-    check("numeric hotplug is supported", rows([ssd])[0].kind, "volume")
+
+    // Bare hotplug is no signal, and reading it as one was a defect: a hot-swap SATA bay reports
+    // hotplug=true and is an internal disk, so it used to lose its own row and hand its partitions
+    // an eject control. Upstream PR #74 draws the line at rm, tran and the subsystems chain.
+    var swapBay = {name: "sdc", type: "disk", rm: false, hotplug: true, tran: "sata",
+                   subsystems: "block:scsi:pci",
+                   children: [{name: "sdc1", type: "part", rm: false, hotplug: false,
+                               tran: null, subsystems: "block:scsi:pci", mountpoint: "/data"}]}
+    check("a hotplug SATA bay is still the internal disk", rows([swapBay])[0].kind, "disk")
+    check("and it grows no ejectable volume", rows([swapBay]).length, 1)
+
+    // A bridge that names no transport of its own still names usb in the chain it hangs off.
+    var bridge = {name: "sdd", type: "disk", rm: false, hotplug: false, tran: null,
+                  subsystems: "block:scsi:usb:pci", model: "WDC",
+                  children: [{name: "sdd1", type: "part", rm: false, hotplug: false, tran: null,
+                              subsystems: "block:scsi:pci", label: "Passport"}]}
+    check("a usb subsystems chain marks a bridge external", rows([bridge])[0].label, "Passport")
+    check("and its partition inherits that answer", rows([bridge])[0].device, "/dev/sdd1")
+
     ssd.children[0].mountpoint = null
     check("unmounted external partition remains available", rows([ssd])[0].mounted, false)
     delete ssd.children

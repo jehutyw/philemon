@@ -115,7 +115,7 @@ function parseDevices(body) {
     var disk = internalDisk(nodes)
     if (disk)
         out.push(disk)
-    collectVolumes(nodes, "", out, false)
+    collectVolumes(nodes, "", out)
     return out
 }
 
@@ -124,7 +124,7 @@ function internalDisk(nodes) {
     for (var i = 0; i < nodes.length; i++) {
         var n = nodes[i]
         // lsblk on this box reports rm as a JSON boolean, measured 2026-09-02.
-        if (!n.name || n.type !== "disk" || externalDevice(n))
+        if (!n.name || n.type !== "disk" || isExternal(n))
             continue
         // zram and loop devices are type "disk" too, and neither is a disk anyone browses.
         if (/^(zram|loop)/.test(String(n.name)))
@@ -134,22 +134,40 @@ function internalDisk(nodes) {
     return null
 }
 
-// USB SSDs often report RM=false: that flag describes removable media, not the enclosure.
-function externalDevice(n) {
-    return n.rm === true || n.rm === 1 || n.hotplug === true || n.hotplug === 1 || n.tran === "usb"
+// A node is external when removable or USB-attached. RM alone misses USB bridges: a WD My Passport
+// reports rm=false with tran=usb over subsystems=block:scsi:usb:pci, while its partition carries
+// tran=null, so collectVolumes inherits the parent's answer the way it inherits the model.
+// Bare hotplug is deliberately no signal: hot-swap SATA and eSATA internals report it too, and
+// reading it cost the internal disk its own row and gave its partitions an eject control.
+function isExternal(n) {
+    if (!n)
+        return false
+    if (n.rm)
+        return true
+    if (String(n.tran || "").toLowerCase() === "usb")
+        return true
+    var subs = String(n.subsystems || "").toLowerCase()
+    if (/(^|:)(usb)(:|$)/.test(subs))
+        return true
+    return false
+}
+
+// A removable row is a partition on an external disk, or an external disk nobody ever partitioned.
+function collectVolumes(nodes, model, out) {
+    collectExternal(nodes, model, false, out)
 }
 
 // Partitions inherit their disk's connection properties, even when lsblk omits them on children.
-function collectVolumes(nodes, model, out, parentExternal) {
+function collectExternal(nodes, model, parentExternal, out) {
     for (var i = 0; i < nodes.length; i++) {
         var n = nodes[i]
         var kids = n.children || []
         // Only the disk carries a product name, so it is passed down to its own partitions.
         var own = n.model ? String(n.model) : model
-        var external = parentExternal || externalDevice(n)
+        var external = parentExternal || isExternal(n)
         if (n.name && external && (n.type === "part" || (n.type === "disk" && kids.length === 0)))
             out.push(volumeRow(n, own))
-        collectVolumes(kids, own, out, external)
+        collectExternal(kids, own, external, out)
     }
 }
 
