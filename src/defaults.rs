@@ -25,12 +25,34 @@ pub fn claim() -> i32 {
         );
         return 1;
     }
-    report(claim_mime(), claim_service(), hyprkeys::claim())
+    // Omarchy owns the two file-manager keys through hypr/bindings.lua; every other desktop owns
+    // its own shortcuts, so off Omarchy this half reports that it left them alone rather than
+    // writing a bindings file the desktop does not read.
+    let keys = if is_omarchy() {
+        hyprkeys::claim()
+    } else {
+        Ok("keys: unchanged (desktop shortcuts are managed by your desktop environment)".to_string())
+    };
+    report(claim_mime(), claim_service(), keys)
 }
 
 // flea --default off
 pub fn release() -> i32 {
-    report(release_mime(), release_service(), hyprkeys::release())
+    let keys = if is_omarchy() {
+        hyprkeys::release()
+    } else {
+        Ok("keys: unchanged (not running under Omarchy)".to_string())
+    };
+    report(release_mime(), release_service(), keys)
+}
+
+// Omarchy's own directory, or the bindings file it manages: either one means the hyprkeys half has
+// a file it can legitimately rewrite.
+fn is_omarchy() -> bool {
+    std::path::Path::new("/usr/share/omarchy").is_dir()
+        || config_home()
+            .map(|p| p.join("hypr").join("bindings.lua").is_file())
+            .unwrap_or(false)
 }
 
 // Each half stands on its own, so a failure in one still leaves the others' lines on screen.

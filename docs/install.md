@@ -1,7 +1,8 @@
 # Installing Flea
 
-Flea is for Omarchy: `omarchy` and `quickshell` are hard dependencies, so it will not install on a
-plain Arch box.
+Flea installs on Arch-based systems, including EndeavourOS. `quickshell` is the GUI runtime;
+the small Commons and Ui compatibility modules Flea uses ship with the package, so Omarchy is not
+required.
 
 Flea installs as an Arch package, so pacman owns both ends: `makepkg -si` puts it on, `pacman -Rns`
 takes it off, and pacman's own file list is what makes the second claim provable. There is no
@@ -14,7 +15,7 @@ below.
 ## Build and install
 
 ```
-git clone https://github.com/thisisgm/flea.git
+git clone https://github.com/jehutyw/flea.git
 cd flea
 makepkg -si
 ```
@@ -36,7 +37,7 @@ uncommitted edits are what gets packaged.
 |---|---|
 | `/usr/bin/flea` | the binary, backend and launcher both |
 | `/usr/share/flea/ui/` | the Quickshell UI, which `paths.rs` looks for by `shell.qml` |
-| `/usr/share/flea/ui/Commons`, `/usr/share/flea/ui/Ui` | symlinks into `/usr/share/omarchy/shell/`, reached from QML as `qs.Commons` |
+| `/usr/share/flea/ui/Commons`, `/usr/share/flea/ui/Ui` | Flea's bundled QML compatibility modules, reached from QML as `qs.Commons` |
 | `/usr/lib/flea/flea-portal` | the XDG portal backend, which answers `org.freedesktop.impl.portal.FileChooser` |
 | `/usr/lib/flea/flea-filemanager1` | the D-Bus service, which answers `org.freedesktop.FileManager1` for "Show in folder" |
 | `/usr/share/dbus-1/services/com.thisisgm.flea.FileManager1.service` | what D-Bus activates that with |
@@ -49,8 +50,7 @@ uncommitted edits are what gets packaged.
 The count is whatever the built archive declares, not a number written down here: the UI grows a file
 whenever a component is added, so a figure pinned in this paragraph would be stale by the next commit.
 `packaging/flea-package-test` reads the count out of the archive and fails if the fake root does not
-hold exactly that many. The two symlinks are why `omarchy` is a hard dependency: they point into a
-directory that package owns.
+hold exactly that many.
 
 ## Uninstall
 
@@ -66,8 +66,8 @@ desktop and icon caches are re-indexed by Arch's own `update-desktop-database` a
 ## Make Flea the default
 
 Installing registers Flea for `inode/directory` and for `org.freedesktop.FileManager1`; it makes
-Flea the answer for neither, because another file manager is registered for both, and it does not
-touch Omarchy's file-manager keys. All of those are per-user preferences, so pacman cannot own them, and
+Flea the answer for neither, because another file manager is registered for both, and it touches no
+desktop's keyboard shortcuts. All of those are per-user preferences, so pacman cannot own them, and
 Omarchy's own `default` verbs (`omarchy default browser`, `editor`, `terminal`) set exactly this
 kind of thing without a package's help. There is no `omarchy default filemanager`, and
 `/usr/share/omarchy/` is the package's to overwrite, so Flea carries the verb itself:
@@ -78,10 +78,10 @@ flea --default
 
 It does every step below, each reported on its own line, and it is honest about state: run it twice
 and the second run says every step it ran is already Flea's and rewrites nothing. It needs no root,
-because every file it writes is yours, and it takes no argument, because Omarchy's `default` verbs
-take one to name which program and here the program is Flea. The files it writes are
-`~/.config/mimeapps.list`, `~/.local/share/dbus-1/services/org.freedesktop.FileManager1.service`,
-`~/.config/hypr/bindings.lua` and `~/.config/xdg-desktop-portal/portals.conf`.
+because every file it writes is yours, and it takes no argument, because there is one program to
+name and it is Flea. The files it writes are `~/.config/mimeapps.list`,
+`~/.local/share/dbus-1/services/org.freedesktop.FileManager1.service` and
+`~/.config/xdg-desktop-portal/portals.conf`, plus `~/.config/hypr/bindings.lua` on Omarchy alone.
 
 1. **The `inode/directory` handler.** `xdg-mime default com.thisisgm.flea.desktop inode/directory`,
    the stock tool, which writes one line to `~/.config/mimeapps.list`. The line printed names the
@@ -94,10 +94,10 @@ take one to name which program and here the program is Flea. The files it writes
    file call `org.freedesktop.FileManager1` on the session bus. Installing Flea registers for that
    name in `/usr/share/dbus-1/services`, but so do nautilus, dolphin, thunar and nemo, each in a
    file of its own in that same directory, and D-Bus keeps whichever registration it reads first.
-   Omarchy ships nautilus in `omarchy-base.packages`, so a stock box always has a second claimant,
-   and which one wins inside a directory is the bus's business: dbus-broker sorts it, dbus-daemon
-   takes it in readdir order, and neither can be steered by installing a package. So this step
-   writes one more registration, in the directory that is read before every system one:
+   Any desktop that ships a file manager already has a second claimant, and which one wins inside a
+   directory is the bus's business: dbus-broker sorts it, dbus-daemon takes it in readdir order, and
+   neither can be steered by installing a package. So this step writes one more registration, in the
+   directory that is read before every system one:
 
    ```
    ~/.local/share/dbus-1/services/org.freedesktop.FileManager1.service
@@ -116,7 +116,10 @@ take one to name which program and here the program is Flea. The files it writes
    with no `com.thisisgm.flea.FileManager1.service` installed has nothing to put in front and this
    step refuses instead of naming a path that is not there.
 
-3. **Omarchy's two file-manager keys.** `SUPER + SHIFT + F` and `SUPER + ALT + SHIFT + F` are bound
+3. **Omarchy only: its two file-manager keys.** This step runs where Omarchy's own directory or its
+   `~/.config/hypr/bindings.lua` is present, and reports the keys unchanged everywhere else, because
+   KDE Plasma, GNOME and the rest own their shortcuts through their own settings.
+   `SUPER + SHIFT + F` and `SUPER + ALT + SHIFT + F` are bound
    to Nautilus in `/usr/share/omarchy/default/hypr/bindings/applications.lua`, which
    `omarchy update` overwrites, so the override goes where the Omarchy manual says an override
    goes: appended to `~/.config/hypr/bindings.lua`, between two marker lines, in the manual's own

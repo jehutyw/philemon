@@ -27,7 +27,7 @@ Item {
         var peer = TaildropJs.byId(root.peers, peerId)
         if (!peer)
             return
-        Quickshell.execDetached(["omarchy-tailscale-send", peer.address].concat(paths))
+        Quickshell.execDetached(["tailscale", "file", "cp"].concat(paths).concat([peer.address + ":"]))
     }
 
     // ui/Pane.qml's own dispatch-confirmation message reads a name, not the id chosen() carries.

@@ -3,25 +3,24 @@
 pkgname=flea
 pkgver=0.1.5
 pkgrel=1
-pkgdesc='Fast, keyboard-first file manager for Omarchy'
+pkgdesc='Fast, keyboard-first file manager for Linux desktops'
 arch=('x86_64' 'aarch64')
 license=('MIT')
-# omarchy owns /usr/share/omarchy/shell, which ui/Commons and ui/Ui link into; quickshell owns qs.
 # util-linux ships prlimit, which the thumbnail and archive sandboxes require alongside bubblewrap.
 # xdg-terminal-exec is what --terminal execs, so the topbar's terminal button needs it installed.
 # wl-clipboard ships wl-copy, which ui/Opener.qml pipes into for the menu's Copy Path row; nothing
-# else in this closure requires it, so on a clean Omarchy box that row failed silently without it.
+# else in this closure requires it, so that row failed silently on a box without it.
 # python-gobject is what tools/flea-portal answers org.freedesktop.impl.portal.FileChooser with, and
-# what tools/flea-filemanager1 answers org.freedesktop.FileManager1 with; it is the same binding
-# omarchy-file-select, the client that portal serves, is already written against.
+# what tools/flea-filemanager1 answers org.freedesktop.FileManager1 with.
 # qt6-webengine ships QtQuick.Pdf and qt6-multimedia ships QtMultimedia, which ui/PreviewPdf.qml and
-# ui/PreviewMedia.qml import: neither is in the omarchy plus quickshell closure, so a clean box
-# installed a Flea whose PDF and media preview could not load at all.
+# ui/PreviewMedia.qml import: without them PDF and media preview cannot load at all.
 # gcc-libs and glibc are the binary's only direct links, and hicolor-icon-theme owns the directory
 # the desktop icon is installed into.
 # python is the interpreter of two scripts this package installs and D-Bus activates at runtime, so
 # it is a runtime dependency rather than only the checkdepend the sandboxed child needs.
-depends=('bubblewrap' 'expect' 'gcc-libs' 'glib2' 'glibc' 'gvfs' 'gvfs-dnssd' 'gvfs-nfs' 'gvfs-smb' 'hicolor-icon-theme' 'omarchy' 'python' 'python-gobject' 'qt6-multimedia' 'qt6-webengine' 'quickshell' 'shared-mime-info' 'util-linux' 'wl-clipboard' 'xdg-terminal-exec' 'xdg-utils')
+# omarchy is upstream's dependency and not this fork's: the point of this package is a Flea that
+# runs on a plain Arch or EndeavourOS desktop, so ui/Commons and ui/Ui ship in it instead.
+depends=('bubblewrap' 'expect' 'gcc-libs' 'glib2' 'glibc' 'gvfs' 'gvfs-dnssd' 'gvfs-nfs' 'gvfs-smb' 'hicolor-icon-theme' 'python' 'python-gobject' 'qt6-multimedia' 'qt6-webengine' 'quickshell' 'shared-mime-info' 'util-linux' 'wl-clipboard' 'xdg-terminal-exec' 'xdg-utils')
 makedepends=('cargo')
 # Both packages own /usr/bin/flea, so pacman refuses the pair rather than leaving one half-installed.
 conflicts=('flea-git')
@@ -76,7 +75,6 @@ package() {
   # paths.rs looks for /usr/share/flea/ui/shell.qml, so the UI ships as data beside the binary.
   install -Dm644 ui/qmldir ui/*.qml -t "$pkgdir/usr/share/flea/ui"
   install -Dm644 ui/js/*.js -t "$pkgdir/usr/share/flea/ui/js"
-  # Commons and Ui are Omarchy's own, reached as qs.Commons: the checkout links them and so does the package.
-  ln -s /usr/share/omarchy/shell/Commons "$pkgdir/usr/share/flea/ui/Commons"
-  ln -s /usr/share/omarchy/shell/Ui "$pkgdir/usr/share/flea/ui/Ui"
+  # Flea carries the small compatibility modules it needs, so it works without Omarchy.
+  cp -a ui/Commons ui/Ui "$pkgdir/usr/share/flea/ui/"
 }

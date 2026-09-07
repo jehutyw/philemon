@@ -325,8 +325,10 @@ Singleton {
 
     // Read once, not watched: the Display section reports the compositor's scale and Flea owns no
     // control that could change it, so there is nothing here for a poll to keep in step with.
+    // The guard is this fork's: off Hyprland there is no hyprctl to answer, and the failed spawn
+    // buys nothing that applyMonitorScale's own catch does not already cover.
     Process {
-        running: true
+        running: !!Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
         command: ["hyprctl", "monitors", "-j"]
         stdout: StdioCollector {
             waitForEnd: true
@@ -343,7 +345,8 @@ Singleton {
     // whose call throws. The query is Commons/Style.qml's own decoration:rounding shape.
     Process {
         id: motionQuery
-        running: !Quickshell.env("FLEA_REDUCED_MOTION")
+        // The second half of the guard is this fork's, for the same reason as the monitor read.
+        running: !Quickshell.env("FLEA_REDUCED_MOTION") && !!Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
         command: ["hyprctl", "-j", "getoption", "animations:enabled"]
         stdout: StdioCollector {
             waitForEnd: true

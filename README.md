@@ -4,9 +4,15 @@
 
 <h1 align="center">Flea</h1>
 
+This is the EndeavourOS/Arch compatibility fork of [thisisgm/flea](https://github.com/thisisgm/flea),
+based on upstream v0.1.3. It bundles the QML compatibility modules so Omarchy is not required,
+provides a standalone dark theme, and recognizes USB and hot-pluggable SSDs even when they report
+non-removable media. The upstream screenshots and benchmarks below describe the original build;
+they have not been re-measured for this fork.
+
 <p align="center">
   <strong>The fastest GUI file manager on Linux.</strong><br>
-  Keyboard first, native to Omarchy, and it holds only the rows you can see.
+  Keyboard first, and it holds only the rows you can see.
 </p>
 
 <p align="center">
@@ -21,11 +27,12 @@ directory and hands the window only what fits on screen.
 
 ## Install
 
-Flea is built for Omarchy. Preferred commands: `omarchy pkg add flea`, then `omarchy update`; AUR
-path only for `flea-git`.
+On EndeavourOS and other Arch-based systems, build the package from this checkout:
 
 ```bash
-omarchy pkg add flea
+git clone https://github.com/jehutyw/flea.git
+cd flea
+makepkg -si
 ```
 
 To make Flea the default file manager:
@@ -34,13 +41,15 @@ To make Flea the default file manager:
 flea --default
 ```
 
-This sets Flea as the `inode/directory` handler, puts Flea in front of the other file managers for
-"Show in folder", makes Omarchy's two file-manager keys, `SUPER + SHIFT + F` and
-`SUPER + ALT + SHIFT + F`, open it instead of Nautilus, and claims the file chooser described below.
-Run `flea --default off` before `omarchy pkg drop flea`: it puts the keys, "Show in folder" and the
-chooser back and deletes Flea's handler line, which leaves the `inode/directory` default wherever
-the rest of the lookup resolves to rather than at a handler you had pinned yourself, see
-[`docs/install.md`](docs/install.md).
+This sets Flea as the `inode/directory` handler and puts Flea in front of the other file managers
+for "Show in folder". On Omarchy it also makes that desktop's two file-manager keys,
+`SUPER + SHIFT + F` and `SUPER + ALT + SHIFT + F`, open Flea instead of Nautilus; on KDE Plasma and
+every other desktop the shortcuts stay that desktop's own. `flea --default off` reverses all of it,
+which leaves the `inode/directory` default wherever the rest of the lookup resolves to rather than
+at a handler you had pinned yourself, see [`docs/install.md`](docs/install.md).
+
+The upstream AUR packages `flea` and `flea-git` require Omarchy and do not carry this fork's
+compatibility changes. Build from this repository for the EndeavourOS and Arch version.
 
 To make Flea the file chooser every application opens, the dialog behind `omarchy tailscale send`
 and every Flatpak's Open and Save:
@@ -97,11 +106,12 @@ and how to undo it by hand, and how the package proves itself.
 ## Update
 
 ```bash
-omarchy update
+git pull --ff-only
+makepkg -si
 ```
 
-Flea updates with Omarchy. Your `flea --default` choice survives because it is a preference, not a
-package file.
+Your `flea --default` choice survives updates because it is a per-user preference rather than a
+file owned by the package.
 
 ## Measured against the field
 
@@ -461,7 +471,7 @@ is one character per kind, upgrading to Nerd Font glyphs where the terminal has 
 
 ## Requirements
 
-- Omarchy, with Quickshell 0.3.1 or newer, for the UI.
+- Quickshell 0.3.1 or newer for the UI; Omarchy is optional in this fork.
 - Rust to build the backend. This tree is built and tested against rustc/cargo 1.98.
 - `bubblewrap` for `bwrap` and `util-linux` for `prlimit`, both required for thumbnailing
   as described above. Everything else works without them.

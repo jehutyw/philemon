@@ -17,7 +17,7 @@ import "js/Search.js" as Search
 ShellRoot {
     FloatingWindow {
         id: fleaWindow
-        title: "Flea"
+        title: "Flea // wired"
         implicitWidth: 900
         implicitHeight: 600
         property bool rendererFallbackStarted: false

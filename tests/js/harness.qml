@@ -18,6 +18,7 @@ import "keymap.js" as KeymapSuite
 import "match.js" as MatchSuite
 import "menu.js" as MenuSuite
 import "mounts.js" as MountsSuite
+import "external-devices.js" as ExternalDevicesSuite
 import "nav.js" as NavSuite
 import "network.js" as NetworkSuite
 import "ops.js" as OpsSuite
@@ -64,6 +65,7 @@ Item {
             ["focus-lines", FocusLinesSuite], ["focus-wrap", FocusWrapSuite],
             ["format", FormatSuite], ["icons", IconsSuite],
             ["keymap", KeymapSuite], ["match", MatchSuite], ["menu", MenuSuite],
+            ["external-devices", ExternalDevicesSuite],
             ["mounts", MountsSuite], ["nav", NavSuite], ["network", NetworkSuite],
             ["ops", OpsSuite],
             ["palette", PaletteSuite], ["pathbar", PathBarSuite], ["places", PlacesSuite],
