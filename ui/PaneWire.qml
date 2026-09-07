@@ -37,6 +37,7 @@ Item {
     readonly property alias opener: opener
     readonly property alias shareLink: shareLink
     readonly property alias taildrop: taildrop
+    readonly property alias protonDrive: protonDrive
 
     Philemon.Opener {
         id: opener
@@ -53,6 +54,13 @@ Item {
         id: shareLink
         onCopied: pane.message("Share link copied to the clipboard.", false)
         onFailed: pane.message("Dropbox could not make a share link for that file.", true)
+    }
+
+    Philemon.ProtonDrive {
+        id: protonDrive
+        onStarted: function (name) { pane.message("Uploading " + name + " to Proton Drive.", false) }
+        onUploaded: function (name) { pane.message(name + " uploaded to Proton Drive.", false) }
+        onFailed: function (name) { pane.message(name + " could not be uploaded to Proton Drive.", true) }
     }
 
     Philemon.Taildrop {

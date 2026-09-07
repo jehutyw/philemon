@@ -9,6 +9,7 @@
 
 function run(check) {
     runMenu(check)
+    runProtonDrive(check)
     check("a Compress row carrying the probed formats is a submenu row",
           Menu.hasSubmenu({ label: "Compress", action: "compress",
                             submenu: Archive.formatEntries(["zip", "7z"]) }),
@@ -175,6 +176,24 @@ function runBackground(check) {
           labels(background(["newFolder", "paste", "selectAll", "sort", "openTerminal",
                              "toggleHidden", "settings"])),
           "Show hidden files")
+}
+
+// The Proton Drive row is gated on a login, not on the binary: proton-drive is a CLI with no synced
+// folder, so an upload offered to a logged-out box is a row that can only fail.
+function runProtonDrive(check) {
+    function labelsFor(ready) {
+        return labels(Menu.listingEntries({
+            showHidden: false, hasRow: true, rowInDropbox: false, dropboxPath: "",
+            taildropPeers: [], archiveFormats: [], rowIsArchive: false, rowIsImage: false,
+            canConvert: false, protonDriveReady: ready, hiddenActions: []
+        }))
+    }
+    check("a login puts the upload row in the share group",
+          labelsFor(true).indexOf("Upload to Proton Drive") >= 0, true)
+    check("no login and the row is absent, not disabled",
+          labelsFor(false).indexOf("Upload to Proton Drive") >= 0, false)
+    check("an absent flag reads as no login",
+          labelsFor(undefined).indexOf("Upload to Proton Drive") >= 0, false)
 }
 
 // The Menus section's consumer. menu.hidden stores what is HIDDEN, so a row named there leaves the

@@ -62,6 +62,8 @@ function listingEntries(p) {
     // Moving a file into the folder it already lives in is not an action, so the row hides there.
     if (p.dropboxPath.length > 0 && !p.rowInDropbox)
         share.push({ label: "Move to Dropbox", action: "dropbox", mark: "dropbox" })
+    if (p.protonDriveReady)
+        share.push({ label: "Upload to Proton Drive", action: "protondrive", glyph: "arrow-up" })
     // A share link is inherently per file, so it appears only for a row already in Dropbox.
     if (p.rowInDropbox)
         share.push({ label: "Copy share link", action: "sharelink", glyph: "network" })

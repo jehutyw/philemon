@@ -31,6 +31,8 @@ Item {
     property bool rowInDropbox: false
     // True when the cursor row is a Markdown note inside a known vault, which gates the Obsidian row.
     property bool rowIsObsidianNote: false
+    // True once proton-drive has a login; the upload row is hidden entirely without one.
+    property bool protonDriveReady: false
     // False on a listing's empty space, where Menus.html's background column is what opens instead.
     // openBackground() is its only writer and openAt() puts it back, because one instance serves both.
     property bool hasRow: true
@@ -100,6 +102,7 @@ Item {
             rowIsArchive: root.rowIsArchive,
             rowIsImage: root.rowIsImage,
             rowIsObsidianNote: root.rowIsObsidianNote,
+            protonDriveReady: root.protonDriveReady,
             canConvert: root.canConvert,
             // The Menus settings section's stored set; ui/js/Menu.js applyHidden is what reads it.
             hiddenActions: ViewState.menuHidden
