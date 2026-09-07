@@ -155,8 +155,8 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: Theme.spacing.hairline
-        color: Theme.color.foreground
-        opacity: 0.12
+        color: Theme.color.accent
+        opacity: 0.5
     }
 
     // A test drives these by coordinate, because a glyph button carries no text to find on screen.

@@ -21,14 +21,18 @@ Singleton {
     // reading it would keep whatever it was built with when the compositor's answer arrives.
     property bool reducedMotion: Quickshell.env("FLEA_REDUCED_MOTION") === "1"
 
-    // The only literal colours in the UI. Color models five roles; surface, symlink and executable
-    // have no counterpart, and the other two are read here before Color.loadColors has run.
+    // The only literal colours in the UI. This is the standalone (non-Omarchy) palette: dark CRT
+    // glass, warm phosphor text and one dusty signal red. File kinds stay muted so the accent is
+    // reserved for focus and selection instead of turning the listing into a rainbow.
     readonly property var fallbackColor: ({
-        background: "#101315",
-        surface: "#181825",
-        muted: "#707880",
-        symlink: "#94e2d5",
-        executable: "#a6e3a1"
+        background: "#090a0c",
+        surface: "#151318",
+        foreground: "#d2cec3",
+        muted: "#8b8990",
+        accent: "#d15b76",
+        error: "#e06c75",
+        symlink: "#8baa9c",
+        executable: "#b39a73"
     })
 
     readonly property QtObject color: QtObject {
@@ -202,9 +206,11 @@ Singleton {
         return lines.join("\n");
     }
 
-    // Color owns the other five; only the three it does not model are assigned here.
+    // Color owns the shared shell roles. On a standalone install it must receive Flea's fallback
+    // too: Style's hover and selection fills derive from Color, not from the facade above.
     function applyColors(body) {
         var found = Palette.parse(body);
+        var themed = Palette.isPalette(found);
         var bg = Palette.pick(found, ["background"], root.fallbackColor.background);
         var surface = Palette.pick(found, ["dark_background", "selection"], root.fallbackColor.surface);
         // corner: the alacritty-derived colors.toml emits neither background ladder key, so selection is third.
@@ -216,10 +222,17 @@ Singleton {
             Palette.pick(found, ["cyan", "color6"], root.fallbackColor.symlink), bg, 4.5);
         root.color.executable = Contrast.ensureRatio(
             Palette.pick(found, ["green", "color2"], root.fallbackColor.executable), bg, 4.5);
-        Color.loadColors(body);
+        if (themed) {
+            Color.loadColors(body);
+        } else {
+            Color.background = root.fallbackColor.background;
+            Color.foreground = root.fallbackColor.foreground;
+            Color.accent = root.fallbackColor.accent;
+            Color.urgent = root.fallbackColor.error;
+        }
         // A body that parsed to nothing left every role on its fallback, so the flag says so rather
         // than reporting that the read happened: text() returns "" for a file that is not there.
-        root.ready = Palette.isPalette(found);
+        root.ready = themed;
     }
 
     // Sample input: {"option": "animations:enabled", "bool": false, "set": true }
@@ -238,7 +251,7 @@ Singleton {
         blockLoading: true
         printErrors: false
         onLoaded: root.applyColors(text())
-        onLoadFailed: root.ready = false
+        onLoadFailed: root.applyColors("")
         Component.onCompleted: root.applyColors(colorsFile.text())
     }
 
@@ -274,7 +287,7 @@ Singleton {
     // radius already follows; FLEA_REDUCED_MOTION is the test override and skips the ask.
     Process {
         id: motionQuery
-        running: Quickshell.env("FLEA_REDUCED_MOTION") === ""
+        running: Quickshell.env("FLEA_REDUCED_MOTION") === "" && Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") !== ""
         command: ["hyprctl", "getoption", "animations:enabled", "-j"]
         stdout: StdioCollector {
             waitForEnd: true

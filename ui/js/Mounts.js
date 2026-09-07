@@ -95,7 +95,7 @@ function parseDevices(body) {
     var disk = internalDisk(nodes)
     if (disk)
         out.push(disk)
-    collectVolumes(nodes, "", out)
+    collectVolumes(nodes, "", out, false)
     return out
 }
 
@@ -104,7 +104,7 @@ function internalDisk(nodes) {
     for (var i = 0; i < nodes.length; i++) {
         var n = nodes[i]
         // lsblk on this box reports rm as a JSON boolean, measured 2026-09-02.
-        if (!n.name || n.type !== "disk" || n.rm)
+        if (!n.name || n.type !== "disk" || externalDevice(n))
             continue
         // zram and loop devices are type "disk" too, and neither is a disk anyone browses.
         if (/^(zram|loop)/.test(String(n.name)))
@@ -114,16 +114,22 @@ function internalDisk(nodes) {
     return null
 }
 
-// A removable row is a partition on a removable disk, or a removable disk nobody ever partitioned.
-function collectVolumes(nodes, model, out) {
+// USB SSDs often report RM=false: that flag describes removable media, not the enclosure.
+function externalDevice(n) {
+    return n.rm === true || n.rm === 1 || n.hotplug === true || n.hotplug === 1 || n.tran === "usb"
+}
+
+// Partitions inherit their disk's connection properties, even when lsblk omits them on children.
+function collectVolumes(nodes, model, out, parentExternal) {
     for (var i = 0; i < nodes.length; i++) {
         var n = nodes[i]
         var kids = n.children || []
         // Only the disk carries a product name, so it is passed down to its own partitions.
         var own = n.model ? String(n.model) : model
-        if (n.name && n.rm && (n.type === "part" || (n.type === "disk" && kids.length === 0)))
+        var external = parentExternal || externalDevice(n)
+        if (n.name && external && (n.type === "part" || (n.type === "disk" && kids.length === 0)))
             out.push(volumeRow(n, own))
-        collectVolumes(kids, own, out)
+        collectVolumes(kids, own, out, external)
     }
 }
 

@@ -19,14 +19,31 @@ pub fn claim() -> i32 {
         );
         return 1;
     }
-    let status = report(claim_mime(), hyprkeys::claim());
-    println!("undo both with: flea --default off");
+    let keys = if is_omarchy() {
+        hyprkeys::claim()
+    } else {
+        Ok("keys: unchanged (desktop shortcuts are managed by your desktop environment)".to_string())
+    };
+    let status = report(claim_mime(), keys);
+    println!("undo with: flea --default off");
     status
 }
 
 // flea --default off
 pub fn release() -> i32 {
-    report(release_mime(), hyprkeys::release())
+    let keys = if is_omarchy() {
+        hyprkeys::release()
+    } else {
+        Ok("keys: unchanged (not running under Omarchy)".to_string())
+    };
+    report(release_mime(), keys)
+}
+
+fn is_omarchy() -> bool {
+    std::path::Path::new("/usr/share/omarchy").is_dir()
+        || config_home()
+            .map(|p| p.join("hypr").join("bindings.lua").is_file())
+            .unwrap_or(false)
 }
 
 // Each half stands on its own, so a failure in one still leaves the other's line on screen.

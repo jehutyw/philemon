@@ -14,6 +14,7 @@ import "keymap.js" as KeymapSuite
 import "match.js" as MatchSuite
 import "menu.js" as MenuSuite
 import "mounts.js" as MountsSuite
+import "external-devices.js" as ExternalDevicesSuite
 import "nav.js" as NavSuite
 import "ops.js" as OpsSuite
 import "palette.js" as PaletteSuite
@@ -58,6 +59,7 @@ Item {
         MatchSuite.run(check)
         MenuSuite.run(check)
         MountsSuite.run(check)
+        ExternalDevicesSuite.run(check)
         NavSuite.run(check)
         OpsSuite.run(check)
         PaletteSuite.run(check)

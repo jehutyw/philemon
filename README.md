@@ -4,9 +4,15 @@
 
 <h1 align="center">Flea</h1>
 
+This is the EndeavourOS/Arch compatibility fork of [thisisgm/flea](https://github.com/thisisgm/flea),
+based on upstream v0.1.3. It bundles the QML compatibility modules so Omarchy is not required,
+provides a standalone dark theme, and recognizes USB and hot-pluggable SSDs even when they report
+non-removable media. The upstream screenshots and benchmarks below describe the original build;
+they have not been re-measured for this fork.
+
 <p align="center">
   <strong>The fastest GUI file manager on Linux.</strong><br>
-  Keyboard first, native to Omarchy, and it holds only the rows you can see.
+  Keyboard first, and it holds only the rows you can see.
 </p>
 
 <p align="center">
@@ -21,29 +27,26 @@ directory and hands the window only what fits on screen.
 
 ## Install
 
-Flea is for Omarchy. `omarchy` and `quickshell` are hard dependencies, so it will not install on a
-plain Arch box.
+On EndeavourOS and other Arch-based systems, build the package from this checkout:
 
 ```bash
-omarchy pkg aur add flea && flea --default
+git clone https://github.com/jehutyw/flea.git
+cd flea
+makepkg -si
+flea --default
 ```
 
-That is the whole install, and the last command is the only one you might leave out. Flea is on the
-AUR, so `omarchy pkg aur add` builds and installs it the way it installs anything else, and
-`omarchy update` keeps it current from then on. `flea --default` makes Flea the default file
-manager, the way `omarchy default browser` makes a browser the default: it becomes the handler for
-`inode/directory`, and Omarchy's two file-manager keys, `SUPER + SHIFT + F` and
-`SUPER + ALT + SHIFT + F`, open it instead of Nautilus. It prints what it replaced, and
-`flea --default off` puts both back.
+The last command is optional. It makes Flea the handler for `inode/directory`; on Omarchy it also
+updates Omarchy's file-manager keys, while KDE Plasma and other desktops retain control of their
+own shortcuts. `flea --default off` removes the MIME preference.
 
 `sudo pacman -Rns flea` takes the package off again, and pacman's own file list is what makes that
 removal provable. `flea --default` is the one thing pacman does not own, because it is your
 preference and not a file of the package's: run `flea --default off` first, or see
 [`docs/install.md`](docs/install.md) for the two lines it would otherwise leave behind.
 
-`flea-git` is the same package built from `main` rather than from the last release, if you would
-rather track it. Building from a clone still works too, and is what the repository's own `PKGBUILD`
-is for: `git clone https://github.com/thisisgm/flea.git && cd flea && makepkg -si`.
+The upstream AUR packages `flea` and `flea-git` still require Omarchy and do not contain this
+fork's compatibility changes. Build from this repository to use the EndeavourOS/Arch version.
 
 Four optional packages each unlock one feature and nothing else: `libarchive` for archive listing
 and extraction, `7zip` for `.7z` archives, `imagemagick` for image conversion, and `tailscale` for
@@ -55,12 +58,12 @@ and how to undo it by hand, and how the package proves itself.
 ## Update
 
 ```bash
-omarchy update
+git pull --ff-only
+makepkg -si
 ```
 
-Nothing Flea-specific to remember. `omarchy update` upgrades AUR packages on every run, so Flea
-comes up with the rest of the system, and your `flea --default` choice survives because that is a
-preference and not a file of the package's.
+Your `flea --default` choice survives updates because it is a per-user preference rather than a
+file owned by the package.
 
 The AUR packages are maintained by [@taxin-404](https://aur.archlinux.org/account/taxin-404), not by
 this repository.
@@ -381,7 +384,7 @@ is one character per kind, upgrading to Nerd Font glyphs where the terminal has 
 
 ## Requirements
 
-- Omarchy, with Quickshell 0.3.1 or newer, for the UI.
+- Quickshell 0.3.1 or newer for the UI; Omarchy is optional in this fork.
 - Rust to build the backend. This tree is built and tested against rustc/cargo 1.98.
 - `bubblewrap` for `bwrap` and `util-linux` for `prlimit`, both required for thumbnailing
   as described above. Everything else works without them.

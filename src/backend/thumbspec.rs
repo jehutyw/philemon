@@ -282,9 +282,11 @@ mod tests {
 
     // Sample input, the MimeType field of a real /usr/share/thumbnailers file, shortened to the types asserted here.
     fn shipped() -> Thumbnailers {
-        let evince = "[Thumbnailer Entry]\nTryExec=evince-thumbnailer\nExec=evince-thumbnailer -s %s %u %o\nMimeType=application/pdf;image/tiff\n";
-        let glycin = "[Thumbnailer Entry]\nTryExec=/usr/bin/glycin-thumbnailer\nExec=/usr/bin/glycin-thumbnailer --input %u --output %o --size %s\nMimeType=image/jpeg;image/heif;image/tiff\n";
-        let ffmpeg = "[Thumbnailer Entry]\nTryExec=ffmpegthumbnailer\nExec=ffmpegthumbnailer -i %i -o %o -s %s -f\nMimeType=video/mp4;video/webm;video/matroska\n";
+        // Keep the real field shapes but use /bin/sh as the program: this unit fixture tests
+        // parsing and precedence, not which optional thumbnailers happen to be installed.
+        let evince = "[Thumbnailer Entry]\nTryExec=/bin/sh\nExec=/bin/sh --evince -s %s %u %o\nMimeType=application/pdf;image/tiff\n";
+        let glycin = "[Thumbnailer Entry]\nTryExec=/bin/sh\nExec=/bin/sh --glycin --input %u --output %o --size %s\nMimeType=image/jpeg;image/heif;image/tiff\n";
+        let ffmpeg = "[Thumbnailer Entry]\nTryExec=/bin/sh\nExec=/bin/sh --ffmpeg -i %i -o %o -s %s -f\nMimeType=video/mp4;video/webm;video/matroska\n";
         Thumbnailers::from_entries(
             &[
                 ("/usr/share/thumbnailers/evince.thumbnailer".to_string(), evince.to_string()),
@@ -311,7 +313,7 @@ mod tests {
     #[test]
     fn a_type_two_files_declare_goes_to_the_first_in_path_order() {
         // Both evince.thumbnailer and glycin-image-rs.thumbnailer declare image/tiff, and deleting the sort reddens this only while read_dir happens to return glycin first, which POSIX does not promise.
-        assert_eq!(shipped().for_mime("image/tiff", &al()).unwrap().exec[0], "evince-thumbnailer");
+        assert_eq!(shipped().for_mime("image/tiff", &al()).unwrap().exec[1], "--evince");
     }
 
     // The only test here that reads this box's own directory, and it asserts the read rather than which thumbnailers are installed, because not one of them is even an optional dependency.

@@ -2,13 +2,12 @@
 
 pkgname=flea
 pkgver=0.1.3
-pkgrel=1
-pkgdesc='Fast, keyboard-first file manager for Omarchy'
+pkgrel=4
+pkgdesc='Fast, keyboard-first file manager for Linux desktops'
 arch=('x86_64')
 license=('MIT')
-# omarchy owns /usr/share/omarchy/shell, which ui/Commons and ui/Ui link into; quickshell owns qs.
 # util-linux ships prlimit, which the thumbnail and archive sandboxes require alongside bubblewrap.
-depends=('bubblewrap' 'glib2' 'omarchy' 'quickshell' 'shared-mime-info' 'util-linux' 'xdg-utils')
+depends=('bubblewrap' 'glib2' 'quickshell' 'shared-mime-info' 'util-linux' 'xdg-utils')
 makedepends=('cargo')
 optdepends=('libarchive: archive listing and extraction'
             '7zip: 7z archive support'
@@ -47,7 +46,6 @@ package() {
   # paths.rs looks for /usr/share/flea/ui/shell.qml, so the UI ships as data beside the binary.
   install -Dm644 ui/qmldir ui/*.qml -t "$pkgdir/usr/share/flea/ui"
   install -Dm644 ui/js/*.js -t "$pkgdir/usr/share/flea/ui/js"
-  # Commons and Ui are Omarchy's own, reached as qs.Commons: the checkout links them and so does the package.
-  ln -s /usr/share/omarchy/shell/Commons "$pkgdir/usr/share/flea/ui/Commons"
-  ln -s /usr/share/omarchy/shell/Ui "$pkgdir/usr/share/flea/ui/Ui"
+  # Flea carries the small compatibility modules it needs, so it works without Omarchy.
+  cp -a ui/Commons ui/Ui "$pkgdir/usr/share/flea/ui/"
 }

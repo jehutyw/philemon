@@ -16,7 +16,7 @@ import "js/Search.js" as Search
 ShellRoot {
     FloatingWindow {
         id: fleaWindow
-        title: "Flea"
+        title: "Flea // wired"
         implicitWidth: 900
         implicitHeight: 600
         // Quickshell 0.3.1 has no exit API and Qt.quit() is a no-op, so the shell signals itself.

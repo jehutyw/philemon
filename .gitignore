@@ -1,4 +1,7 @@
 /target
+/src/target/
+/pkg/
+/*.pkg.tar.*
 **/*.rs.bk
 
 # Editor and IDE droppings

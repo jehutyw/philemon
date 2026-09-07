@@ -1,7 +1,8 @@
 # Installing Flea
 
-Flea is for Omarchy: `omarchy` and `quickshell` are hard dependencies, so it will not install on a
-plain Arch box.
+Flea installs on Arch-based systems, including EndeavourOS. `quickshell` is the GUI runtime;
+the small Commons and Ui compatibility modules Flea uses ship with the package, so Omarchy is not
+required.
 
 Flea installs as an Arch package, so pacman owns both ends: `makepkg -si` puts it on, `pacman -Rns`
 takes it off, and pacman's own file list is what makes the second claim provable. There is no
@@ -11,7 +12,7 @@ Flea your default file manager, is a subcommand of the binary, `flea --default`,
 ## Build and install
 
 ```
-git clone https://github.com/thisisgm/flea.git
+git clone https://github.com/jehutyw/flea.git
 cd flea
 makepkg -si
 ```
@@ -33,7 +34,7 @@ uncommitted edits are what gets packaged.
 |---|---|
 | `/usr/bin/flea` | the binary, backend and launcher both |
 | `/usr/share/flea/ui/` | the Quickshell UI, which `paths.rs` looks for by `shell.qml` |
-| `/usr/share/flea/ui/Commons`, `/usr/share/flea/ui/Ui` | symlinks into `/usr/share/omarchy/shell/`, reached from QML as `qs.Commons` |
+| `/usr/share/flea/ui/Commons`, `/usr/share/flea/ui/Ui` | Flea's bundled QML compatibility modules |
 | `/usr/share/applications/com.thisisgm.flea.desktop` | the desktop entry |
 | `/usr/share/icons/hicolor/scalable/apps/com.thisisgm.flea.svg` | the icon |
 | `/usr/share/licenses/flea/LICENSE` | the licence |
@@ -41,8 +42,7 @@ uncommitted edits are what gets packaged.
 The count is whatever the built archive declares, not a number written down here: the UI grows a file
 whenever a component is added, so a figure pinned in this paragraph would be stale by the next commit.
 `packaging/flea-package-test` reads the count out of the archive and fails if the fake root does not
-hold exactly that many. The two symlinks are why `omarchy` is a hard dependency: they point into a
-directory that package owns.
+hold exactly that many.
 
 ## Uninstall
 
@@ -57,8 +57,8 @@ desktop and icon caches are re-indexed by Arch's own `update-desktop-database` a
 
 ## Make Flea the default
 
-Installing registers Flea for `inode/directory`; it does not make it the default, and it does not
-touch Omarchy's file-manager keys. Both are per-user preferences, so pacman cannot own them, and
+Installing registers Flea for `inode/directory`; it does not make it the default. This is a
+per-user preference, so pacman cannot own it, and
 Omarchy's own `default` verbs (`omarchy default browser`, `editor`, `terminal`) set exactly this
 kind of thing without a package's help. There is no `omarchy default filemanager`, and
 `/usr/share/omarchy/` is the package's to overwrite, so Flea carries the verb itself:
@@ -67,10 +67,9 @@ kind of thing without a package's help. There is no `omarchy default filemanager
 flea --default
 ```
 
-It does two things, each reported on its own line, and it is honest about state: run it twice and
-the second run says both halves are already Flea's and rewrites nothing. It needs no root, because
-both files are yours, and it takes no argument, because Omarchy's `default` verbs take one rather
-than asking questions and this one has only one thing to set.
+It sets the directory MIME handler through `xdg-mime`. On Omarchy it also updates Omarchy's two
+file-manager keys; on other desktops it leaves keyboard shortcuts to the desktop's settings.
+It needs no root.
 
 1. **The `inode/directory` handler.** `xdg-mime default com.thisisgm.flea.desktop inode/directory`,
    the stock tool, which writes one line to `~/.config/mimeapps.list`. The line printed names the
@@ -79,7 +78,7 @@ than asking questions and this one has only one thing to set.
    and a file manager that takes image or archive types is a bad citizen. The answer is read back
    with `xdg-mime query default` rather than trusted, because `xdg-mime default` exits 0 whatever it
    wrote.
-2. **Omarchy's two file-manager keys.** `SUPER + SHIFT + F` and `SUPER + ALT + SHIFT + F` are bound
+2. **Omarchy only: its two file-manager keys.** `SUPER + SHIFT + F` and `SUPER + ALT + SHIFT + F` are bound
    to Nautilus in `/usr/share/omarchy/default/hypr/bindings/applications.lua`, which
    `omarchy update` overwrites, so the override goes where the Omarchy manual says an override
    goes: appended to `~/.config/hypr/bindings.lua`, between two marker lines, in the manual's own

@@ -42,7 +42,7 @@ Item {
     readonly property int spiralSize: Style.font.body
 
     readonly property int messageMs: 4000
-    readonly property real ruleOpacity: 0.12
+    readonly property real ruleOpacity: 0.28
 
     // A status strip is chrome, not a data row; see Theme.qml's chromeHeight comment.
     implicitHeight: Theme.chromeHeight
@@ -128,7 +128,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: Theme.spacing.hairline
-        color: Theme.color.foreground
+        color: Theme.color.accent
         opacity: root.ruleOpacity
     }
 

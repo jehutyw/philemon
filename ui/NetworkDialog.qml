@@ -86,7 +86,7 @@ Item {
     // omarchy-launch-terminal runs its argv directly in a real terminal, so the sudo prompt
     // omarchy-pkg-add may need and the install's own progress are both visible to the user.
     function installDropbox() {
-        Quickshell.execDetached(["omarchy-launch-terminal", "omarchy", "install", "service", "dropbox"])
+        Quickshell.execDetached(["xdg-open", "https://www.dropbox.com/install-linux"])
         root.close()
     }
 
