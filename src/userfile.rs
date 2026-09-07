@@ -1,4 +1,4 @@
-// The per-user preference files flea --default touches: where they are, and the one way they are rewritten.
+// The per-user preference files philemon --default touches: where they are, and the one way they are rewritten.
 use std::fs;
 use std::io::Write;
 use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
@@ -81,8 +81,8 @@ mod tests {
     // One test, because the variable is process wide and cargo runs tests in threads.
     #[test]
     fn config_home_reads_a_non_empty_xdg_config_home_and_falls_back_to_home() {
-        std::env::set_var("XDG_CONFIG_HOME", "/tmp/flea-test-xdg");
-        assert_eq!(config_home().expect("set"), PathBuf::from("/tmp/flea-test-xdg"));
+        std::env::set_var("XDG_CONFIG_HOME", "/tmp/philemon-test-xdg");
+        assert_eq!(config_home().expect("set"), PathBuf::from("/tmp/philemon-test-xdg"));
         std::env::set_var("XDG_CONFIG_HOME", "");
         let home = std::env::var("HOME").expect("HOME");
         assert_eq!(config_home().expect("fallback"), PathBuf::from(home).join(".config"));

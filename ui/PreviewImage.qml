@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Format.js" as Format
 
 // The Quick Look's image pane, reached only through Preview.qml's Loader. It draws the file itself:
@@ -48,7 +48,7 @@ Item {
         spacing: Theme.spacing.gap
         visible: root.failed
 
-        Flea.Glyph {
+        Philemon.Glyph {
             anchors.horizontalCenter: parent.horizontalCenter
             // A failure mark stands alone, so it takes the pane-state ceiling States.dc.html draws at 40.
             maxSize: Theme.stateMarkSize

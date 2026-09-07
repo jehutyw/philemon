@@ -1,5 +1,5 @@
 id,run,mapped_ms,settled_ms,pss_kb,cpu_s,child_pss_kb,thumbs_n,pss_anon_kb,uss_kb,drm_kb,thumbs_by_dir,cpu_tree_s,thumbs_by_format,ranked,preview_ms
-flea,1,795,2533,115135,1.21,2033,36,86096,91848,277496,fail=0;large=36,1.42,heic=0;jpg=0;mkv=6;mp4=24;png=0;txt=0;webm=6;webp=0;unknown=0,yes,-
+philemon,1,795,2533,115135,1.21,2033,36,86096,91848,277496,fail=0;large=36,1.42,heic=0;jpg=0;mkv=6;mp4=24;png=0;txt=0;webm=6;webp=0;unknown=0,yes,-
 nautilus,1,814,17006,176734,9.37,0,541,82952,166756,180104,fail=0;large=541,12.81,heic=13;jpg=0;mkv=0;mp4=400;png=14;txt=0;webm=100;webp=14;unknown=0,yes,-
 thunar,1,462,12774,41671,7.27,0,221,16172,36104,0,fail=0;large=0;normal=221,7.27,heic=0;jpg=0;mkv=37;mp4=148;png=0;txt=0;webm=36;webp=0;unknown=0,yes,-
 pcmanfm,1,390,-1,41680,39.63,0,605,17152,29052,0,fail=0;large=0;normal=605,90.87,heic=0;jpg=0;mkv=0;mp4=400;png=105;txt=0;webm=100;webp=0;unknown=0,yes,-
@@ -14,7 +14,7 @@ lf,1,255,1750,74967,1.07,0,n/a,72040,72660,0,fail=0;large=0,1.07,n/a,n/a: tui in
 ranger,1,273,995,28645,0.31,0,n/a,25864,26536,0,fail=0;large=0,0.32,n/a,n/a: tui in kitty,1123
 xplr,1,293,620,13886,0.17,0,n/a,9164,13524,0,fail=0;large=0,0.17,n/a,n/a: tui in kitty,-1
 superfile,1,295,1162,157152,0.43,0,n/a,142560,157040,0,fail=0;large=0,0.90,n/a,n/a: tui in kitty,-1
-flea,2,833,2737,115477,1.27,2051,36,86380,92128,277496,fail=0;large=36,1.47,heic=0;jpg=0;mkv=6;mp4=24;png=0;txt=0;webm=6;webp=0;unknown=0,yes,-
+philemon,2,833,2737,115477,1.27,2051,36,86380,92128,277496,fail=0;large=36,1.47,heic=0;jpg=0;mkv=6;mp4=24;png=0;txt=0;webm=6;webp=0;unknown=0,yes,-
 nautilus,2,826,17093,177250,9.36,0,541,83564,167300,180104,fail=0;large=541,12.76,heic=13;jpg=0;mkv=0;mp4=400;png=14;txt=0;webm=100;webp=14;unknown=0,yes,-
 thunar,2,511,12785,43486,7.20,0,221,17984,37900,0,fail=0;large=0;normal=221,7.20,heic=0;jpg=0;mkv=37;mp4=148;png=0;txt=0;webm=36;webp=0;unknown=0,yes,-
 pcmanfm,2,383,-1,41440,39.64,0,605,16920,28848,0,fail=0;large=0;normal=605,90.89,heic=0;jpg=0;mkv=0;mp4=400;png=105;txt=0;webm=100;webp=0;unknown=0,yes,-
@@ -29,7 +29,7 @@ lf,2,257,1732,70771,1.06,0,n/a,67808,68476,0,fail=0;large=0,1.06,n/a,n/a: tui in
 ranger,2,274,1006,28642,0.31,0,n/a,25864,26540,0,fail=0;large=0,0.32,n/a,n/a: tui in kitty,1117
 xplr,2,293,605,13764,0.18,0,n/a,9124,13400,0,fail=0;large=0,0.18,n/a,n/a: tui in kitty,-1
 superfile,2,293,1569,157168,0.45,0,n/a,142600,157060,0,fail=0;large=0,0.94,n/a,n/a: tui in kitty,-1
-flea,3,835,2612,115342,1.20,2064,36,86180,91948,277496,fail=0;large=36,1.41,heic=0;jpg=0;mkv=6;mp4=24;png=0;txt=0;webm=6;webp=0;unknown=0,yes,-
+philemon,3,835,2612,115342,1.20,2064,36,86180,91948,277496,fail=0;large=36,1.41,heic=0;jpg=0;mkv=6;mp4=24;png=0;txt=0;webm=6;webp=0;unknown=0,yes,-
 nautilus,3,819,16972,176467,9.41,0,541,82640,166516,180104,fail=0;large=541,12.88,heic=13;jpg=0;mkv=0;mp4=400;png=14;txt=0;webm=100;webp=14;unknown=0,yes,-
 thunar,3,516,12860,40712,7.32,0,221,23580,26904,0,fail=0;large=0;normal=221,7.32,heic=0;jpg=0;mkv=37;mp4=148;png=0;txt=0;webm=36;webp=0;unknown=0,yes,-
 pcmanfm,3,396,-1,41422,39.61,0,604,17104,28744,0,fail=0;large=0;normal=604,90.89,heic=0;jpg=0;mkv=0;mp4=400;png=104;txt=0;webm=100;webp=0;unknown=0,yes,-

@@ -1,7 +1,7 @@
 .pragma library
 
 // The interface scale Ctrl+Shift+Plus and Ctrl+Shift+Minus step, issue 9, the way foot's own zoom
-// does. Flea still reads Omarchy's base size for its type: this multiplies what the theme already
+// does. Philemon still reads Omarchy's base size for its type: this multiplies what the theme already
 // resolved, so a box on base-size 12 stays on 12 until the operator asks for something else.
 
 var MIN = 0.8

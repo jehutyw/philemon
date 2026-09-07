@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Tap.js" as Tap
 
 // One Miller column: a scrolling list of ColumnRows over either a peeked directory or the pane's
@@ -46,7 +46,7 @@ Item {
         boundsBehavior: Flickable.StopAtBounds
         reuseItems: true
 
-        delegate: Flea.ColumnRow {
+        delegate: Philemon.ColumnRow {
             required property int index
             width: view.width
             // A shrunk listing subscripts out of range under a delegate not yet released, and QML
@@ -80,7 +80,7 @@ Item {
     }
 
     // A denied peek answers zero rows, the exact count an empty directory answers, so a locked column draws States.dc.html's Locked tile rather than reading as an empty one.
-    Flea.StateMessage {
+    Philemon.StateMessage {
         anchors.fill: parent
         listingState: root.lockedMode >= 0 ? "locked" : "ready"
         lockedMode: root.lockedMode
@@ -88,7 +88,7 @@ Item {
     }
 
     // The empty answer drawn quiet: the mark size Locked and Error already take in this slot, the hero's own first phrase, and a fixed caption, which is what keeps EmptyState's rotation off in a column the cursor rebuilds on every step.
-    Flea.EmptyState {
+    Philemon.EmptyState {
         id: emptyTile
         anchors.fill: parent
         visible: root.drawsEmpty && root.rows.length === 0 && root.lockedMode < 0

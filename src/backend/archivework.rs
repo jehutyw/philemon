@@ -4,12 +4,12 @@ use crate::backend::sandbox;
 use crate::backend::archive::Formats;
 use crate::backend::archivelist::parse_reader;
 use crate::backend::opsreq::op_err;
-use crate::error::{from_io, FleaError};
+use crate::error::{from_io, PhilemonError};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 // A private directory beside the destination, so the rename that follows never crosses a filesystem.
-const WORK_PREFIX: &str = ".flea-work-";
+const WORK_PREFIX: &str = ".philemon-work-";
 
 pub struct Work {
     pub dir: PathBuf,
@@ -27,7 +27,7 @@ const WORK_ATTEMPTS: usize = 64;
 impl Work {
     // create_dir, not create_dir_all: a name already taken is a collision and must never merge, and
     // create_new semantics are also what stops this from adopting somebody else's live directory.
-    pub fn new(beside: &Path, tag: &str) -> Result<Work, FleaError> {
+    pub fn new(beside: &Path, tag: &str) -> Result<Work, PhilemonError> {
         let mut last = String::new();
         for _ in 0..WORK_ATTEMPTS {
             let seq = WORK_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -57,7 +57,7 @@ impl Drop for Work {
 
 // The tools print their own diagnosis on stderr and do not always exit non-zero, so success is read
 // off the filesystem: the file the job was told to produce either exists afterwards or it does not.
-pub fn run_boxed(inner: Vec<String>, read_only: &Path, writable: &Path) -> Result<(), FleaError> {
+pub fn run_boxed(inner: Vec<String>, read_only: &Path, writable: &Path) -> Result<(), PhilemonError> {
     // Fail closed: the jail is the only containment for these tools, so a missing bwrap or prlimit
     // refuses the job rather than running it unsandboxed, the same rule thumbs.rs already follows.
     if !sandbox::available() {

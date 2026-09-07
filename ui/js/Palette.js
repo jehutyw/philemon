@@ -13,7 +13,7 @@ function parse(body) {
     return found;
 }
 
-// The first key the theme actually set wins, and a role no theme models keeps Flea's own colour.
+// The first key the theme actually set wins, and a role no theme models keeps Philemon's own colour.
 function pick(found, keys, fallback) {
     for (var i = 0; i < keys.length; i++) {
         if (found[keys[i]])

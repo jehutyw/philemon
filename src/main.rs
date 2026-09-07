@@ -7,6 +7,7 @@ mod hyprkeys;
 mod json;
 mod launcher;
 mod open;
+mod notes;
 mod paths;
 mod thp;
 mod userfile;
@@ -17,10 +18,10 @@ use std::path::PathBuf;
 use std::process::exit;
 
 fn usage(message: &str) -> ! {
-    eprintln!("flea: {}", message);
-    eprintln!("usage: flea [--tui|--gui] [--select <uri|path>] [path]");
-    eprintln!("       flea --default [off]");
-    eprintln!("       flea --version");
+    eprintln!("philemon: {}", message);
+    eprintln!("usage: philemon [--tui|--gui] [--select <uri|path>] [path]");
+    eprintln!("       philemon --default [off]");
+    eprintln!("       philemon --version");
     exit(2)
 }
 
@@ -37,9 +38,10 @@ fn select_target(raw: &str) -> Option<(PathBuf, PathBuf)> {
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    if args.len() == 2 && args[1] == "--notes" { exit(notes::run()); }
 
     // Bare, so a script can read it without parsing. Checked before every other mode: the only
-    // way to tell which Flea is installed is to ask it, and updates here are a manual git pull.
+    // way to tell which Philemon is installed is to ask it, and updates here are a manual git pull.
     if args.iter().any(|a| a == "--version") {
         println!("{}", env!("CARGO_PKG_VERSION"));
         exit(0);
@@ -49,7 +51,7 @@ fn main() {
         exit(backend::run::run());
     }
 
-    // flea --prewarm <path> <count> <dest>
+    // philemon --prewarm <path> <count> <dest>
     if args.len() == 5 && args[1] == "--prewarm" {
         let first: usize = args[3].parse().unwrap_or(0);
         match launcher::prewarm::write_prewarm(&args[2], first, &PathBuf::from(&args[4])) {
@@ -61,12 +63,15 @@ fn main() {
         }
     }
 
-    // flea --open <path>
+    // philemon --open <path>
+    if args.len() == 3 && args[1] == "--open-obsidian" {
+        exit(open::obsidian(&args[2]));
+    }
     if args.len() == 3 && args[1] == "--open" {
         exit(open::open(&args[2]));
     }
 
-    // flea --default [off]: the one per-user step pacman cannot own, see docs/install.md.
+    // philemon --default [off]: the one per-user step pacman cannot own, see docs/install.md.
     if args.len() == 2 && args[1] == "--default" {
         exit(defaults::claim());
     }
@@ -127,21 +132,21 @@ fn main() {
 
     if tui {
         if !interactive {
-            eprintln!("flea: the terminal interface needs a terminal on stdin and stdout");
+            eprintln!("philemon: the terminal interface needs a terminal on stdin and stdout");
             exit(2);
         }
-        eprintln!("flea: the terminal interface is not built yet, use --gui");
+        eprintln!("philemon: the terminal interface is not built yet, use --gui");
         exit(2);
     }
 
     if !paths::has_display() {
-        eprintln!("flea: there is no graphical session to open a window in");
+        eprintln!("philemon: there is no graphical session to open a window in");
         exit(2);
     }
     match paths::ui_dir() {
         Some(ui) => exit(gui::exec_qs(&ui, open_path.as_deref(), select_path.as_deref())),
         None => {
-            eprintln!("flea: the shell config is missing, set FLEA_UI or install /usr/share/flea/ui");
+            eprintln!("philemon: the shell config is missing, set PHILEMON_UI or install /usr/share/philemon/ui");
             exit(2);
         }
     }

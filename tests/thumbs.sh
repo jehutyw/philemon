@@ -3,13 +3,13 @@
 set -u
 set -o pipefail
 # Hard rule 9's guard, which owns FIXTURE_ROOT and every create and delete below.
-. "$(dirname "$0")/../tools/flea-sandbox-guard"
+. "$(dirname "$0")/../tools/philemon-sandbox-guard"
 cd "$(dirname "$0")/.." || exit 1
 
-BIN=./target/release/flea
-FIXTURE="${FLEA_MEDIA_DIR:-$FIXTURE_ROOT/flea-media-btrfs}"
+BIN=./target/release/philemon
+FIXTURE="${PHILEMON_MEDIA_DIR:-$FIXTURE_ROOT/philemon-media-btrfs}"
 # A scratch copy, so nothing this suite generates lands against a file the operator's cache knows.
-D=$FIXTURE_ROOT/flea-thumbs-test-$$
+D=$FIXTURE_ROOT/philemon-thumbs-test-$$
 # The cache this suite fills is its own, redirected inside that sandbox: src/backend/thumbcache.rs
 # honours XDG_CACHE_HOME, so nothing here reads or writes the operator's real cache at all.
 export XDG_CACHE_HOME="$D/cache"
@@ -74,12 +74,12 @@ head -c 4096 /dev/urandom > "$D/corrupt/broken.jpg"
 broken_key=$(printf 'file://%s' "$D/corrupt/broken.jpg" | md5sum | cut -d' ' -f1)
 out=$(printf '{"c":"list","path":"%s","first":10}\n{"c":"thumb","rows":[0]}\n{"c":"quit"}\n' "$D/corrupt" | timeout 120 $BIN --backend)
 check "an undecodable file answers empty" "1" "$(echo "$out" | grep -c '"row":0,"file":""')"
-check "and the decoder verdict is recorded" "0" "$([ -e "$CACHE/fail/flea/$broken_key.png" ] && echo 0 || echo 1)"
+check "and the decoder verdict is recorded" "0" "$([ -e "$CACHE/fail/philemon/$broken_key.png" ] && echo 0 || echo 1)"
 # record_failure publishes by rename, so a second job would leave a different inode here; an unchanged one proves no child ran.
-marker_inode=$(stat -c %i "$CACHE/fail/flea/$broken_key.png" 2>/dev/null || echo missing-before)
+marker_inode=$(stat -c %i "$CACHE/fail/philemon/$broken_key.png" 2>/dev/null || echo missing-before)
 out=$(printf '{"c":"list","path":"%s","first":10}\n{"c":"thumb","rows":[0]}\n{"c":"quit"}\n' "$D/corrupt" | timeout 120 $BIN --backend)
 check "the second request is answered from the marker" "1" "$(echo "$out" | grep -c '"row":0,"file":"","ms":0\.')"
-check "and no second child ran" "$marker_inode" "$(stat -c %i "$CACHE/fail/flea/$broken_key.png" 2>/dev/null || echo missing-after)"
+check "and no second child ran" "$marker_inode" "$(stat -c %i "$CACHE/fail/philemon/$broken_key.png" 2>/dev/null || echo missing-after)"
 
 # A fifo named like a video is not a regular file: the 10 s bound is well under the 20 s job timeout it used to burn.
 mkdir -p "$D/special"
@@ -110,7 +110,7 @@ key=$(printf 'file://%s' "$D/unconfined/u.jpg" | md5sum | cut -d' ' -f1)
 out=$(printf '{"c":"list","path":"%s","first":10}\n{"c":"thumb","rows":[0]}\n{"c":"quit"}\n' "$D/unconfined" | timeout 120 env PATH="$D/nopath" $BIN --backend 2>/dev/null)
 check "a missing sandbox refuses the job" "1" "$(echo "$out" | grep -c '"row":0,"file":""')"
 check "and publishes nothing to the shared cache" "0" "$([ -e "$CACHE/large/$key.png" ] && echo 1 || echo 0)"
-check "and records no failure marker" "0" "$([ -e "$CACHE/fail/flea/$key.png" ] && echo 1 || echo 0)"
+check "and records no failure marker" "0" "$([ -e "$CACHE/fail/philemon/$key.png" ] && echo 1 || echo 0)"
 
 # A cancel-all must leave the map holding exactly what is still running, or every cancelled row is skipped for good.
 mkdir -p "$D/cancelall"
@@ -131,15 +131,15 @@ check "every row of a request larger than the queue is answered" "80" "$(echo "$
 mkdir -p "$D/probe"
 for i in 0 1 2; do cp "$FIXTURE/photo_0.jpg" "$D/probe/p$i.jpg"; done
 ask() { printf '{"c":"list","path":"%s","first":10}\n{"c":"thumb","rows":[%s]}\n{"c":"quit"}\n' "$D/probe" "$1"; }
-out=$(ask 0 | FLEA_THUMB_TRACE=1 timeout 120 $BIN --backend 2>/dev/null)
+out=$(ask 0 | PHILEMON_THUMB_TRACE=1 timeout 120 $BIN --backend 2>/dev/null)
 check "the trace never reaches stdout" "0" "$(echo "$out" | grep -c 'trace')"
-err=$(ask 1 | FLEA_THUMB_TRACE=1 timeout 120 $BIN --backend 2>&1 >/dev/null)
+err=$(ask 1 | PHILEMON_THUMB_TRACE=1 timeout 120 $BIN --backend 2>&1 >/dev/null)
 check "the trace reaches stderr when asked for" "1" "$(echo "$err" | grep -c 'trace row=1 ')"
 off=$(ask 2 | timeout 120 $BIN --backend 2>&1 >/dev/null)
 check "and nothing at all when it is not" "0" "$(echo "$off" | grep -c 'trace')"
 
 # -A, never ls: the one kind of litter this subsystem leaves is a dotfile temp a bare ls cannot see.
-check "no temp file is left in the cache this run filled" "0" "$(ls -A "$CACHE/large" 2>/dev/null | grep -c '^\.flea-')"
+check "no temp file is left in the cache this run filled" "0" "$(ls -A "$CACHE/large" 2>/dev/null | grep -c '^\.philemon-')"
 sandbox_remove "$D"
 
 # The redirect is what makes this structural rather than a promise, so it is asserted.

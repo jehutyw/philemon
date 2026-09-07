@@ -2,7 +2,7 @@ use crate::backend::md5;
 use std::path::{Path, PathBuf};
 
 // This application's name in the shared cache's fail/ namespace, per the freedesktop thumbnail spec.
-const APP_NAME: &str = "flea";
+const APP_NAME: &str = "philemon";
 const LARGE_DIR: &str = "large";
 const FAIL_DIR: &str = "fail";
 const CACHE_DIR: &str = "thumbnails";
@@ -189,7 +189,7 @@ mod tests {
     fn the_fail_path_is_namespaced_by_this_application() {
         let c = Cache::new();
         let p = c.fail_path("file:///tmp/a.jpg");
-        assert!(p.to_string_lossy().contains("/thumbnails/fail/flea/"));
+        assert!(p.to_string_lossy().contains("/thumbnails/fail/philemon/"));
         assert!(p.to_string_lossy().ends_with(".png"));
     }
 
@@ -202,7 +202,7 @@ mod tests {
         );
         assert_eq!(
             c.fail_path("file:///tmp/a.jpg").parent().unwrap(),
-            Path::new("/x/y/thumbnails/fail/flea")
+            Path::new("/x/y/thumbnails/fail/philemon")
         );
         assert!(default_root().ends_with("thumbnails"));
     }
@@ -272,7 +272,7 @@ mod tests {
 
     // Returns the root alongside the result so the caller deletes it before asserting, which frees it on the failing path too.
     fn lookup_fixture(tag: &str, fail_at: Option<i64>, large_at: Option<i64>, ask: i64) -> (PathBuf, Hit) {
-        let root = std::env::temp_dir().join(format!("flea-thumbcache-{}-{}", tag, std::process::id()));
+        let root = std::env::temp_dir().join(format!("philemon-thumbcache-{}-{}", tag, std::process::id()));
         let c = Cache::at(root.clone());
         let uri = uri_for(Path::new(FIXTURE_SRC));
         for (entry, stamp) in [(c.fail_path(&uri), fail_at), (c.large_path(&uri), large_at)] {

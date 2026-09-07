@@ -59,7 +59,7 @@ function run(check) {
     // Real lsblk --json output, captured on the box with a USB stick plugged in (2026-09-02).
     // ui/DeviceMounts.qml feeds this exact command's stdout to parseDevices on the rail's own clock.
     var live = '{"blockdevices":['
-             + '{"name":"loop0","label":"FLEATEST","mountpoint":null,"rm":false,"size":"64M","type":"loop","model":null},'
+             + '{"name":"loop0","label":"PHILEMONTEST","mountpoint":null,"rm":false,"size":"64M","type":"loop","model":null},'
              + '{"name":"sda","label":null,"mountpoint":null,"rm":true,"size":"116.1G","type":"disk","model":"USB Flash Disk",'
              + '"children":[{"name":"sda1","label":"128GB","mountpoint":"/run/media/gm/128GB","rm":true,"size":"116.1G","type":"part","model":null}]},'
              + '{"name":"zram0","label":"zram0","mountpoint":"[SWAP]","rm":false,"size":"19.3G","type":"disk","model":null},'

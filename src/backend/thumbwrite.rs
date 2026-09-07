@@ -7,7 +7,7 @@ const TEMP_TRIES: usize = 8;
 const TEMP_MODE: u32 = 0o600;
 const SUFFIX_BYTES: usize = 8;
 // This application's name in the PNG Software key, matching the fail/ namespace in thumbcache.
-const SOFTWARE: &str = "flea";
+const SOFTWARE: &str = "philemon";
 // The three keys a published entry may hold only one of, so any the thumbnailer wrote are stripped before ours go in.
 const STAMPED_KEYS: [&str; 3] = ["Thumb::URI", "Thumb::MTime", "Software"];
 // The reflected polynomial PNG's CRC-32 uses, and the value that both seeds and inverts the register.
@@ -29,7 +29,7 @@ const ONE_PIXEL: [u8; 67] = [
 
 // The pid is in the name so a shutdown sweep can find this process's temps and no other process's.
 fn temp_prefix() -> String {
-    format!(".flea-{}-", std::process::id())
+    format!(".philemon-{}-", std::process::id())
 }
 
 // A predictable destination is never handed to a child; see AGENTS.md "Predictable path writes".
@@ -216,7 +216,7 @@ mod tests {
 
     #[test]
     fn a_stamp_leaves_exactly_one_of_each_key_it_owns() {
-        let dir = std::env::temp_dir().join(format!("flea-restamp-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("philemon-restamp-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let p = dir.join("theirs.png");
         // What ffmpegthumbnailer actually writes on this box: its own Thumb::URI and Thumb::MTime, plus keys nobody else owns.
@@ -247,12 +247,12 @@ mod tests {
 
     #[test]
     fn the_sweep_takes_this_process_temps_and_leaves_everything_else() {
-        let dir = std::env::temp_dir().join(format!("flea-sweep-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("philemon-sweep-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let mine = exclusive_temp(&dir).unwrap();
         // A published entry, another process's in-flight temp, and another application's dotfile must all survive.
         let published = dir.join("d41d8cd98f00b204e9800998ecf8427e.png");
-        let other_pid = dir.join(".flea-1-0011223344556677.png");
+        let other_pid = dir.join(".philemon-1-0011223344556677.png");
         let other_app = dir.join(".gnome-thumbnail-factory.png");
         for p in [&published, &other_pid, &other_app] {
             std::fs::write(p, b"").unwrap();
@@ -267,7 +267,7 @@ mod tests {
 
     #[test]
     fn a_stamped_png_reads_back_through_the_cache_parser() {
-        let dir = std::env::temp_dir().join(format!("flea-thumbwrite-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("philemon-thumbwrite-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let p = dir.join("m.png");
         write_marker(&p, "file:///tmp/a%20b.jpg", FIXTURE_MTIME).unwrap();

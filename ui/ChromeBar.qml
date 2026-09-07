@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Format.js" as Format
 import "js/PathBar.js" as PathBar
 
@@ -179,13 +179,13 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         spacing: Theme.spacing.gap
 
-        Flea.ChromeButton {
+        Philemon.ChromeButton {
             glyph: "arrow-left"
             enabled: root.canGoBack
             onActivated: root.backRequested()
         }
 
-        Flea.ChromeButton {
+        Philemon.ChromeButton {
             glyph: "arrow-up"
             enabled: root.canGoUp
             onActivated: root.upRequested()
@@ -310,14 +310,14 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         spacing: Theme.spacing.gap
 
-        Flea.ChromeButton {
+        Philemon.ChromeButton {
             glyph: "search"
             onActivated: root.searchRequested()
         }
 
         Repeater {
             model: ["list", "columns", "grid"]
-            delegate: Flea.ChromeButton {
+            delegate: Philemon.ChromeButton {
                 required property string modelData
                 glyph: modelData
                 active: root.viewMode === modelData

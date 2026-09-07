@@ -25,6 +25,8 @@ function listingEntries(p) {
     var out = []
     if (p.hasRow) {
         out.push({ label: "Open", action: "open", glyph: "folder-open" })
+        if (p.rowIsObsidianNote)
+            out.push({ label: "Open in Obsidian", action: "obsidian", glyph: "file-text" })
         out.push({ label: "Copy path", action: "copypath", glyph: "file-text" })
         out.push({ separator: true })
         out.push({ label: "Rename", action: "rename", glyph: "rename" })

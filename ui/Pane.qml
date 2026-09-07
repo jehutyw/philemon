@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell
-import "." as Flea
+import "." as Philemon
 import "js/DirSizes.js" as DirSizes
 import "js/Filter.js" as Filter
 import "js/Focus.js" as Focus
@@ -18,7 +18,7 @@ FocusScope {
 
     property var backend: null
     property string path: ""
-    // Set once by shell.qml from FLEA_SELECT; applied to the first `rows` this pane receives, then forgotten.
+    // Set once by shell.qml from PHILEMON_SELECT; applied to the first `rows` this pane receives, then forgotten.
     property string pendingSelect: ""
     property int total: 0
     property int cursorIndex: 0
@@ -225,12 +225,12 @@ FocusScope {
         return base === "/" ? "/" + name : base + "/" + name
     }
 
-    Flea.PaneWire {
+    Philemon.PaneWire {
         id: wire
         pane: root
     }
 
-    Flea.Sidebar {
+    Philemon.Sidebar {
         id: sidebar
         anchors.left: parent.left
         anchors.top: parent.top
@@ -243,7 +243,7 @@ FocusScope {
         onRenameFinished: list.forceActiveFocus()
     }
 
-    Flea.Header {
+    Philemon.Header {
         id: header
         // Only the list view has columns to head, and neither the grid board nor the columns board
         // draws one; the strip collapses rather than hiding, so the view below starts at the top of
@@ -273,7 +273,7 @@ FocusScope {
     readonly property var columnsArea: columns
     readonly property int cursorStride: root.viewMode === "grid" ? grid.columns : 1
 
-    Flea.FilterStrip {
+    Philemon.FilterStrip {
         id: filterStrip
         anchors.top: header.bottom
         anchors.left: sidebar.right
@@ -281,7 +281,7 @@ FocusScope {
         pane: root
     }
 
-    Flea.ColumnsArea {
+    Philemon.ColumnsArea {
         id: columns
         visible: root.viewMode === "columns"
         focus: root.viewMode === "columns"
@@ -294,7 +294,7 @@ FocusScope {
         Keys.onPressed: function (event) { event.accepted = Focus.handleKey(event, root, sidebar) }
     }
 
-    Flea.GridArea {
+    Philemon.GridArea {
         id: grid
         visible: root.viewMode === "grid"
         // Both views default to focus true, so the one that is not up has to give it back explicitly:
@@ -315,7 +315,7 @@ FocusScope {
         Keys.onPressed: function (event) { event.accepted = Focus.handleKey(event, root, sidebar) }
     }
 
-    Flea.List {
+    Philemon.List {
         id: list
         visible: root.viewMode === "list"
         focus: root.viewMode === "list"
@@ -340,8 +340,9 @@ FocusScope {
     // opening a submenu that always no-ops; reactive on both the cursor and the held window.
     readonly property var cursorRow: root.rowFor(root.cursorIndex)
 
-    Flea.ContextMenu {
+    Philemon.ContextMenu {
         id: menu
+        rowIsObsidianNote: root.cursorRow !== null && !root.cursorRow.d && Obsidian.isNote(root.join(root.path, root.cursorRow.n))
         showHidden: root.showHidden
         taildropPeers: (root.cursorRow && !root.cursorRow.d) ? wire.taildrop.peers : []
         archiveFormats: root.backend.archiveFormats
@@ -353,6 +354,7 @@ FocusScope {
         rowInDropbox: root.path === root.home + "/Dropbox" || root.path.indexOf(root.home + "/Dropbox/") === 0
         // The Open row's muted tail: the app xdg-open would choose, resolved as the cursor moves; empty for a directory.
         onChosen: function (action) {
+            if (action === "obsidian" && root.cursorRow) { wire.opener.openObsidian(root.join(root.path, root.cursorRow.n)); return }
             if (action.indexOf("taildrop:") === 0) { root.sendTaildrop(action.substring("taildrop:".length)); return }
             if (action === "copypath") { wire.opener.copyText(root.path + "/" + root.cursorRow.n); return }
             if (action.indexOf("col:") === 0) { ViewState.toggleColumn(action.substring("col:".length)); return }
@@ -381,7 +383,7 @@ FocusScope {
         return row !== null
     }
 
-    Flea.StateMessage {
+    Philemon.StateMessage {
         anchors.fill: root.listArea
         anchors.leftMargin: Theme.spacing.rowPaddingX
         anchors.rightMargin: Theme.spacing.rowPaddingX

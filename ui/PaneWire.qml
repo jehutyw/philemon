@@ -1,5 +1,5 @@
 import QtQuick
-import "." as Flea
+import "." as Philemon
 import "js/DirSizes.js" as DirSizes
 import "js/Errors.js" as Errors
 import "js/Nav.js" as Nav
@@ -25,19 +25,19 @@ Item {
     readonly property alias shareLink: shareLink
     readonly property alias taildrop: taildrop
 
-    Flea.Opener {
+    Philemon.Opener {
         id: opener
         onFailed: function (path) { pane.message("That file could not be opened; check that it still exists.", true) }
         onIsDirectory: function (path) { pane.open(path) }
     }
 
-    Flea.ShareLink {
+    Philemon.ShareLink {
         id: shareLink
         onCopied: pane.message("Share link copied to the clipboard.", false)
         onFailed: pane.message("Dropbox could not make a share link for that file.", true)
     }
 
-    Flea.Taildrop {
+    Philemon.Taildrop {
         id: taildrop
         // Fetched once per session start, not per right click: peers change on the scale of
         // minutes, not the scale of opening a context menu, and refreshing on open would make

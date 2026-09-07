@@ -20,7 +20,7 @@ function run(check) {
           "Sorting by that column is not available.")
     check("a read failure says the backend stopped",
           Errors.sentence("read", "EOF"),
-          "The backend stopped responding; reopen Flea and try again.")
+          "The backend stopped responding; reopen Philemon and try again.")
     check("an unknown origin falls back rather than leaking it",
           Errors.sentence("whatever", "/home/gm/secret/path"),
           "That action could not be completed; try again.")

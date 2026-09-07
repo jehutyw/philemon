@@ -1,5 +1,5 @@
 import QtQuick
-import "." as Flea
+import "." as Philemon
 
 // The canvas's PdfViewer: the Quick Look's own PDF surface. Hairline chrome above and below, and
 // between them the page, which is the only light thing in the app. The document itself stays in
@@ -65,7 +65,7 @@ Item {
             opacity: 0.12
         }
 
-        Flea.Glyph {
+        Philemon.Glyph {
             id: kindMark
             anchors.left: parent.left
             anchors.leftMargin: Theme.spacing.rowPaddingX
@@ -112,25 +112,25 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             spacing: Theme.spacing.gap
 
-            Flea.ChromeButton {
+            Philemon.ChromeButton {
                 glyph: "minus"
                 enabled: root.zoom > root.minZoom
                 onActivated: root.zoomBy(-1)
             }
 
-            Flea.ChromeButton {
+            Philemon.ChromeButton {
                 glyph: "plus"
                 enabled: root.zoom < root.maxZoom
                 onActivated: root.zoomBy(1)
             }
 
-            Flea.ChromeButton {
+            Philemon.ChromeButton {
                 glyph: "maximize"
                 active: root.expanded
                 onActivated: root.toggleExpand()
             }
 
-            Flea.ChromeButton {
+            Philemon.ChromeButton {
                 glyph: "x"
                 onActivated: root.closed()
             }
@@ -154,7 +154,7 @@ Item {
             height: pageFlick.contentHeight
             color: Theme.color.background
 
-            Flea.PreviewPdf {
+            Philemon.PreviewPdf {
                 id: pdf
                 anchors.fill: parent
                 path: root.path
@@ -170,7 +170,7 @@ Item {
         spacing: Theme.spacing.gap
         visible: root.failed
 
-        Flea.Glyph {
+        Philemon.Glyph {
             anchors.horizontalCenter: parent.horizontalCenter
             width: Theme.iconSize
             height: Theme.iconSize
@@ -213,7 +213,7 @@ Item {
             spacing: Theme.spacing.gap
             visible: root.pageCount > 0
 
-            Flea.ChromeButton {
+            Philemon.ChromeButton {
                 glyph: "chevron-left"
                 enabled: root.page > 0
                 onActivated: root.turn(-1)
@@ -228,7 +228,7 @@ Item {
                 textFormat: Text.PlainText
             }
 
-            Flea.ChromeButton {
+            Philemon.ChromeButton {
                 glyph: "chevron-right"
                 enabled: root.page + 1 < root.pageCount
                 onActivated: root.turn(1)

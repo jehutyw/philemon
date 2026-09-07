@@ -13,7 +13,7 @@ function run(check) {
     check("a thousand takes one separator", Search.grouped(4120), "4,120")
     check("a million takes two", Search.grouped(1234567), "1,234,567")
 
-    check("the home prefix reads as a tilde", Search.scope("/home/gm/Work/claude/flea", "/home/gm"), "~/Work/claude/flea")
+    check("the home prefix reads as a tilde", Search.scope("/home/gm/Work/claude/philemon", "/home/gm"), "~/Work/claude/philemon")
     check("home itself is the bare tilde", Search.scope("/home/gm", "/home/gm"), "~")
     check("a path outside home keeps its own form", Search.scope("/usr/share", "/home/gm"), "/usr/share")
 

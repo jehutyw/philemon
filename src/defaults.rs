@@ -1,4 +1,4 @@
-// flea --default: the one per-user step pacman cannot own, see docs/install.md "Make Flea the default".
+// philemon --default: the one per-user step pacman cannot own, see docs/install.md "Make Philemon the default".
 use crate::hyprkeys;
 use crate::userfile::{config_home, env_dir, home, replace_file};
 use std::fs;
@@ -6,15 +6,15 @@ use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
 // The entry packaging/ installs; the desktop resolves the id to that file, so a missing file is a claim on nothing.
-pub const DESKTOP_ID: &str = "com.thisisgm.flea.desktop";
+pub const DESKTOP_ID: &str = "com.thisisgm.philemon.desktop";
 // Directories only: the entry registers nothing else, and a file manager that takes image or archive types is a bad citizen.
 const MIME: &str = "inode/directory";
 
-// flea --default
+// philemon --default
 pub fn claim() -> i32 {
     if installed_entry().is_none() {
         eprintln!(
-            "flea: {} is not installed in any applications directory, so there is nothing to make the default; install the package first",
+            "philemon: {} is not installed in any applications directory, so there is nothing to make the default; install the package first",
             DESKTOP_ID
         );
         return 1;
@@ -25,11 +25,11 @@ pub fn claim() -> i32 {
         Ok("keys: unchanged (desktop shortcuts are managed by your desktop environment)".to_string())
     };
     let status = report(claim_mime(), keys);
-    println!("undo with: flea --default off");
+    println!("undo with: philemon --default off");
     status
 }
 
-// flea --default off
+// philemon --default off
 pub fn release() -> i32 {
     let keys = if is_omarchy() {
         hyprkeys::release()
@@ -53,7 +53,7 @@ fn report(mime: Result<String, String>, keys: Result<String, String>) -> i32 {
         match half {
             Ok(line) => println!("{}", line),
             Err(why) => {
-                eprintln!("flea: {}", why);
+                eprintln!("philemon: {}", why);
                 status = 1;
             }
         }
@@ -71,7 +71,7 @@ fn claim_mime() -> Result<String, String> {
     let now = query_default()?;
     if now != DESKTOP_ID {
         return Err(format!(
-            "xdg-mime default exited 0 but {} still resolves to {}; the desktop skips an entry whose Exec is not on PATH, so check that flea is",
+            "xdg-mime default exited 0 but {} still resolves to {}; the desktop skips an entry whose Exec is not on PATH, so check that philemon is",
             MIME,
             handler_name(&now)
         ));
@@ -99,7 +99,7 @@ fn release_mime() -> Result<String, String> {
     };
     replace_file(&path, &without)?;
     let now = query_default()?;
-    Ok(format!("{}: now {}, Flea's line removed from {}", MIME, handler_name(&now), path.display()))
+    Ok(format!("{}: now {}, Philemon's line removed from {}", MIME, handler_name(&now), path.display()))
 }
 
 fn handler_name(id: &str) -> &str {
@@ -151,9 +151,9 @@ fn installed_entry() -> Option<PathBuf> {
 
 // The per-user file xdg-mime writes, of which only the [Default Applications] section is ours to touch:
 //   [Default Applications]
-//   inode/directory=com.thisisgm.flea.desktop
+//   inode/directory=com.thisisgm.philemon.desktop
 //   image/png=imv.desktop
-// Returns the file without Flea's claim on `mime`, or None when the file makes no such claim.
+// Returns the file without Philemon's claim on `mime`, or None when the file makes no such claim.
 pub fn drop_default(text: &str, mime: &str, id: &str) -> Option<String> {
     let mut out = String::with_capacity(text.len());
     let mut in_defaults = false;
@@ -193,34 +193,34 @@ pub fn drop_default(text: &str, mime: &str, id: &str) -> Option<String> {
 mod tests {
     use super::*;
 
-    const OMARCHY_SHAPE: &str = "[Default Applications]\ninode/directory=com.thisisgm.flea.desktop\nimage/png=imv.desktop\n\n[Added Associations]\ninode/directory=com.thisisgm.flea.desktop;\n";
+    const OMARCHY_SHAPE: &str = "[Default Applications]\ninode/directory=com.thisisgm.philemon.desktop\nimage/png=imv.desktop\n\n[Added Associations]\ninode/directory=com.thisisgm.philemon.desktop;\n";
 
     #[test]
-    fn drop_default_removes_only_fleas_line_in_the_default_section() {
-        let out = drop_default(OMARCHY_SHAPE, MIME, DESKTOP_ID).expect("the file names Flea");
-        assert_eq!(out, "[Default Applications]\nimage/png=imv.desktop\n\n[Added Associations]\ninode/directory=com.thisisgm.flea.desktop;\n");
+    fn drop_default_removes_only_philemons_line_in_the_default_section() {
+        let out = drop_default(OMARCHY_SHAPE, MIME, DESKTOP_ID).expect("the file names Philemon");
+        assert_eq!(out, "[Default Applications]\nimage/png=imv.desktop\n\n[Added Associations]\ninode/directory=com.thisisgm.philemon.desktop;\n");
     }
 
     #[test]
-    fn drop_default_leaves_a_file_that_does_not_name_flea_alone() {
+    fn drop_default_leaves_a_file_that_does_not_name_philemon_alone() {
         assert_eq!(drop_default("[Default Applications]\ninode/directory=thunar.desktop\n", MIME, DESKTOP_ID), None);
-        assert_eq!(drop_default("inode/directory=com.thisisgm.flea.desktop\n", MIME, DESKTOP_ID), None);
+        assert_eq!(drop_default("inode/directory=com.thisisgm.philemon.desktop\n", MIME, DESKTOP_ID), None);
         assert_eq!(drop_default("", MIME, DESKTOP_ID), None);
     }
 
     #[test]
     fn drop_default_keeps_the_rest_of_a_list_value() {
         // gio writes a trailing semicolon where xdg-mime writes none; both are one claim.
-        assert_eq!(drop_default("[Default Applications]\ninode/directory=com.thisisgm.flea.desktop;\n", MIME, DESKTOP_ID), Some("[Default Applications]\n".to_string()));
+        assert_eq!(drop_default("[Default Applications]\ninode/directory=com.thisisgm.philemon.desktop;\n", MIME, DESKTOP_ID), Some("[Default Applications]\n".to_string()));
         assert_eq!(
-            drop_default("[Default Applications]\ninode/directory=com.thisisgm.flea.desktop;thunar.desktop;\n", MIME, DESKTOP_ID),
+            drop_default("[Default Applications]\ninode/directory=com.thisisgm.philemon.desktop;thunar.desktop;\n", MIME, DESKTOP_ID),
             Some("[Default Applications]\ninode/directory=thunar.desktop\n".to_string())
         );
     }
 
     #[test]
     fn drop_default_keeps_a_last_line_with_no_newline_intact() {
-        let out = drop_default("[Default Applications]\ninode/directory=com.thisisgm.flea.desktop\nimage/png=imv.desktop", MIME, DESKTOP_ID);
+        let out = drop_default("[Default Applications]\ninode/directory=com.thisisgm.philemon.desktop\nimage/png=imv.desktop", MIME, DESKTOP_ID);
         assert_eq!(out, Some("[Default Applications]\nimage/png=imv.desktop".to_string()));
     }
 }

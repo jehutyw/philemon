@@ -1,4 +1,4 @@
-# The one key table. tools/flea-keymap-gen turns it into ui/js/Keymap.js, which is generated.
+# The one key table. tools/philemon-keymap-gen turns it into ui/js/Keymap.js, which is generated.
 
 # Control-modified keys are checked first, so plain d can mean cut while ctrl-d pages.
 [[ctrl]]
@@ -468,12 +468,12 @@ keys = "?"
 action = "keymapSheet"
 label = "this sheet"
 
-# The pointer contract, the mouse's half of this table. tools/flea-keymap-gen turns it into
+# The pointer contract, the mouse's half of this table. tools/philemon-keymap-gen turns it into
 # Keymap.POINTER and tests/js/tap.js drives ui/js/Tap.js against every listing and neighbour row, so
 # a click cannot change meaning without this file saying so and this file cannot advertise a click
 # the code does not make.
 #
-# The effect field is "does" and not "action" on purpose. tools/flea-acceptance derives its whole key
+# The effect field is "does" and not "action" on purpose. tools/philemon-acceptance derives its whole key
 # checklist from every 'action = ' line in this file, without scoping to a table, so an action= here
 # would put a key on that checklist that nobody can press. Do not rename it back.
 #

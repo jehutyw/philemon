@@ -1,6 +1,6 @@
-# Flea backend protocol
+# Philemon backend protocol
 
-One JSON object per line, newline-delimited, over the `flea --backend` child's stdin
+One JSON object per line, newline-delimited, over the `philemon --backend` child's stdin
 and stdout. No batching, no length prefix: `Quickshell.Io.Process` reads with a
 `SplitParser` on `\n`. Implemented in `src/backend/proto.rs` over the field scanner and
 escaper in `src/json.rs`, dispatched by `src/backend/run.rs`.
@@ -272,7 +272,7 @@ Example: `{"c":"transfer","op":"copy","paths":["/home/gm/a.txt","/home/gm/photos
 
 Copies or moves each top-level path into `dest`. `op` of `"move"` moves; **anything else, including a
 missing `op`, copies**, so a malformed request can never remove a source. `paths` are absolute; `dest`
-is an absolute directory that must already exist, because Flea does not create a destination as a side
+is an absolute directory that must already exist, because Philemon does not create a destination as a side
 effect of a transfer. A `dest` that is missing, relative, or not a directory answers a single `error`
 line with `where` of `transfer` and nothing is started.
 
@@ -817,7 +817,7 @@ carries the key as sent), or `read` (the
 stdin stream itself could not be decoded; the loop stops right after emitting this
 line, because the framing cannot be trusted past that point; thumbnail work already
 running is still drained after it, so a `thumbed` line can follow). `error_line`
-is also how `flea --prewarm` reports a failure, to stderr rather than over this wire
+is also how `philemon --prewarm` reports a failure, to stderr rather than over this wire
 protocol. `where` names whichever operation actually failed: a missing or unreadable
 `path` propagates `scan`'s error unchanged, so `where` reads `scan` there too; only a
 failure inside prewarm's own file handling (creating, writing or renaming the temp
@@ -831,11 +831,11 @@ because only a denial reaches the Locked state. The stat outlives the denial: `/
 `0o40750`, while `opendir` on it is refused. No other `where` ever carries the field, and a `scan`
 whose path could not be stat'd either leaves it out, which a client reads as "I could not look" and
 draws as a sentence with no permission string under it. It exists because a typed path, or
-`FLEA_PATH`, reaches the denial with no parent listing to remember the mode from.
+`PHILEMON_PATH`, reaches the denial with no parent listing to remember the mode from.
 
 ## Prewarm reuses this wire format
 
-`flea --prewarm <path> <first> <dest>` writes exactly a `listed` line then a `rows`
+`philemon --prewarm <path> <first> <dest>` writes exactly a `listed` line then a `rows`
 line, the same two lines `--backend` would print for an equivalent `list`, to `dest`
 instead of stdout. See `AGENTS.md`, "Prewarm".
 
@@ -847,7 +847,7 @@ file.
 ## Undocumented requests
 
 `peek`, `paths`, `archive`, `convert`, `formats` and `fsinfo` are on the wire and are not documented
-here yet. `tools/flea-acceptance` derives its checklist from this file, so each one is a gap in that
+here yet. `tools/philemon-acceptance` derives its checklist from this file, so each one is a gap in that
 battery until its section is written.
 
 One `peek` field is worth naming ahead of that section, because it is new. A `peeked` line whose scan
@@ -866,7 +866,7 @@ as it did before.
 ## Known gaps
 
 - `listed` and the two-line prewarm file carry no requested path. A stale prewarm file
-  cannot be matched to the requested directory, so production ignores `FLEA_PREWARM`.
+  cannot be matched to the requested directory, so production ignores `PHILEMON_PREWARM`.
   Add a path or correlation field and prove a first-paint win before re-enabling a
   reader.
 - The pool is built when the backend starts, not when the first `thumb` arrives. That

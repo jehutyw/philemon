@@ -4,9 +4,9 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 // The one name that makes a directory deletable by this module; a directory without it is never touched.
-const MARKER: &str = ".flea-test-sandbox";
+const MARKER: &str = ".philemon-test-sandbox";
 // Every sandbox this process makes shares it, so a stray path outside the pattern is refused on the name alone.
-const PREFIX: &str = "flea-test-";
+const PREFIX: &str = "philemon-test-";
 // A sandbox lives under the temp root, which is at least two components deep, so a shallower path is a bug and not a root.
 const MIN_COMPONENTS: usize = 3;
 
@@ -26,7 +26,7 @@ impl TestDir {
         let path = std::env::temp_dir().join(name);
         std::fs::create_dir(&path).expect("test sandbox could not be created");
         let mut marker = std::fs::File::create(path.join(MARKER)).expect("test sandbox marker");
-        marker.write_all(b"flea test sandbox\n").expect("test sandbox marker");
+        marker.write_all(b"philemon test sandbox\n").expect("test sandbox marker");
         TestDir { path }
     }
 
@@ -102,7 +102,7 @@ mod tests {
         assert!(!removable(Path::new("/")));
         assert!(!removable(Path::new("")));
         // A relative path can be anything the caller's cwd makes it, so it never qualifies.
-        assert!(!removable(Path::new("flea-test-relative")));
+        assert!(!removable(Path::new("philemon-test-relative")));
         // Right shape, right place, no marker.
         let bare = std::env::temp_dir().join(format!("{}bare-{}", PREFIX, std::process::id()));
         std::fs::create_dir_all(&bare).expect("bare");

@@ -7,7 +7,7 @@ import "js/Tabs.js" as Tabs
 QtObject {
     id: root
 
-    property var fleaWindow: null
+    property var philemonWindow: null
     property var pane: null
     property var bar: null
     property var backend: null
@@ -20,7 +20,7 @@ QtObject {
 
     // The wrapper holds the references because an IpcHandler marshals every property it owns.
     property IpcHandler seam: IpcHandler {
-        target: "flea"
+        target: "philemon"
         function ready(): bool { return true }
         function themeLoaded(): bool { return Theme.ready }
         function themeForeground(): string { return String(Theme.color.foreground) }
@@ -30,7 +30,7 @@ QtObject {
             return [c.background, c.surface, c.foreground, c.muted, c.accent, c.error, c.symlink, c.executable].join(" ");
         }
         function metrics(): string { return Theme.font.bodySmall + " " + Theme.font.caption + " " + Theme.spacing.rowPaddingX + " " + Theme.rowHeight }
-        // Every token the Blueprint board states, one key=value per line; tools/flea-metrics-gate diffs it. metrics() above stays positional for tests/ui.sh.
+        // Every token the Blueprint board states, one key=value per line; tools/philemon-metrics-gate diffs it. metrics() above stays positional for tests/ui.sh.
         function tokens(): string { return Theme.tokens() }
         function cursor(): int { return root.pane.cursorIndex }
         function total(): int { return root.pane.total }
@@ -164,22 +164,22 @@ QtObject {
         function thumbRequests(): int { return root.backend.thumbRequests }
         function dirSizeRequests(): int { return root.backend.dirSizeRequests }
         function thumbFile(i: int): string { return root.pane.thumbFor(i) }
-        function rowCentre(i: int): string { return root.pane.rowFor(i) ? root.fleaWindow.centreOf(root.pane.visibleItemFor(i)) : "" }
+        function rowCentre(i: int): string { return root.pane.rowFor(i) ? root.philemonWindow.centreOf(root.pane.visibleItemFor(i)) : "" }
         // The same lookup as rowCentre, but for the preview's own seek slider, so a test can drive
         // a real wheel event over it without hardcoding the strip's layout.
         function previewSliderCentre(): string {
-            return root.pane.preview.active && root.pane.preview.isMedia ? root.fleaWindow.centreOf(root.pane.preview.seekSlider) : ""
+            return root.pane.preview.active && root.pane.preview.isMedia ? root.philemonWindow.centreOf(root.pane.preview.seekSlider) : ""
         }
         // The same lookup as rowCentre, but for a rail row: the rail has no ListView, so Sidebar.railItemFor(i) walks its own two Repeaters instead.
-        function railRowCentre(i: int): string { return root.fleaWindow.centreOf(root.pane.sidebar.railItemFor(i)) }
+        function railRowCentre(i: int): string { return root.philemonWindow.centreOf(root.pane.sidebar.railItemFor(i)) }
         // The sidebar pushes the row and the header right by its own width, so a pixel-crop test needs this rather than assuming x=0.
         function rowLeft(i: int): string {
             var item = root.pane.itemFor(i)
             if (!item || !root.pane.rowFor(i))
                 return ""
-            return String(Math.round(root.fleaWindow.itemRect(item).x))
+            return String(Math.round(root.philemonWindow.itemRect(item).x))
         }
-        function headerLeft(): string { return String(Math.round(root.fleaWindow.itemRect(root.pane.header).x)) }
+        function headerLeft(): string { return String(Math.round(root.philemonWindow.itemRect(root.pane.header).x)) }
         function viewMode(): string { return root.pane.viewMode }
         // What this box probed: the compress submenu is exactly this and never a fixed list.
         function archiveFormats(): string { return root.backend.archiveFormats.join("|") }
@@ -199,9 +199,9 @@ QtObject {
         function columnMediaPosition(): int { return root.pane.columnsArea.mediaPosition() }
         function columnPlayCentre(): string {
             var strip = root.pane.columnsArea.mediaStrip()
-            return strip ? root.fleaWindow.centreOf(strip.playItem) : ""
+            return strip ? root.philemonWindow.centreOf(strip.playItem) : ""
         }
-        function columnStripCentre(): string { return root.fleaWindow.centreOf(root.pane.columnsArea.mediaStrip()) }
+        function columnStripCentre(): string { return root.philemonWindow.centreOf(root.pane.columnsArea.mediaStrip()) }
         // The preview column's PDF page position, so a test proves a page turned rather than
         // eyeballing a render. Both readers are pure, like every other one on this handler.
         function columnPdfPage(): int { return root.pane.columnsArea.pdfPage() }
@@ -209,7 +209,7 @@ QtObject {
         function columnPdfLoaded(): bool { return root.pane.columnsArea.pdfLoaded() }
         function columnChevronCentre(dir: string): string {
             var item = root.pane.columnsArea.pdfChevron(dir)
-            return item && item.visible ? root.fleaWindow.centreOf(item) : ""
+            return item && item.visible ? root.philemonWindow.centreOf(item) : ""
         }
         function chromeHeight(): int { return Math.round(Theme.chromeHeight) }
         function tabCount(): int { return Tabs.count(root.pane) }
@@ -219,25 +219,25 @@ QtObject {
         function tabCentre(i: int): string {
             if (!root.tabBar)
                 return ""
-            return root.fleaWindow.centreOf(root.tabBar.itemAt(i))
+            return root.philemonWindow.centreOf(root.tabBar.itemAt(i))
         }
         // The chrome's buttons carry a glyph and no text, so a test reaches one by name and clicks
         // its centre, exactly the way rowCentre already works for a row.
-        function chromeButtonCentre(glyph: string): string { return root.fleaWindow.centreOf(root.chrome.buttonFor(glyph)) }
+        function chromeButtonCentre(glyph: string): string { return root.philemonWindow.centreOf(root.chrome.buttonFor(glyph)) }
         // The path bar: whether it has the keyboard, what it is holding, and the box a double click
         // opens it on, which is the pointer's half of ":" and Ctrl+L.
         function pathBarOpen(): bool { return root.chrome.editing }
         function pathBarText(): string { return String(root.chrome.editText) }
-        function pathCentre(): string { return root.fleaWindow.centreOf(root.chrome.pathArea) }
+        function pathCentre(): string { return root.philemonWindow.centreOf(root.chrome.pathArea) }
         // The button's painted box as "WxH": the mark is Theme.chromeMarkSize wide and the hit area is the whole strip tall.
         function chromeButtonSize(glyph: string): string {
             var item = root.chrome.buttonFor(glyph)
             if (!item)
                 return ""
-            var rect = root.fleaWindow.itemRect(item)
+            var rect = root.philemonWindow.itemRect(item)
             return Math.round(rect.width) + "x" + Math.round(rect.height)
         }
-        function headerTop(): string { return String(Math.round(root.fleaWindow.itemRect(root.pane.header).y)) }
+        function headerTop(): string { return String(Math.round(root.philemonWindow.itemRect(root.pane.header).y)) }
         function railRenamingIndex(): int { return root.pane.sidebar.renamingIndex }
         function dialogOpen(): bool { return root.networkDialog.opened }
         // The network form's own state, so a test asserts the protocol swap and the URI it built.
@@ -246,7 +246,7 @@ QtObject {
         function networkUri(): string { return root.networkDialog.formUri() }
         function networkPathLabel(): string { return root.networkDialog.formPathLabel() }
         // A protocol chip carries a label and no tree, so a test clicks its centre the way it does a row.
-        function networkChipCentre(name: string): string { return root.fleaWindow.centreOf(root.networkDialog.formChip(name)) }
+        function networkChipCentre(name: string): string { return root.philemonWindow.centreOf(root.networkDialog.formChip(name)) }
         function shareBrowserOpen(): bool { return root.shareBrowser.active }
         // One share name per line, in cursor order; empty when the overlay is shut.
         function shareBrowserEntries(): string { return root.shareBrowser.shares.join("\n") }

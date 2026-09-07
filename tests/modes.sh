@@ -2,10 +2,10 @@
 # Drives the real binary and asserts the mode contract, since main() is only reachable here.
 set -u
 # Hard rule 9's guard, which owns FIXTURE_ROOT and every create and delete below.
-. "$(dirname "$0")/../tools/flea-sandbox-guard"
+. "$(dirname "$0")/../tools/philemon-sandbox-guard"
 cd "$(dirname "$0")/.." || exit 1
 
-BIN=./target/debug/flea
+BIN=./target/debug/philemon
 fail=0
 
 check() {
@@ -34,7 +34,7 @@ out=$(env -u WAYLAND_DISPLAY -u DISPLAY $BIN --gui 2>&1 </dev/null)
 check "no display refuses" "1" "$(echo "$out" | grep -c 'no graphical session')"
 
 # qs missing from PATH is what a bad launcher or .desktop install hits; no errno may leak.
-out=$(env WAYLAND_DISPLAY=flea-modes-test-display PATH=/nonexistent-flea-test-path $BIN --gui 2>&1 </dev/null)
+out=$(env WAYLAND_DISPLAY=philemon-modes-test-display PATH=/nonexistent-philemon-test-path $BIN --gui 2>&1 </dev/null)
 check "missing qs is elided" "1" "$(echo "$out" | grep -c 'could not start the shell')"
 check "missing qs carries no errno" "0" "$(echo "$out" | grep -c 'os error')"
 
@@ -53,18 +53,18 @@ check "--tui --gui is a usage error" "2" "$rc"
 check "--tui --gui names the conflict" "1" "$(echo "$out" | grep -c 'mutually exclusive')"
 
 # The prctl has to survive exec, so a stub qs reports the kernel's own view of the launched child.
-D="$FIXTURE_ROOT/flea-thp-test-$$"
+D="$FIXTURE_ROOT/philemon-thp-test-$$"
 sandbox_make "$D"
 printf '#!/bin/sh\ngrep -i "^THP_enabled" /proc/self/status\n' > "$D/qs"
 chmod +x "$D/qs"
-out=$(env WAYLAND_DISPLAY=flea-modes-test-display PATH="$D:/usr/bin:/bin" $BIN --gui 2>&1 </dev/null)
+out=$(env WAYLAND_DISPLAY=philemon-modes-test-display PATH="$D:/usr/bin:/bin" $BIN --gui 2>&1 </dev/null)
 check "the launched shell has transparent huge pages off" "1" \
   "$(echo "$out" | grep -c 'THP_enabled:[[:space:]]*0')"
 check "the launched shell reported its THP state at all" "1" "$(echo "$out" | grep -c 'THP_enabled')"
 sandbox_remove "$D"
 
 # --open resolves the target, refuses a directory, and hands anything else to xdg-open.
-D="$FIXTURE_ROOT/flea-open-test-$$"
+D="$FIXTURE_ROOT/philemon-open-test-$$"
 sandbox_make "$D"
 mkdir -p "$D/dir" "$D/bin"
 printf 'hello' > "$D/file.txt"
@@ -78,11 +78,11 @@ printf '#!/bin/sh\nprintf "FD1 %%s\\n" "$(readlink /proc/$$/fd/1)" >> %q\nexec >
 chmod +x "$D/bin/xdg-open"
 
 : > "$opened"
-# Quickshell hands flea --open a pipe and closes it, so a pipe is exactly what the handler must not inherit.
+# Quickshell hands philemon --open a pipe and closes it, so a pipe is exactly what the handler must not inherit.
 PATH="$D/bin:/usr/bin:/bin" $BIN --open "$D/file.txt" 2>&1 | cat >/dev/null; sleep 0.2
 out=$(cat "$opened")
 check "--open hands the file to xdg-open" "1" "$(echo "$out" | grep -c "^ARGV $D/file.txt$")"
-# A pipe here dies with the flea that made it, and the handler dies with it on its first write.
+# A pipe here dies with the philemon that made it, and the handler dies with it on its first write.
 check "the opened program got no inherited pipe" "1" "$(echo "$out" | grep -c '^FD1 /dev/null$')"
 check "and the stub reported its first descriptor at all" "1" "$(echo "$out" | grep -c '^FD1 ')"
 # Field five of /proc/self/stat is the process group; it equals the pid only after setpgid(0, 0).
@@ -107,7 +107,7 @@ check "a broken symlink is an error status" "2" "$rc"
 check "and one sentence, with no errno" "0" "$(echo "$out" | grep -c 'os error')"
 check "and that sentence names the file" "1" "$(echo "$out" | grep -c 'could not be opened')"
 
-out=$(env PATH=/nonexistent-flea-test-path $BIN --open "$D/file.txt" 2>&1)
+out=$(env PATH=/nonexistent-philemon-test-path $BIN --open "$D/file.txt" 2>&1)
 rc=$?
 check "a missing xdg-open is an error status" "2" "$rc"
 check "and is elided too" "0" "$(echo "$out" | grep -c 'os error')"
@@ -121,7 +121,7 @@ check "--open with no path is a usage error" "1" "$(echo "$out" | grep -c -- '--
 printf '#!/bin/sh\ngrep -i "^THP_enabled" /proc/self/status | sed "s/^/QS /"\nexec %s --open %s\n' "$PWD/$BIN" "$D/file.txt" > "$D/bin/qs"
 chmod +x "$D/bin/qs"
 : > "$opened"
-out=$(env WAYLAND_DISPLAY=flea-modes-test-display PATH="$D/bin:/usr/bin:/bin" $BIN --gui 2>&1 </dev/null; sleep 0.2)
+out=$(env WAYLAND_DISPLAY=philemon-modes-test-display PATH="$D/bin:/usr/bin:/bin" $BIN --gui 2>&1 </dev/null; sleep 0.2)
 check "the shell inherited huge pages off" "1" "$(echo "$out" | grep -c '^QS THP_enabled:[[:space:]]*0')"
 check "and the opened program got them back" "1" "$(grep -c '^THP_enabled:[[:space:]]*1' "$opened")"
 sandbox_remove "$D"
@@ -130,7 +130,7 @@ sandbox_remove "$D"
 out=$(printf '{"c":"quit"}\n' | $BIN --backend)
 check "--backend still runs" "0" "$?"
 
-D="$FIXTURE_ROOT/flea-modes-test-$$"
+D="$FIXTURE_ROOT/philemon-modes-test-$$"
 sandbox_make "$D"
 mkdir -p "$D"; : > "$D/a.txt"
 $BIN --prewarm "$D" 1 "$D/out.json" >/dev/null 2>&1
@@ -145,7 +145,7 @@ check "and names the accepted shape" "1" "$(echo "$out" | grep -c -- '--default 
 
 # With no desktop entry installed, --default must refuse and touch nothing: pointing
 # xdg-mime or Hyprland's bindings at an uninstalled binary would be a claim on nothing.
-D="$FIXTURE_ROOT/flea-default-missing-test-$$"
+D="$FIXTURE_ROOT/philemon-default-missing-test-$$"
 sandbox_make "$D"
 mkdir -p "$D/data" "$D/config/hypr"
 printf -- '-- stock omarchy bindings\n' > "$D/config/hypr/bindings.lua"

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Philemon
+GenericName=File Manager
+Comment=Fast, keyboard-first file manager
+# The entry always means the window: without --gui the mode would be inferred from whatever stdio the launcher hands over.
+Exec=philemon --gui %f
+Icon=com.thisisgm.philemon
+Terminal=false
+Categories=System;FileTools;FileManager;
+MimeType=inode/directory;
+Keywords=files;folder;manager;browser;philemon;
+StartupWMClass=com.thisisgm.philemon

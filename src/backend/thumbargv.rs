@@ -36,7 +36,7 @@ mod tests {
     }
 
     fn dir_for(tag: &str) -> PathBuf {
-        std::env::temp_dir().join(format!("flea-thumbargv-{}-{}", tag, std::process::id()))
+        std::env::temp_dir().join(format!("philemon-thumbargv-{}-{}", tag, std::process::id()))
     }
 
     #[test]

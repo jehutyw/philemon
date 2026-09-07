@@ -5,7 +5,7 @@ import Quickshell.Io
 import "js/Scale.js" as Scale
 
 // The per-user view state that outlives a window: which list columns the user has hidden, and
-// later whatever else a preference earns a toggle for. One JSON file under ~/.config/flea, read
+// later whatever else a preference earns a toggle for. One JSON file under ~/.config/philemon, read
 // once at construction and rewritten on every change through the same FileView pattern the
 // bookmarks use (ui/NetworkDialog.qml's write, ui/Sidebar.qml's watch). A write over a directory
 // that does not exist yet is the one silent failure this singleton allows: the toggles keep
@@ -51,7 +51,7 @@ QtObject {
 
     property var store: FileView {
         path: (Quickshell.env("XDG_CONFIG_HOME") && Quickshell.env("XDG_CONFIG_HOME").length > 0
-               ? Quickshell.env("XDG_CONFIG_HOME") : Quickshell.env("HOME") + "/.config") + "/flea/view.json"
+               ? Quickshell.env("XDG_CONFIG_HOME") : Quickshell.env("HOME") + "/.config") + "/philemon/view.json"
         watchChanges: false
         printErrors: false
         onLoaded: root.load()

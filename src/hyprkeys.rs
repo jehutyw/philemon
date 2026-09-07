@@ -1,16 +1,16 @@
-// The two Omarchy file-manager keys, moved to Flea by one additive block in ~/.config/hypr/bindings.lua.
+// The two Omarchy file-manager keys, moved to Philemon by one additive block in ~/.config/hypr/bindings.lua.
 use crate::userfile::{config_home, replace_file};
 use std::fs;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
 // Markers at line start, so the inverse finds the block whatever the user wrote after it.
-const BEGIN: &str = "-- flea --default: begin. Written by `flea --default`; `flea --default off` removes the block whole.";
-const END: &str = "-- flea --default: end.";
+const BEGIN: &str = "-- philemon --default: begin. Written by `philemon --default`; `philemon --default off` removes the block whole.";
+const END: &str = "-- philemon --default: end.";
 // Omarchy binds both to Nautilus in default/hypr/bindings/applications.lua; the cwd one opens on the active terminal's directory.
 const BINDS: [(&str, &str, &str); 2] = [
-    ("SUPER + SHIFT + F", "File manager", "flea --gui"),
-    ("SUPER + ALT + SHIFT + F", "File manager (cwd)", "flea --gui \"$(omarchy-cmd-terminal-cwd)\""),
+    ("SUPER + SHIFT + F", "File manager", "philemon --gui"),
+    ("SUPER + ALT + SHIFT + F", "File manager (cwd)", "philemon --gui \"$(omarchy-cmd-terminal-cwd)\""),
 ];
 // hyprctl binds reports a chord as a mask: SUPER is 64, ALT is 8, SHIFT is 1.
 const MODMASKS: [u32; 2] = [65, 73];
@@ -19,7 +19,7 @@ pub fn claim() -> Result<String, String> {
     let path = bindings_path()?;
     let text = read(&path)?;
     if has_block(&text) {
-        return Ok(format!("keys: already Flea's, the flea --default block is in {}", path.display()));
+        return Ok(format!("keys: already Philemon's, the philemon --default block is in {}", path.display()));
     }
     if let Some(errors) = configerrors().filter(|e| !e.is_empty()) {
         return Err(format!("hyprctl configerrors already reports a problem, fix that first so a change here can be told apart from it: {}", errors));
@@ -29,7 +29,7 @@ pub fn claim() -> Result<String, String> {
     let keys = format!("{} and {}", BINDS[0].0, BINDS[1].0);
     if !reload() {
         return Ok(format!(
-            "keys: {} open Flea, {}; block appended to {}, not reloaded because hyprctl could not be reached, so run hyprctl reload inside the session",
+            "keys: {} open Philemon, {}; block appended to {}, not reloaded because hyprctl could not be reached, so run hyprctl reload inside the session",
             keys, were, path.display()
         ));
     }
@@ -39,14 +39,14 @@ pub fn claim() -> Result<String, String> {
         reload();
         return Err(format!("the block broke the Hyprland config and was removed again; hyprctl configerrors said: {}", errors));
     }
-    Ok(format!("keys: {} open Flea, {}; block appended to {} and reloaded", keys, were, path.display()))
+    Ok(format!("keys: {} open Philemon, {}; block appended to {} and reloaded", keys, were, path.display()))
 }
 
 pub fn release() -> Result<String, String> {
     let path = bindings_path()?;
     let text = read(&path)?;
     let Some(without) = without_block(&text)? else {
-        return Ok(format!("keys: nothing to undo, no flea --default block in {}", path.display()));
+        return Ok(format!("keys: nothing to undo, no philemon --default block in {}", path.display()));
     };
     replace_file(&path, &without)?;
     if !reload() {
@@ -103,7 +103,7 @@ pub fn without_block(text: &str) -> Result<Option<String>, String> {
         return Ok(None);
     };
     let Some(end_offset) = text[start..].find(END) else {
-        return Err("the flea --default begin marker has no end marker, so remove the block by hand".to_string());
+        return Err("the philemon --default begin marker has no end marker, so remove the block by hand".to_string());
     };
     let mut end = start + end_offset + END.len();
     if text[end..].starts_with('\n') {
@@ -195,8 +195,8 @@ mod tests {
         assert_eq!(b.matches("hl.unbind(").count(), 2);
         assert_eq!(b.matches("o.bind(").count(), 2);
         // The same launcher Omarchy's own { launch = } bindings use, and the cwd one reads the terminal's directory.
-        assert!(b.contains("{ launch = 'flea --gui' }"));
-        assert!(b.contains("{ launch = 'flea --gui \"$(omarchy-cmd-terminal-cwd)\"' }"));
+        assert!(b.contains("{ launch = 'philemon --gui' }"));
+        assert!(b.contains("{ launch = 'philemon --gui \"$(omarchy-cmd-terminal-cwd)\"' }"));
     }
 
     #[test]

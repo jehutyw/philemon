@@ -15,16 +15,16 @@ cd "$(dirname "$0")/.." || exit 1
 # anything. They refuse by name rather than reporting failures against a binary that is absent.
 # protocol.sh drives the debug binary and thumbs.sh drives the release one. Building only debug
 # passes in a tree that happens to carry both and fails on a fresh clone.
-if [ ! -x target/debug/flea ]; then
-    printf 'run-all: building target/debug/flea, protocol.sh needs it\n'
+if [ ! -x target/debug/philemon ]; then
+    printf 'run-all: building target/debug/philemon, protocol.sh needs it\n'
     cargo build -q || { printf 'run-all: cargo build failed, nothing else was run\n' >&2; exit 1; }
 fi
-if [ ! -x target/release/flea ]; then
-    printf 'run-all: building target/release/flea, thumbs.sh needs it\n'
+if [ ! -x target/release/philemon ]; then
+    printf 'run-all: building target/release/philemon, thumbs.sh needs it\n'
     cargo build -q --release || { printf 'run-all: release build failed, nothing else was run\n' >&2; exit 1; }
 fi
 
-headless="js keymap-gen charts budget sandbox ops modes protocol archive thumbs"
+headless="js obsidian-open note-workspace keymap-gen charts budget sandbox ops modes protocol archive thumbs"
 failed=0
 ran=0
 
@@ -49,7 +49,7 @@ printf '\nrun-all: %d suite(s) run, %d failed\n' "$ran" "$failed"
 
 # Named, not run: each needs something this script cannot assume it has.
 printf '\nNot run here, and why:\n'
-printf '  ui.sh     needs the display, and refuses beside a Flea it did not start\n'
+printf '  ui.sh     needs the display, and refuses beside a Philemon it did not start\n'
 printf '  drag.sh   needs the display and a real pointer through uinput\n'
 printf '  bench.sh  needs an idle box and the sudo password on stdin for drop_caches\n'
 

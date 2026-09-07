@@ -1,16 +1,16 @@
-# Flea
+# Philemon
 
 The fastest GUI file manager on Linux, keyboard first, native to Omarchy.
 P0 is the local browser, and remotes, search and disk operations have since landed on
-top of it. Encryption and Flea's own terminal interface are later phases and are not in
-this tree yet: `flea --tui` says so and exits 2.
+top of it. Encryption and Philemon's own terminal interface are later phases and are not in
+this tree yet: `philemon --tui` says so and exits 2.
 
 ## The five load-bearing rules
 
 1. **Every per-file operation stays scoped to the viewport.** Icons, MIME sniffing and
    thumbnails all stay inside the visible rows. The whole margin over the field is that
-   the competition stats every entry in the directory and Flea stats only the ones a
-   screen can hold. Measured: the field stats 100,000 entries, Flea's first window
+   the competition stats every entry in the directory and Philemon stats only the ones a
+   screen can hold. Measured: the field stats 100,000 entries, Philemon's first window
    stats 350. `ui/Pane.qml` owns the viewport-sized held window and calls
    `ui/Backend.qml`'s `window(start, count)` request only when that window drifts.
 
@@ -25,11 +25,11 @@ this tree yet: `flea --tui` says so and exits 2.
    client ask for it separately costs a full round trip that lands mid first-paint.
    Measured: 64 ms if asked for afterward, 4 ms riding along with the listing.
 
-4. **Prewarm stays disabled until it is both safe and faster.** The `flea --prewarm`
+4. **Prewarm stays disabled until it is both safe and faster.** The `philemon --prewarm`
    producer exists, but the proposed UI reader measured a 485 ms median against 439 ms
    for the live path. After its removal, ignored experimental generation measured
    469 ms against 437 ms live. Production `ui/shell.qml` intentionally calls only
-   `pane.open(start)`, and `tools/flea-first-paint` preserves the comparison. The reader
+   `pane.open(start)`, and `tools/philemon-first-paint` preserves the comparison. The reader
    was rejected as slower and stale-capable; it remains disabled until the wire carries
    the requested path and a new measurement proves a real win.
 
@@ -58,10 +58,10 @@ this tree yet: `flea --tui` says so and exits 2.
    keystroke is a hidden view that is fully alive.
 
 7. **The media bracket got a real rival on 2026-09-03, and two columns felt it.** Measuring
-   `strata`'s work properly moved it from unranked into the table, and Flea's placements moved
+   `strata`'s work properly moved it from unranked into the table, and Philemon's placements moved
    with it: memory went from fifth of six to **sixth of seven** at 112.6 MiB against strata's
    **70.3 MiB**, and the CPU lead, which read 3.61x over `nemo`, is now **1.28x over strata**,
-   1.42 s against 1.82 s. Both columns Flea wins are still won, settled listing first of six and
+   1.42 s against 1.82 s. Both columns Philemon wins are still won, settled listing first of six and
    CPU first of seven, and the 100,000 file bracket did not move at all. The operator ruled this
    acceptable with an optimization pass to follow, so it is a deferred ticket and not a defect.
    Item 6 above is the first place to look: its `Loader` gating was MEASURED to recover 14.7 MB at
@@ -172,7 +172,7 @@ served from the heap and never leaves the process.** Naming a threshold is what 
 glibc sets `no_dyn_threshold` the moment a program sets one, through the tunable or `mallopt`.
 
 **So the size of the win depends entirely on the sequence, and any single number quoted without
-its sequence is wrong.** Measured through the REAL path, a live Flea window driven by `h`,
+its sequence is wrong.** Measured through the REAL path, a live Philemon window driven by `h`,
 `g`, `j` and `Return` to list the 100,000-file fixture, leave it, and list it again, with a
 negative control on the same tree and the arms alternating over six interleaved pairs. `Pss` from
 `smaps_rollup` in KiB, divide by 1024 for MiB:
@@ -187,7 +187,7 @@ negative control on the same tree and the arms alternating over six interleaved 
 lever, listing a large directory a second time roughly DOUBLES the backend, and with it the second
 listing costs what the first did.**
 
-**The field bench will not show this and must not be expected to.** `tools/flea-field-bench`
+**The field bench will not show this and must not be expected to.** `tools/philemon-field-bench`
 launches an entrant once and lists one directory, so its `child_pss_kb` column is the first row of
 that table and moves by about 50 KiB. This is a session property, not a cold-start one. **The
 2026-08-30 field run confirmed it**: the whole branch, this lever plus the shared table parse's
@@ -237,7 +237,7 @@ fails on those. But a wrong parameter number or a wrong threshold value warns ab
 silently LOSES the 4.81 MiB above, which is why `src/heap.rs` now carries its own test.
 
 **The guard is a re-exec.** `a_freed_large_block_does_not_ratchet_the_mmap_threshold` spawns the test
-binary again behind `FLEA_HEAP_PROBE`, ratchets the threshold the way a first large listing does with
+binary again behind `PHILEMON_HEAP_PROBE`, ratchets the threshold the way a first large listing does with
 one 8 MiB allocation and free, and asserts a 1 MiB allocation landed outside `[heap]` in
 `/proc/self/maps`. A fresh process is what makes it not flaky: a heap already holding a free chunk of
 that size would answer from the arena for a reason that has nothing to do with the lever. 0 red in 50
@@ -272,7 +272,7 @@ both were measured head to head over ten interleaved pairs, 1453.5 KiB against 1
 half KiB apart with the distributions fully overlapping. `Process` on Quickshell 0.3.1 does carry
 `environment` and it does MERGE rather than replace: with the map set, the backend's
 `/proc/<pid>/environ` holds the tunable and still holds `HOME`, `PATH`, `XDG_RUNTIME_DIR`,
-`WAYLAND_DISPLAY` and `FLEA_BIN`, 26 variables in all, verified live. `mallopt` wins on reach
+`WAYLAND_DISPLAY` and `PHILEMON_BIN`, 26 variables in all, verified live. `mallopt` wins on reach
 rather than on numbers: it applies however the backend is started, including `tests/protocol.sh`,
 `tests/thumbs.sh` and any second front end, whereas the QML property covers only the process the
 GUI spawns; and it keeps an allocator decision in the module whose allocation pattern was measured
@@ -292,11 +292,11 @@ by itself.
 
 ## Prewarm
 
-`flea --prewarm <path> <first> <dest>` (`launcher/prewarm.rs`) runs the same scan, sort
+`philemon --prewarm <path> <first> <dest>` (`launcher/prewarm.rs`) runs the same scan, sort
 and stat-range as the backend's `list` command, then writes exactly the two lines
 `--backend` would have printed to stdout, a `listed` line and a `rows` line, to `dest`
 instead. This producer and its secure file contract remain available for measurement,
-but production ignores `FLEA_PREWARM`: the rejected reader was slower and the file
+but production ignores `PHILEMON_PREWARM`: the rejected reader was slower and the file
 carries no requested path with which to reject stale content (rule 4 above).
 
 ## Predictable path writes
@@ -320,7 +320,7 @@ from the flag parsing below: it is matched anywhere in argv and always wins. `--
 `--open` are matched only in their exact well-formed shape, `args.len() == 5` and
 `args.len() == 3` with the flag in argv[1], so a MALFORMED one is not caught here at all. It
 falls through to the parsing below and leaves by the unknown-flag branch, which names the flag
-and exits 2; `flea --open` with no path and `flea --open a b` are both that case. The looseness
+and exits 2; `philemon --open` with no path and `philemon --open a b` are both that case. The looseness
 predates this branch for `--prewarm` and this branch extended it to `--open`. `--open` takes exactly one path and exits with the whole of its contract: `0` is a
 successful handoff, `2` is anything that could not be opened and carries one elided
 sentence, and `3` means the resolved target is a directory and carries no output at all. A
@@ -334,7 +334,7 @@ manager opens a different file manager; the caller navigates instead. See "Openi
 `--default` does not fall through to the unknown-flag branch: a third check catches any argv
 with `args[1] == "--default"` that matched neither shape and names its own usage error,
 `--default takes nothing, or off`, before exiting 2. `claim()` refuses and writes nothing when
-Flea's own desktop entry, `com.thisisgm.flea.desktop` (`defaults::DESKTOP_ID`), is not installed
+Philemon's own desktop entry, `com.thisisgm.philemon.desktop` (`defaults::DESKTOP_ID`), is not installed
 under `$XDG_DATA_HOME` (or `~/.local/share`) or any of `$XDG_DATA_DIRS` (default
 `/usr/local/share:/usr/share`): the packaged entry is the proof the pacman package landed, and
 pointing `xdg-mime` or Hyprland's bindings at an uninstalled binary would be a claim on nothing.
@@ -351,7 +351,7 @@ exactly once, and a type nobody matches on twice would be ceremony.
 `--tui` and `--gui` are mutually exclusive; giving both is a usage error naming the conflict,
 never a coin flip. With neither flag, the choice is `interactive`: both stdin and stdout must
 be a real terminal, not just one, so that a pipeline never receives the terminal interface.
-`flea | head` gives stdin a tty and stdout a pipe, so `interactive` is false and the window
+`philemon | head` gives stdin a tty and stdout a pipe, so `interactive` is false and the window
 branch runs; what the rule prevents is the terminal interface writing escape codes into that
 pipe, which is exactly what the `--tui` refusal below it says. `--tui` without a terminal on
 both handles exits 2; `--gui` without `WAYLAND_DISPLAY` or `DISPLAY` refuses rather than
@@ -361,16 +361,16 @@ Telling that `&&` apart from an `||` needs a tty on exactly one handle and no su
 a pty, so that distinction is untested; the no-flag case in `./tests/modes.sh` pins only
 which branch the default takes.
 
-`paths::ui_dir()` finds the UI the same way `FLEA_BIN` finds the backend binary (see "Where
-the backend binary comes from" below): `FLEA_UI` first, then the packaged
-`/usr/share/flea/ui`, then the dev tree's `ui/` found by walking up three parents from the
-running binary (`target/debug/flea` to the repository root). Each candidate is confirmed by
-checking for its `shell.qml` before being accepted, and an empty `FLEA_UI` is rejected before
+`paths::ui_dir()` finds the UI the same way `PHILEMON_BIN` finds the backend binary (see "Where
+the backend binary comes from" below): `PHILEMON_UI` first, then the packaged
+`/usr/share/philemon/ui`, then the dev tree's `ui/` found by walking up three parents from the
+running binary (`target/debug/philemon` to the repository root). Each candidate is confirmed by
+checking for its `shell.qml` before being accepted, and an empty `PHILEMON_UI` is rejected before
 that check because `PathBuf::from("")` would test the working directory, so a stale or empty
-`FLEA_UI` falls through instead of handing `qs` a broken path.
+`PHILEMON_UI` falls through instead of handing `qs` a broken path.
 
 `gui::exec_qs` calls `Command::exec`, replacing this process instead of spawning a child, so
-`flea` never leaves an orphaned pid behind and signals sent to it reach `qs` directly. It also
+`philemon` never leaves an orphaned pid behind and signals sent to it reach `qs` directly. It also
 calls `prctl(PR_SET_THP_DISABLE)` immediately before that `exec`, because the setting is
 preserved across `exec` and this is the last point that can hand it to `qs`; see "Transparent
 huge pages" below for what it is worth and what it cost.
@@ -389,7 +389,7 @@ huge pages" below for what it is worth and what it cost.
 - `defaults.rs` claims or releases the OS-level default: the desktop-entry install check,
   the `inode/directory` MIME default via `xdg-mime`, and reporting each half, see "Modes".
 - `hyprkeys.rs` adds or removes the additive, markered block in Omarchy's
-  `~/.config/hypr/bindings.lua` that binds the two file-manager chords to Flea, see "Modes".
+  `~/.config/hypr/bindings.lua` that binds the two file-manager chords to Philemon, see "Modes".
 - `userfile.rs` resolves `$HOME` and `$XDG_CONFIG_HOME` and rewrites a per-user file through
   an exclusive temp plus rename, see "Predictable path writes".
 - `error.rs` the one error type, naming the failing operation and input.
@@ -442,13 +442,13 @@ huge pages" below for what it is worth and what it cost.
 - `ui/Row.qml` renders one row delegate: the icon slot, which a thumbnail replaces in
   place, the PlainText name and the semantic colours.
 - `ui/Opener.qml` is the only component that launches a foreign program, by running
-  `flea --open`, see "Opening a file".
+  `philemon --open`, see "Opening a file".
 - `ui/ContextMenu.qml` is the one pane-owned right-click popup and its single Open action.
 - `ui/StatusBar.qml` renders the path, row counts and transient messages.
 - `ui/TabBar.qml` is the window's tab strip, hidden with no height until a second tab exists.
 - `ui/ChromeBar.qml` renders the top chrome, and owns the path bar: the same strip typed into
   rather than drawn, opened by `:`, `Ctrl+L` or a double click on the path.
-- `keys.toml` is the one key table, and `tools/flea-keymap-gen` turns it into `Keymap.js`.
+- `keys.toml` is the one key table, and `tools/philemon-keymap-gen` turns it into `Keymap.js`.
 - `ui/js/Keymap.js` is the generated key-to-action lookup and imports no QML.
 - `ui/js/Format.js` is the pure size, date and permission formatter.
 - `ui/js/Errors.js` turns a backend failure into the one sentence the status bar shows, and
@@ -468,22 +468,22 @@ huge pages" below for what it is worth and what it cost.
 
 ## Where the backend binary comes from
 
-`ui/Backend.qml` spawns the child as `[Quickshell.env("FLEA_BIN") || "flea", "--backend"]`.
+`ui/Backend.qml` spawns the child as `[Quickshell.env("PHILEMON_BIN") || "philemon", "--backend"]`.
 A relative path cannot be right, because `Process` resolves it against the working
 directory of the `qs` process rather than against the config directory, and `qs` is started
 from several different directories here, including a non-interactive ssh whose cwd is
-`$HOME`. Measured with `command: ["./target/release/flea", "--backend"]` and `qs` started
+`$HOME`. Measured with `command: ["./target/release/philemon", "--backend"]` and `qs` started
 from `$HOME`: the child never ran, and the log read `Process failed to start, likely
-because the binary could not be found. Command: QList("./target/release/flea",
+because the binary could not be found. Command: QList("./target/release/philemon",
 "--backend")`.
 
 `workingDirectory` does not rescue it. It can only relocate a relative path that is wrong
-in the packaged layout anyway, where the binary installs to `/usr/bin/flea` and the UI to
-`/usr/share/flea/ui/`, so no single working directory makes `./target/release/flea`
+in the packaged layout anyway, where the binary installs to `/usr/bin/philemon` and the UI to
+`/usr/share/philemon/ui/`, so no single working directory makes `./target/release/philemon`
 correct in both layouts.
 
-The default is therefore the bare name `flea`, which is exactly what a packaged install
-puts on PATH, and `FLEA_BIN` is the development seam that points at `target/release/flea`
+The default is therefore the bare name `philemon`, which is exactly what a packaged install
+puts on PATH, and `PHILEMON_BIN` is the development seam that points at `target/release/philemon`
 in this tree. Every script that starts `qs` for a test exports it. It is a deployment seam
 and not a tuning knob: a user never sets it.
 
@@ -492,9 +492,9 @@ and not a tuning knob: a user never sets it.
 `ui/qmldir` is the type authority for that directory, and **the qualifier decides whether a
 reference goes through it**. An unqualified name resolves only through the qmldir, so a bare
 `Backend` is a type only because a line declares one, however correct `Backend.qml` itself is.
-A namespace-qualified name does not: under `import "." as Flea` an undeclared sibling still
-resolves by file name, so `Flea.StatusBar` loads `StatusBar.qml` with no qmldir line at all.
-`shell.qml` carries both `import "."` and `import "." as Flea`, so both spellings are in scope
+A namespace-qualified name does not: under `import "." as Philemon` an undeclared sibling still
+resolves by file name, so `Philemon.StatusBar` loads `StatusBar.qml` with no qmldir line at all.
+`shell.qml` carries both `import "."` and `import "." as Philemon`, so both spellings are in scope
 and only the qualified one falls back to the file on disk. Deleting the `Header`, `Row` or
 `StatusBar` line therefore does nothing whatever with the caches cleared, not an error and not
 a warning, while deleting the `Backend` line breaks the load outright: `StatusBar` and
@@ -597,8 +597,8 @@ shipped `ui/` unmodified, `ui/List.qml`'s `model: pane.total`. Arm S patches `ui
 `model: rowModel`, a `ScriptModel` filled through one `setRowCount(n)` function that assigns `[]`
 before the new array, because a single disjoint replace of 100,000 values diffs quadratically
 (about 294 s in the windowless probe; clear-then-fill there cost 17 ms). Both arms launched
-`flea --gui` against the same `target/release/flea`, so only `FLEA_UI` differed. Nine interleaved
-pairs on the scale fixture (`/home/flea-sandbox/flea-bench-btrfs`, 100,000 files), `Pss` read from
+`philemon --gui` against the same `target/release/philemon`, so only `PHILEMON_UI` differed. Nine interleaved
+pairs on the scale fixture (`/home/philemon-sandbox/philemon-bench-btrfs`, 100,000 files), `Pss` read from
 `smaps_rollup` in KiB after settling to a 256 KiB band held for three 300 ms samples, order
 alternated pair to pair:
 
@@ -623,7 +623,7 @@ its own decisive axis (the toolchain) made the rest of that measurement moot. `u
 
 ## File budget
 
-`tools/flea-file-budget` scans `src`, `ui` and `tests` for `.rs`, `.qml` and `.js`
+`tools/philemon-file-budget` scans `src`, `ui` and `tests` for `.rs`, `.qml` and `.js`
 files. Rust and QML get a 250-line soft budget and a 400-line hard cap; JS gets 200
 soft and 300 hard. Going over the hard cap fails the tool; going over the soft budget
 only warns. The budget is a smell detector, not a target. Every count below is
@@ -637,7 +637,7 @@ number.
 drifted by 2026-09-01: `src/heap.rs` was claimed at 15 and is 100, `ui/Row.qml` at 166 and is 310,
 `ui/Theme.qml` at 264 and is 187.** Nothing was over the hard cap when that was checked; only the
 record was wrong. So read the numbers below as the reasoning's own context, never as the current
-size of anything, and run `tools/flea-file-budget` for what a file measures today. The warning
+size of anything, and run `tools/philemon-file-budget` for what a file measures today. The warning
 directly above this paragraph was already there and was violated eleven times in the paragraphs
 beneath it, which is why this one states the failure rather than repeating the instruction.
 
@@ -723,7 +723,7 @@ which answers a thumbnail URL when the pane holds one for this row and the OEM t
 lookup otherwise.
 
 `ui/Opener.qml` is 41 lines, well inside both budgets: one `Process`, one `open()` and two
-signals. `flea --open` decides and exits in milliseconds, so one process serves every open,
+signals. `philemon --open` decides and exits in milliseconds, so one process serves every open,
 and this is the only component in the tree that launches a foreign program.
 
 `ui/js/Thumbs.js` is 77 lines by `wc -l` against a 200-line soft budget, and its suite
@@ -781,10 +781,10 @@ automated regression coverage.
 ## The key table is generated
 
 `keys.toml` at the repository root is the single source of truth for every binding.
-`ui/js/Keymap.js` is generated from it by `tools/flea-keymap-gen` and must not be hand
+`ui/js/Keymap.js` is generated from it by `tools/philemon-keymap-gen` and must not be hand
 edited: change `keys.toml`, run the tool, commit its output.
 
-`docs/images/glyphs.svg` is generated the same way, by `tools/flea-glyph-sheet` from the `PATHS`
+`docs/images/glyphs.svg` is generated the same way, by `tools/philemon-glyph-sheet` from the `PATHS`
 table in `ui/js/Icons.js`. It has no diff guard, so re-run the tool whenever a mark joins or
 leaves that table: the sheet kept drawing `send` twelve minutes after `e4b4911` took it out, and
 never drew `drive`, `filter` or `lock` at all.
@@ -827,7 +827,7 @@ neither side can move without the other. `tests/ui.sh` case `click` then drives 
 the window, which is the half a JavaScript suite cannot reach: it is what says a delegate hands
 `Tap.tapped` the tap count and the modifiers the click actually carried.
 
-Its effect field is `does` and not `action`, and that is load bearing. `tools/flea-acceptance`
+Its effect field is `does` and not `action`, and that is load bearing. `tools/philemon-acceptance`
 derives its whole key checklist with one `sed` for `^action = ` over this file, with no table
 scoping, so an `action =` in a pointer block would put an item on that checklist that no key
 can press. The generator refuses an empty or unreadable `[[pointer]]` table for the same
@@ -875,11 +875,11 @@ waits for its consumer.
   stolen grab, which a synthetic pointer cannot produce. The rewrite arguably retires that race,
   since the compositor now owns the drop decision, but that is reasoning and is not counted as
   coverage.
-- `tools/flea-field-bench` is the cold-cache comparison against the installed field and the
+- `tools/philemon-field-bench` is the cold-cache comparison against the installed field and the
   instrument behind `docs/baseline-2026-08-30b.md`. **Run it from a copy outside this tree**, because
   it launches the tree it measures; `~/bench/` is where it runs here. It needs the sudo password on
-  stdin for `drop_caches`, and it launches Flea through `$FLEA_BIN --gui`, never `qs` directly:
-  measuring Flea by a path no user takes cost a whole field run, since `qs` alone misses the
+  stdin for `drop_caches`, and it launches Philemon through `$PHILEMON_BIN --gui`, never `qs` directly:
+  measuring Philemon by a path no user takes cost a whole field run, since `qs` alone misses the
   `prctl` in `exec_qs` and reads 104 MB against the real path's 45 MB.
 - **The field was re-taken cold on 2026-08-30 against the honest settle detector and
   `docs/baseline-2026-08-30b.md` is the current one.** It supersedes `docs/baseline-2026-08-30.md`,
@@ -888,11 +888,11 @@ waits for its consumer.
 - **The settle signal is no longer one process's `utime + stime`.** A run is settled when, for a
   whole 500 ms, neither the watched set's `utime + stime + cutime + cstime` nor the summed
   `utime + stime + cutime + cstime` of its whole LIVE descendant tree has changed. The watched set
-  is the entrant plus its declared helper, and `flea` is the only entrant declaring one
-  (comm `flea`, token `--backend`). The descendant walk is breadth first and runs only on a poll
+  is the entrant plus its declared helper, and `philemon` is the only entrant declaring one
+  (comm `philemon`, token `--backend`). The descendant walk is breadth first and runs only on a poll
   where the watched set earned no tick, because it costs a read per thread and per descendant.
   **`cutime` alone is not enough**: it holds only what a watched pid has REAPED, so a decode still
-  running is invisible to it, and Flea's decode is two levels down under `bwrap`.
+  running is invisible to it, and Philemon's decode is two levels down under `bwrap`.
 - **`cpu_tree_s` is a new column at the END of each row**, so an old parser still works. It carries
   the watched set's tree total; `cpu_s` still reports the entrant process alone. On the media fixture
   they diverge hard: pcmanfm reads 38.83 against 90.00 and dolphin 3.29 against 68.59.
@@ -903,7 +903,7 @@ waits for its consumer.
   holds, zeros included, because `webp=0` is the capability claim and a missing row reads as
   untested. `unknown` counts a produced key the fixture cannot explain, which means the cache was
   not clean and the row is not comparable. The key sets themselves land in `<out>.keys/`, so a run
-  can be classified after the fact; a count cannot. `tools/flea-bench-keys` builds the map and does
+  can be classified after the fact; a count cannot. `tools/philemon-bench-keys` builds the map and does
   the classification, and it refuses a fixture holding any name that would need percent-encoding,
   because a shell cannot reproduce the backend's GLib literal set and a wrong key would report
   every entrant as producing zero. Measured against dolphin on a five-file probe: 5 files, 5 new
@@ -918,14 +918,14 @@ waits for its consumer.
   directory it deletes on drop and keeps the image in memory, and its 0 here was published as
   "strata thumbnails nothing" in three artefacts for a whole release while it drew six of the
   eight formats offered. The raw cache reading survives in `thumbs_by_dir`, which is a true
-  statement about the cache and a false one about the entrant. `tools/flea-bench-capability` is
+  statement about the cache and a false one about the entrant. `tools/philemon-bench-capability` is
   the instrument that answers ability, and it measures an entrant named in its `TRANSIENT_ID` by
   live watch instead of by cache count. The harness names the refusal on stderr the way it names
   an absent entrant and keeps going, because one unmeasurable entrant is not a reason to lose the
   other thirteen. `n/a: tui in <terminal>` is the whole TUI bracket: a
   TUI previews the cursor file and never fills a grid, and the terminal decides whether it can draw
   an image at all, so those rows carry `n/a` in `thumbs_n` rather than a 0 that reads as slow.
-- **`tools/flea-field-bench` measures its own `TRANSIENT_ID` by the same live watch, so such a row
+- **`tools/philemon-field-bench` measures its own `TRANSIENT_ID` by the same live watch, so such a row
   is ranked rather than refused.** Two watches, because neither answers both questions: an
   `inotifywait` on `/tmp` counts each `result.png` closing under `TRANSIENT_PREFIX`, and an
   `inotifywait` on the fixture directory names the file that earned it, because bwrap binds the
@@ -945,7 +945,7 @@ waits for its consumer.
 - **Two rules for the report, which the harness cannot enforce.** The thumbnail count prints beside
   every timing number in every table, not only in the CSV: a settle time without its count is not
   citable for this field. And where two counts differ by an order of magnitude the row says so
-  rather than implying a comparison, because Flea thumbnails the viewport by design and dolphin
+  rather than implying a comparison, because Philemon thumbnails the viewport by design and dolphin
   thumbnails the directory, which on the media fixture was 36 against 790.
 - **The manifest opens before the first entrant and closes after the last.** The open block carries
   the versions, the fixture counted from itself, the thumbnailable denominator with the extension it
@@ -959,7 +959,7 @@ waits for its consumer.
 - **The TUI bracket runs as-intended, in kitty, on the bench's own configuration.** foot is sixel
   only while every entrant here that previews at all prefers the Kitty protocol, so the old
   bracket's `thumbs_n 0` across all eight was the harness's terminal choice and not a result about
-  the entrants. `tools/flea-bench-tui/` is the `XDG_CONFIG_HOME` handed to every TUI entrant, copied
+  the entrants. `tools/philemon-bench-tui/` is the `XDG_CONFIG_HOME` handed to every TUI entrant, copied
   into a `mktemp -d` per run so the operator's own `~/.config` is neither read nor written and the
   repo never collects the state files entrants leave. Provenance per entrant is in that directory's
   README; the manifest records the materialised files verbatim, because lf reads `previewer` as a
@@ -1012,11 +1012,11 @@ waits for its consumer.
 - **`EXPECT_FILES` is the payload count and the dotfiles are judged by name, because one count
   cannot do both jobs.** The payload is what the fixture is for and does not move when a marker is
   added: **scale 100000, media 2000, matched 1700**, checked with `ls -U`. Every dotfile is then
-  matched against `.flea-*` (a fixture marker) or `.seed.*` (an encoder seed) and a stray is named
+  matched against `.philemon-*` (a fixture marker) or `.seed.*` (an encoder seed) and a stray is named
   rather than folded into a total. A total was tried and it broke the whole harness the moment
-  `.flea-bench-fixture` landed, because a count that must be re-derived by hand after an unrelated
+  `.philemon-bench-fixture` landed, because a count that must be re-derived by hand after an unrelated
   change is the same defect as a bare `ls` with a different constant.
-- **`ls -A` on each fixture is 100001, 2001 and 1701**, one marker each. `tools/flea-media-fixture`
+- **`ls -A` on each fixture is 100001, 2001 and 1701**, one marker each. `tools/philemon-media-fixture`
   deletes its seven `.seed.*` encoder seeds at the end of a successful build, so a fixture that still
   carries them was built by an interrupted run: **the resident media fixture had all seven and was
   reconciled to the builder on 2026-09-01**, which is why an earlier note here recorded 2008. The
@@ -1029,7 +1029,7 @@ waits for its consumer.
   exclusion rather than assuming it.
 - **dolphin restores a KDE session on every launch and it poisoned every dolphin row ever published
   here.** `~/.config/session/dolphin_dolphin_dolphin` held a tab naming
-  `file:///home/flea-sandbox/flea-bench-btrfs`, the 100,000-file fixture, so dolphin listed that in a
+  `file:///home/philemon-sandbox/philemon-bench-btrfs`, the 100,000-file fixture, so dolphin listed that in a
   background tab on top of whatever it was being measured on. Measured on a 24-file directory:
   5417 ms settled, 8.99 s CPU and 177714 kB PSS with the file present, against 1625 ms, 0.68 s and
   86678 kB with it parked. **It is invisible on the scale fixture**, where the restored tab is the
@@ -1052,7 +1052,7 @@ waits for its consumer.
   24-file directory holding three of each fixture type, screen against cache: **pcmanfm renders jpg,
   webp and heic and persists none of the three**, 18 on screen against 9 in the cache, so a
   cache-only reading marks it down for work it did. **nautilus shows a play glyph on every mkv** and
-  **dolphin shows an image glyph on every heic**, and both of those the cache does agree with. flea
+  **dolphin shows an image glyph on every heic**, and both of those the cache does agree with. philemon
   and thunar are the only two entrants that render all seven media types.
 - **`pss_kb()` reads the rollup with `mapfile`, never line by line.** A `while read` loop over
   `/proc/<pid>/smaps_rollup` re-renders the seq_file between lines and mixes fields from two
@@ -1061,7 +1061,7 @@ waits for its consumer.
   0 of 300 and is about 4.5x cheaper. The `Pss` column was never affected, because it is the first
   field in the file.
 - **`cpu_s` is the entrant process's own `utime + stime`**, fields 14 and 15 of `/proc/<pid>/stat`
-  and not `cutime + cstime`, so no child's CPU is in it. For Flea that excludes the Rust backend and
+  and not `cutime + cstime`, so no child's CPU is in it. For Philemon that excludes the Rust backend and
   every thumbnailer child, and the column therefore compares front ends and not total work.
 - **A PSS row is only comparable to a row taken in the same interleaved run**, and the 4.1 MiB
   that `docs/baseline-2026-08-29-plan5.md` says appeared across Tasks 4 to 7 of that branch is
@@ -1083,7 +1083,7 @@ waits for its consumer.
   `shared-mime-info`: a package update, not a code change, is what will redden them.
 - `./tests/protocol.sh` drives the built `--backend` binary over real stdin and
   asserts the exact stdout contract, including the prewarm file.
-- `./tests/modes.sh` drives the real `flea` binary and asserts the mode contract:
+- `./tests/modes.sh` drives the real `philemon` binary and asserts the mode contract:
   refusal messages, the mutual-exclusion usage error and its message, the no-flag
   default landing on the window branch, and that `--backend` and `--prewarm` still dispatch. The `--tui --gui` case checks the message
   as well as the exit code, because the no-tty refusal below it exits 2 too, so the exit
@@ -1097,10 +1097,10 @@ waits for its consumer.
   huge pages" under "Deliberate corners".
 - The `--open` checks inside `./tests/modes.sh` put a stub `xdg-open` on `PATH` that reports
   its own argv and its own `THP_enabled`, which is what pins symlink resolution and the
-  handoff. The huge page half needs a second stub, because a bare `flea --open` runs in a
+  handoff. The huge page half needs a second stub, because a bare `philemon --open` runs in a
   process where nothing disabled huge pages, so `thp::enable()` is a no-op there and that
-  check cannot tell it from an empty function: the paired case launches `flea --gui` against a
-  stub `qs` that reports what it inherited and then execs `flea --open`, and only that one
+  check cannot tell it from an empty function: the paired case launches `philemon --gui` against a
+  stub `qs` that reports what it inherited and then execs `philemon --open`, and only that one
   reddens when the `thp::enable()` call is deleted. Both were measured against a deletion.
 - `.process_group(0)` in `open::open` is pinned by the same stub, which prints its own pid
   beside field five of `/proc/self/stat`, its process group, and reports `PGID MATCH` only when
@@ -1113,9 +1113,9 @@ waits for its consumer.
   the unknown-flag branch also exits 2 and also prints no errno: against the pre-Task-4 binary
   the status and errno checks of both pairs pass unchanged, and only `could not be opened` and
   `nothing on this system could be asked` tell an implemented `--open` from an absent one.
-- `./tests/budget.sh` asserts `tools/flea-file-budget` itself rejects an oversized
+- `./tests/budget.sh` asserts `tools/philemon-file-budget` itself rejects an oversized
   file and passes a clean tree.
-- `./tools/flea-acceptance` is the everything-works battery, and **its checklist is derived at run
+- `./tools/philemon-acceptance` is the everything-works battery, and **its checklist is derived at run
   time, never written from memory**: every request in `docs/protocol.md`, every action in
   `keys.toml` (the `[digits]` range included, which binds nine keys no `action =` line names), every
   entry in `ui/ContextMenu.qml`, every artboard in the design canvas, every sidebar entry kind, and
@@ -1142,15 +1142,15 @@ waits for its consumer.
   observable on a four-file directory, so the cancels assert that the backend accepted the request,
   answered no error and is still answering, which is coverage of the request and not of the
   cancellation. The canvas lives in the omarchy repo, so a read-only copy sits at
-  `$REPO/../flea-canvas/` on the box and the failure names it rather than skipping the group.
-- `./tests/bench.sh` gates `tools/flea-bench-manifest`, the version and environment record the
+  `$REPO/../philemon-canvas/` on the box and the failure names it rather than skipping the group.
+- `./tests/bench.sh` gates `tools/philemon-bench-manifest`, the version and environment record the
   field bench writes beside its CSV, and the two values the harness derives from its own entrant
   table to feed it. It launches nothing and builds its fixture in a `mktemp -d`. It exists because
   the field bench had no gate at all, and its first check is the defect that found: an entrant row
-  arriving indented missed its own case arm, so Flea reported itself as `quickshell 0.3.1`, which
+  arriving indented missed its own case arm, so Philemon reported itself as `quickshell 0.3.1`, which
   is what `pacman -Qo` says about its launcher.
 - `./tests/keymap-gen.sh` asserts the committed `ui/js/Keymap.js` is byte-for-byte what
-  `tools/flea-keymap-gen` produces from `keys.toml`; see "The key table is generated" above.
+  `tools/philemon-keymap-gen` produces from `keys.toml`; see "The key table is generated" above.
 - `./tests/thumbs.sh` drives the release binary against the media fixture and asserts the
   thumbnail contract end to end: a video row and an image row each generate their own
   thumbnail, a text row answers with no file, every requested row is answered, a second
@@ -1163,11 +1163,11 @@ waits for its consumer.
   decode is slow enough to make the cache-hit check meaningless. **It writes into the
   operator's real shared cache and removes exactly what it created**, by the same md5 key
   the backend used, and its last three checks are that `~/.cache/thumbnails/large` ended at
-  the count it started at, that no `.flea-` temp is left in it, and that no `fail/flea`
+  the count it started at, that no `.philemon-` temp is left in it, and that no `fail/philemon`
   namespace was left behind. **Both counts use `ls -A`.** The temps this subsystem leaks are
   dotfiles, so a bare `ls` cannot see them: the operator's cache showed 94 by `ls` and 104 by
   `ls -A`, and the count check alone stays green against a temp that was present both before and
-  after, which is why the explicit `.flea-` check is a separate assertion and not a rewording.
+  after, which is why the explicit `.philemon-` check is a separate assertion and not a rewording.
 - `./tests/js.sh` runs the pure JavaScript suites through `qml6`: `tests/js/format.js`,
   `tests/js/keymap.js` and `tests/js/thumbs.js`. The thumbs suite is 66 lines against a
   77-line helper and pins the four properties the request policy rests on: `plan` names only
@@ -1201,12 +1201,12 @@ waits for its consumer.
     `Image.status` reached `Ready`, because a URL a test can read is not proof Qt could load it.
   - `nosweep` catches any request for a row the client did not name, which is the rule that
     forfeits the project: a fling and a `G`/`g` traversal of the 100,000-file fixture must end
-    with the request count at zero, the shared cache the size it started, and no `.flea-` temp.
+    with the request count at zero, the shared cache the size it started, and no `.philemon-` temp.
   It needs `jq` and ImageMagick: the cursor case counts warm pixels in the header band of a
   real screenshot, because a clipping bug is a pixel fact that no IPC value reports. Its sample
   starts 16 px in, since the Hyprland corner arc shows wallpaper through the window's own
   top-left pixels.
-- Each case starts a fresh `/tmp/flea.log`, so `launch()` rolls the previous case's log into
+- Each case starts a fresh `/tmp/philemon.log`, so `launch()` rolls the previous case's log into
   one run log and the end-of-run check greps that. Grepping the live log only ever saw the
   last case, which is how a `TypeError` in an earlier case went unreported.
 - `qmllint ui/*.qml`, run from the repository root, is a gate, and it is the only instrument here
@@ -1220,7 +1220,7 @@ waits for its consumer.
   - **It does not come back clean and it cannot be made to.** `import qs.Commons` does not
     resolve under qmllint, so `Theme.color` and `Theme.spacing` degrade to `QObject` and two
     categories fill with false positives: **`missing-property` 605 and `unqualified` 331**, out
-    of 8255 lines total (`tools/flea-qmllint-gate` and `cat ui/*.qml | wc -l` at `9cecda3`; an
+    of 8255 lines total (`tools/philemon-qmllint-gate` and `cat ui/*.qml | wc -l` at `9cecda3`; an
     earlier version of this line said 590, 317 and 3601, and 548 and 301 before that). Those two
     track how large `ui/*.qml` is, so a later delta in them alone
     is tree growth, not a regression. Building a `qs` alias tree and passing `-I` was measured
@@ -1233,12 +1233,12 @@ waits for its consumer.
     gate on total silence would be permanently red and would be ignored within a day. A prior
     version of this line also named `index` 12: that count came from the same grep miscounting
     an array subscript in a printed source line, `root.rows[index]`, as a category; `index` is
-    not a real qmllint id, and `--json`, which `tools/flea-qmllint-gate` reads, never emits it.
+    not a real qmllint id, and `--json`, which `tools/philemon-qmllint-gate` reads, never emits it.
   - **`signal-handler-parameters` is gated at 0 because one exact message is filtered first.**
     qmllint cannot resolve `QProcess::ExitStatus`, so every `Process` `onExited` in this tree
     raises `Type QProcess::ExitStatus of parameter exitStatus in signal called exited was not
     found`, thirteen today, and it raises it identically at 0, 1 and 2 declared parameters, so
-    that count was never measuring arity. `tools/flea-qmllint-gate` (`90c5ec2`, corrected in
+    that count was never measuring arity. `tools/philemon-qmllint-gate` (`90c5ec2`, corrected in
     `320f840`) drops the findings carrying that message, matched on the message and deliberately
     not on the handler name, so a genuine arity slip on an `onExited` itself still fails; that was
     proven by injecting one there and one on another signal. The thirteen are printed as context
@@ -1261,12 +1261,12 @@ waits for its consumer.
   - **It is not on the non-interactive ssh PATH.** `command -v qmllint` prints nothing and exits 1
     over ssh; the binary lives at `/usr/lib/qt6/bin/qmllint`. A gate written as
     `qmllint ui/*.qml | grep -E '...'` runs that "command not found" through the grep, finds no
-    match, and reports clean. `tools/flea-qmllint-gate` is the correct form: it asserts the binary
+    match, and reports clean. `tools/philemon-qmllint-gate` is the correct form: it asserts the binary
     at its absolute path before running anything, reads `--json` instead of the text output so a
     printed source line's array-index syntax cannot be mistaken for a category by a bracket grep,
     and checks the actionable categories against a ceiling rather than an exact count, so a fix
     can lower one without turning the gate red.
-- `./tools/flea-bench` reproduces the backend half of the acceptance table against a
+- `./tools/philemon-bench` reproduces the backend half of the acceptance table against a
   100,000-file directory.
 - `firstRowsAt()` on that same `IpcHandler` reports the `Date.now()` of the first `rows`
   response that carried any row, as a decimal string. It is what the warm product path is
@@ -1311,24 +1311,24 @@ stat came in far faster, so the measured figure is the baseline, not the estimat
   read next to a cold stat means something warmed the directory before the measurement.
 - The benchmark refuses to run on tmpfs, because `drop_caches` cannot evict it and a
   cold number there would be a fabrication. `/tmp` on this box is tmpfs, which is why
-  the default target moved to `/home/flea-sandbox`, a sibling of $HOME rather than a child of it, per hard rule 9.
+  the default target moved to `/home/philemon-sandbox`, a sibling of $HOME rather than a child of it, per hard rule 9.
 - Cold procedure: `sudo sh -c 'sync; echo 3 > /proc/sys/vm/drop_caches'`, then
-  `COLD=1 ./tools/flea-bench`. A plain `./tools/flea-bench` run warms the directory
+  `COLD=1 ./tools/philemon-bench`. A plain `./tools/philemon-bench` run warms the directory
   before it measures, so it cannot produce a cold number; `COLD=1` skips that check.
 
 ## Fixtures
 
 There are four, they measure different halves of the product, and **none may live on
 tmpfs**. `drop_caches` cannot evict tmpfs pages, so a cold number taken there is a
-fabrication. `/tmp` on this box is tmpfs, which is why all three default to `/home/flea-sandbox`, on the same btrfs filesystem as home but outside it, and
+fabrication. `/tmp` on this box is tmpfs, which is why all three default to `/home/philemon-sandbox`, on the same btrfs filesystem as home but outside it, and
 all three scripts refuse to build anywhere `findmnt` calls tmpfs or cannot name at all.
 
 | Fixture | Built by | Holds | Measures |
 |---|---|---|---|
-| `/home/flea-sandbox/flea-bench-btrfs` | `tools/flea-bench`, warm run | 100,000 empty `.txt` files | listing: readdir, sort, window stat |
-| `/home/flea-sandbox/flea-media-btrfs` | `tools/flea-media-fixture` | 2,000 real media files, 4.7 GB | thumbnail generation and icon resolution |
-| `/home/flea-sandbox/flea-matched-btrfs` | `tools/flea-matched-fixture` | the media fixture minus heic and mkv, 1,700 files, 4.0 GB | the same comparison with every entrant at equal capability |
-| a `mktemp -d` of its own | `tools/flea-gvfs-fixture` | a zip mounted through `gvfsd-archive` | the NETWORK rail and anything needing a real FUSE mount, at zero privilege |
+| `/home/philemon-sandbox/philemon-bench-btrfs` | `tools/philemon-bench`, warm run | 100,000 empty `.txt` files | listing: readdir, sort, window stat |
+| `/home/philemon-sandbox/philemon-media-btrfs` | `tools/philemon-media-fixture` | 2,000 real media files, 4.7 GB | thumbnail generation and icon resolution |
+| `/home/philemon-sandbox/philemon-matched-btrfs` | `tools/philemon-matched-fixture` | the media fixture minus heic and mkv, 1,700 files, 4.0 GB | the same comparison with every entrant at equal capability |
+| a `mktemp -d` of its own | `tools/philemon-gvfs-fixture` | a zip mounted through `gvfsd-archive` | the NETWORK rail and anything needing a real FUSE mount, at zero privilege |
 
 The listing fixture contains no media at all, so it cannot exercise a thumbnailer. The
 media fixture is small enough that its listing time says nothing. Report both.
@@ -1375,7 +1375,7 @@ to sweep, so a ratio taken from it carries the same work-rate caveat the media t
   in all three, so the spread is time waited rather than time computed and it is not the
   encoders; no mechanism beyond that was established. Deleting a previous fixture is not
   the cause: `rm -rf` of the whole 4.7 GB takes 0.5 s.
-- The fixture directory carries a `.flea-media-fixture` marker, and the script refuses to
+- The fixture directory carries a `.philemon-media-fixture` marker, and the script refuses to
   `rm -rf` any existing `DIR` that does not have one. That is the only thing standing
   between a mistyped `DIR` and the deletion, so do not remove the marker by hand. It is a
   dotfile, so the fixture lists 2,000 visible entries and 2,001 in total.
@@ -1406,7 +1406,7 @@ the code that matches thumbnailers, which Plan 4 owns.
 second, separated by a single space. On this box it holds 357 lines with no comment line,
 no blank line, no tab and no line carrying a third field, so `split_once(' ')` reads all of
 it. `Aliases::from_str` still skips a blank line, a `#` line and a line with no space,
-because the file is shipped by `shared-mime-info` and its shape is not Flea's to promise.
+because the file is shipped by `shared-mime-info` and its shape is not Philemon's to promise.
 
 A thumbnailer may declare either side of a pair, and the two pairs that matter here fall on
 opposite sides:
@@ -1465,7 +1465,7 @@ empty-string vector green, because a zero length has the same eight bytes in eit
 non-interactive ssh here. Under it, `large/<md5>.png` holds the 256 px thumbnails and
 `fail/<application>/<md5>.png` holds the markers that say a file could not be thumbnailed.
 `fail/` is namespaced by application because one program failing on a file says nothing
-about another; Flea's namespace is `flea`, and the only namespace this box already carries
+about another; Philemon's namespace is `philemon`, and the only namespace this box already carries
 is `gnome-thumbnail-factory`. `Cache::new` computes that root, and `Cache::at` takes one,
 so a test writes its markers into a temporary directory and never into the shared cache.
 
@@ -1540,19 +1540,19 @@ remeasure rather than quoting a constant.
 
 The writer lives next to this reader on purpose: the two agreeing is the only property either
 of them has, so a change to one that is not made to the other is invisible until the desktop
-stops matching Flea's entries. `png_text` above reads a `tEXt` chunk; `thumbwrite.rs` writes
+stops matching Philemon's entries. `png_text` above reads a `tEXt` chunk; `thumbwrite.rs` writes
 one, and `a_stamped_png_reads_back_through_the_cache_parser` is the test that pins them
 together against a real file on disk.
 
 It owns the whole of publishing one entry safely: `exclusive_temp` opens
-`.flea-<pid>-<16 hex>.png` with `create_new` at 0600, `stamp` reads back the bare PNG a
+`.philemon-<pid>-<16 hex>.png` with `create_new` at 0600, `stamp` reads back the bare PNG a
 thumbnailer wrote and inserts three `tEXt` chunks directly after IHDR, and `write_marker`
 puts the same three chunks in a 67-byte 1x1 greyscale PNG for the `fail/` namespace. The keys
 are `Thumb::URI`, `Thumb::MTime` and `Software`.
 
 **The CRC-32 is in-tree because the cache is shared.** A `tEXt` chunk needs a CRC that `std`
-does not have, and the alternative, skipping the chunks and keeping the mtime in a Flea-owned
-sidecar, was rejected: `lookup` reads `Thumb::MTime` out of the PNG itself, so a cache Flea
+does not have, and the alternative, skipping the chunks and keeping the mtime in a Philemon-owned
+sidecar, was rejected: `lookup` reads `Thumb::MTime` out of the PNG itself, so a cache Philemon
 writes but cannot re-read is worthless, and a `fail/` entry no other application honours
 defeats the only reason for using the shared cache. It is twenty lines, its table is built
 once in a `OnceLock` because it runs three times per stamped file, and
@@ -1788,7 +1788,7 @@ no shipped file declares.
 **The cache root is a constructor argument, not `Cache::new()`.** Production passes
 `thumbcache::default_root()`; every test in this module passes a per-pid directory under the
 temp dir. The shared cache at `~/.cache/thumbnails` is the operator's, and a suite that
-records a `fail/flea/<md5>.png` marker there on every run would poison it for every other
+records a `fail/philemon/<md5>.png` marker there on every run would poison it for every other
 application on the box.
 
 `submit`, `cancel` and `cancel_all` each return the queued `Job`s they dropped, taken under the
@@ -1882,7 +1882,7 @@ RAM and 38 GiB of swap.
 
 Only a SIGKILL of the sandbox launcher itself arrives as `signal=9`, and that process decodes
 nothing, allocates nothing and burns no CPU, so it can reach neither rlimit; with
-`--die-with-parent` the realistic producer of that signal is something killing Flea's whole
+`--die-with-parent` the realistic producer of that signal is something killing Philemon's whole
 process tree, at which point nothing records anything. The probe's six rows are `inner_sigkill`
 exit 137, `as_rlimit_bomb` exit 1, `cpu_rlimit_ignoring_xcpu` exit 137, `inner_exit_1` exit 1,
 `outer_sigkill` signal 9 and `cpu_rlimit_plain` exit 137.
@@ -1967,13 +1967,13 @@ directory the test just removed. That reproduced 5 times in 5 under three concur
 
 ## Thumbnail trace
 
-`FLEA_THUMB_TRACE`, set and non-empty, makes the backend write one line per reported job to
+`PHILEMON_THUMB_TRACE`, set and non-empty, makes the backend write one line per reported job to
 **stderr**. Off by default, and off it costs a `None` on `Job` and nothing else: the environment
 is read once for the process behind a `OnceLock`, and an untraced job reads no clock and carries
 no marks.
 
 ```
-flea: trace row=12 depth=8 queued=182.41 setup=0.31 child=94.77 after=1.02 total=278.51
+philemon: trace row=12 depth=8 queued=182.41 setup=0.31 child=94.77 after=1.02 total=278.51
 ```
 
 `row` is the listing row the job answers and `depth` is the number of jobs already queued when
@@ -2014,7 +2014,7 @@ pins all three of on-stderr, never-on-stdout and silent-when-unset.
 generated only for a row a client named in a `thumb` request.** Nothing in the loop walks
 the listing looking for work at any priority, and the proof is on the record: listing the
 100,000-file fixture and stat'ing every row through two full windows grows
-`~/.cache/thumbnails/large` by zero files and never creates `fail/flea`.
+`~/.cache/thumbnails/large` by zero files and never creates `fail/philemon`.
 
 **`THUMB_WORKERS` is 4, and it is a measured ceiling and not a core count.** It lives here and
 not in `thumbs.rs` because it is scheduling policy and belongs with the request policy.
@@ -2062,7 +2062,7 @@ control, and `ready()`, which returns a constant and reads no UI state, costs th
 at every load. Those numbers are the harness measuring itself. `inputToRows()` exists for this; see
 "Testing".
 
-Measured with it: a Flea window on the 100,000-file fixture, `omarchy-drive key --window flea G`
+Measured with it: a Philemon window on the 100,000-file fixture, `omarchy-drive key --window philemon G`
 and `g` to jump to the far end and back, a 210-row generation burst at the arm's own width running
 beside it, eight rounds an arm with every arm twice in every position. With no burst every arm
 reads a median of 38 ms over 48 samples; that is a sanity check and not a result, since each
@@ -2204,16 +2204,16 @@ waits forever.
 after itself is the one where the drain runs out of budget: the process exits and the four worker
 threads die inside `run_with_timeout`, after `thumbwrite::exclusive_temp` and before `discard`.
 Reproduced with eight hung jobs against four workers under a scratch cache root: four zero-byte
-`.flea-<pid>-<hex>.png` files were left behind, which is exactly the ten the operator found in the
+`.philemon-<pid>-<hex>.png` files were left behind, which is exactly the ten the operator found in the
 real cache. `drain` therefore calls `thumbwrite::sweep_own_temps` on the `large/` directory after
 `cancel_all` and only when `outstanding` is still above zero. The order is load bearing: with the
 queue emptied first, no worker can start a new job, so the temps on disk at that moment are exactly
 the abandoned ones and the sweep cannot race a fresh one. The name carries this process's pid, so
 the sweep provably cannot touch a published entry, another application's file, or a concurrent
-flea's in-flight temp; a unit test plants all three next to a real temp and asserts only ours goes.
-Two alternatives were rejected. Sweeping stale `.flea-*` at STARTUP would put a `readdir` of a
+philemon's in-flight temp; a unit test plants all three next to a real temp and asserts only ours goes.
+Two alternatives were rejected. Sweeping stale `.philemon-*` at STARTUP would put a `readdir` of a
 possibly huge shared directory on the product path, which is the one thing this product does not
-do, and "stale" needs an age heuristic that races a concurrent flea. Registering each temp in a
+do, and "stale" needs an age heuristic that races a concurrent philemon. Registering each temp in a
 shared list would be exact but replaces one function with an invariant that every return path in
 `run_one` has to maintain, which is the class of bug this is. Neither this nor any other design
 covers a `SIGKILL`; nothing running inside the process can.
@@ -2239,7 +2239,7 @@ second copy of the alias and thumbnailer tables was what carried it, and `Pool::
 nothing: both tables arrive as `Arc`s from the caller (`src/backend/thumbs.rs:76`,
 `src/backend/run.rs:104`), which is the 0.11 MiB recorded above. What eager construction still
 costs is four worker threads blocked on a condvar, and a backend whose client never asks for a
-thumbnail still pays for those, `flea --backend` driven from a script being exactly that client.
+thumbnail still pays for those, `philemon --backend` driven from a script being exactly that client.
 Constructing the pool on the first `thumb` request would give back 0.042 MiB and about 0.32 ms;
 it is dropped on its size alone, and the measurement behind those two numbers is in "Backend
 memory levers that were measured and dropped".
@@ -2285,7 +2285,7 @@ not, is corroboration and not the gate. `tests/ui.sh nosweep` asserts a full tra
 120 ms is a feel decision, confirmed on the box against 60 ms and 250 ms rather than measured.
 
 **The first screen races the compositor's resize, and `firstSettleMs` exists to lose that race on
-purpose.** Flea's `FloatingWindow` declares `implicitHeight: 600` at `ui/shell.qml:18`, Hyprland
+purpose.** Philemon's `FloatingWindow` declares `implicitHeight: 600` at `ui/shell.qml:18`, Hyprland
 then tiles it to the full screen, and the viewport a request would name depends on which of the two
 arrives first. Before the resize the list is **526 px** tall and `visibleRows` is **15**; both
 `ui/Header.qml` and `ui/StatusBar.qml` declare `implicitHeight: Theme.rowHeight`, which the IPC
@@ -2564,7 +2564,7 @@ way and waits for the terminal line, so shutting down mid-copy leaves nothing ha
 
 **Testing them is `tests/ops.sh`**, which drives the real binary over a FIFO rather than a pipe: an
 operation answers asynchronously, so a piped script would send `undo` before the operation it meant to
-reverse had reported. Its sandbox is under `FLEA_FIXTURE_ROOT` and not `/tmp`, because `gio trash`
+reverse had reported. Its sandbox is under `PHILEMON_FIXTURE_ROOT` and not `/tmp`, because `gio trash`
 refuses `/tmp` and `/var/tmp` with "Trashing on system internal mounts is not supported"; `/home` is the
 only mount on this box a trash round trip can be exercised on. Hard rule 9's guard is in the script
 itself, and the Rust tests use `TestDir`.
@@ -2591,7 +2591,7 @@ itself, and the Rust tests use `TestDir`.
 
 `ui/js/Format.js`'s `size()` is GLib's SI, one-decimal ladder (`g_format_size`), because storage
 capacity has no power-of-two basis and hard rule 2 picks the desktop's own convention over
-Flea's old IEC one. Finder renders 26,950,000,000 bytes as "26.95 GB". The design spec that
+Philemon's old IEC one. Finder renders 26,950,000,000 bytes as "26.95 GB". The design spec that
 named this fixture quotes that string as a value that "reproduces exactly" and assumed GLib
 rounds it up to "27.0 GB"; measured live on this box (glib 2.88.3, `python3 -c "from
 gi.repository import GLib; print(GLib.format_size(26950000000))"`, and cross-checked with
@@ -2634,20 +2634,20 @@ nothing: 42.08 MB against the shipped call's 42.12 MB, because nothing in the Qt
 advises huge pages. It also leaves `THP_enabled` reading 1, so the shipped test would not pin the
 mechanism under it. The simpler call is the right one.
 
-**// corner: the setting is inherited by every descendant, and that is fine only while Flea launches
+**// corner: the setting is inherited by every descendant, and that is fine only while Philemon launches
 nothing foreign.** Today the only descendants are the backend and the `bwrap` thumbnailer children,
 both measured to pay nothing for it: `ffmpegthumbnailer` on a fixture clip ran 88 to 94 ms with huge
 pages on against 89 to 92 ms off over five interleaved pairs, output byte-identical. A foreign program
-CAN now be launched from the window, because Enter on a file runs `flea --open`, and the undo the
+CAN now be launched from the window, because Enter on a file runs `philemon --open`, and the undo the
 corner asked for ships with it: `open::open` calls `thp::enable()`, which is
-`prctl(PR_SET_THP_DISABLE, 0, ...)`, in the `flea --open` process before it spawns `xdg-open`, so the
+`prctl(PR_SET_THP_DISABLE, 0, ...)`, in the `philemon --open` process before it spawns `xdg-open`, so the
 opened program inherits huge pages back on. That call lives in `src/open.rs`, after the
 `canonicalize` and after the directory refusal and immediately before the spawn, so a path that
 never reaches a handler never changes the setting, and `src/thp.rs` holds the one `extern "C"`
-declaration that both it and `gui::exec_qs` call. Without it Flea would silently change a
+declaration that both it and `gui::exec_qs` call. Without it Philemon would silently change a
 system-wide performance setting for every application launched from it, for that
 application's whole life. `tests/modes.sh` pins it through a
-stub `qs` that execs `flea --open` against a stub handler reporting its own `THP_enabled`, which is
+stub `qs` that execs `philemon --open` against a stub handler reporting its own `THP_enabled`, which is
 the only shape of check that can redden when the `thp::enable()` call is deleted. See "Opening a
 file" below.
 
@@ -2666,7 +2666,7 @@ so what is being paid for is page-walk work rather than allocation.
 
 ### Opening a file
 
-`flea --open <path>` is the one route that opens a file with the desktop's own handler, and both
+`philemon --open <path>` is the one route that opens a file with the desktop's own handler, and both
 front ends use it rather than launching anything themselves. It exists in Rust because the huge page
 setting above is inherited by every descendant, so a program launched from QML would run its whole
 life with transparent huge pages disabled without ever asking; `open::open` hands the setting back
@@ -2674,17 +2674,17 @@ before it spawns.
 
 It spawns `xdg-open` and exits, it does not `exec` into it. `/usr/bin/xdg-open` line 977 is
 `env "$command" "$@"` inside `search_desktop_file`, with no `exec` and no `&`, so `xdg-open` blocks
-for the whole life of the application it launched. An `exec` would therefore leave a Flea-descended
+for the whole life of the application it launched. An `exec` would therefore leave a Philemon-descended
 process alive for that whole life, as a child of the `qs` process, which Quickshell may kill when
-Flea quits. `Command::spawn` is still argv-direct exec and never a shell, which is the binding
-requirement. The child gets `process_group(0)` so that nothing which later kills Flea's process group
+Philemon quits. `Command::spawn` is still argv-direct exec and never a shell, which is the binding
+requirement. The child gets `process_group(0)` so that nothing which later kills Philemon's process group
 reaches the opened application.
 
-The child also gets `/dev/null` on all three descriptors. Quickshell hands `flea --open` pipes and
+The child also gets `/dev/null` on all three descriptors. Quickshell hands `philemon --open` pipes and
 closes them the moment it exits, so a handler that inherited those pipes dies with `SIGPIPE` on its
 first write. Measured on this box: `imv` was spawned and gone inside 250 ms without ever mapping a
 window, and the same spawn with `Stdio::null()` opened normally. `tests/modes.sh` pins it by giving
-`flea --open` a pipe of its own and reading the stub handler's `/proc/$$/fd/1`.
+`philemon --open` a pipe of its own and reading the stub handler's `/proc/$$/fd/1`.
 
 The path is `std::fs::canonicalize`d, which does two jobs at once: a symlink opens its target rather
 than the link, and the absolute result cannot be read as a flag by the child, so a file named
@@ -2696,23 +2696,23 @@ be opened and carries one elided sentence on stderr, and `3` means the resolved 
 and carries no output at all. A directory is refused rather than handed on because
 `xdg-mime query default inode/directory` is `org.gnome.Nautilus.desktop` here, so opening one through
 `xdg-open` from inside a file manager opens a different file manager; the caller navigates instead.
-`flea --open` with no path and `flea --open a b` both fall through to the unknown-flag branch, which
+`philemon --open` with no path and `philemon --open a b` both fall through to the unknown-flag branch, which
 names the flag and exits 2.
 
 `ui/Opener.qml` is the window side of that contract and the only component in the tree that
-launches a foreign program. It holds one `Process`, because `flea --open` decides and exits in
+launches a foreign program. It holds one `Process`, because `philemon --open` decides and exits in
 milliseconds, and its `onExited` is the whole mapping: `0` says nothing, `3` raises
 `isDirectory` and `Pane` navigates there, and anything else raises `failed` and `Pane` writes one
 sentence to the status line. `Pane.openCursor` sends a row with `d` true to `open()` and every
 other row to the opener, so a symlink to a directory reaches the opener, comes back 3 and
 navigates; `tests/ui.sh open` asserts all three answers on one listing.
 
-**`xdg-open` ignores `Terminal=true`, and that is the box's XDG configuration rather than Flea's
+**`xdg-open` ignores `Terminal=true`, and that is the box's XDG configuration rather than Philemon's
 to work around.** `search_desktop_file` reads only `Exec`, `Icon` and `Name`, so a handler that
 needs a terminal is run without one. `xdg-mime query default text/plain` is `nvim.desktop` here,
 so Enter on a text file spawns a headless `nvim` that maps no window and that the user never
 sees. The remedy belongs to the operator and it is `omarchy default editor`, which rewrites the
-association. Wrapping the handler in a terminal from inside Flea would mean Flea deciding which
+association. Wrapping the handler in a terminal from inside Philemon would mean Philemon deciding which
 programs are terminal programs, and that is the judgement the desktop's own database exists to
 make.
 
@@ -2732,10 +2732,10 @@ sheet draws `dd`, and `tests/js/keymap.js` resolves a doubled cap as that one ch
 
 ### Theme roles and sources
 
-`Theme.qml`'s `applyColors` assigns only Flea's eight palette roles and ignores unknown
-keys because Omarchy themes contain more roles than Flea uses. Alacritty-derived palettes
+`Theme.qml`'s `applyColors` assigns only Philemon's eight palette roles and ignores unknown
+keys because Omarchy themes contain more roles than Philemon uses. Alacritty-derived palettes
 contain neither background ladder key, so the measured surface fallback is `selection`.
-Shell parsing consumes only `[font]` and `[spacing]` because Flea has no bar, popups,
+Shell parsing consumes only `[font]` and `[spacing]` because Philemon has no bar, popups,
 tooltip or lock screen.
 
 ### Plain text filenames
@@ -2754,7 +2754,7 @@ cap because those digits are the jump keys. `:` and `Ctrl+L` open the path bar, 
 `pathBar` rather than `palette` (the old name read as a command palette, and `ui/js/Palette.js` is
 the theme's colour file); `Focus.handleKey` opens it beside the keymap sheet as a global action and
 `ui/ChromeBar.qml` carries the field, answered by `keycase_pathBar` in
-`tools/flea-acceptance-drive`, which drives the key and reads `pathBarOpen` off the seam. The generic
+`tools/philemon-acceptance-drive`, which drives the key and reads `pathBarOpen` off the seam. The generic
 `<action> is not built yet.` fallback below those stays as the loud failure for a row the
 dispatcher does not answer, and should never be reachable from the shipped table. `Ctrl+Shift+N`
 was on this list for one afternoon and is not on it now: `295e757` routed the action through
@@ -2767,7 +2767,7 @@ Hyprland grabs every `SUPER` chord, so no app ever sees one; Omarchy's own unive
 (`/usr/share/omarchy/default/hypr/bindings/clipboard.lua`) works by injecting `CTRL+C`, `CTRL+V`
 and `CTRL+X` into the focused surface with `send_key_state`. So the Finder table lands in
 `keys.toml` as `[[ctrl]]` and `[[ctrlshift]]` rows, every one additive to the bare vim key it
-doubles, and `tools/flea-keymap-gen` checks the shifted rows first and falls through. Two Finder
+doubles, and `tools/philemon-keymap-gen` checks the shifted rows first and falls through. Two Finder
 conventions are refused on purpose and should not be reopened: Enter opens and does not rename
 (every Linux file manager and the vim table open on Enter, and the TUI is generated from this
 table), and `Cmd+D` is not duplicate because `Ctrl+D` already pages with `Ctrl+U` as its pair.
@@ -2776,7 +2776,7 @@ otherwise `Mounts.holding`, the mounted removable volume whose path holds the li
 verdict is `Mounts.railMenu`'s either way. `XF86Eject` and the transport keys are not bound here
 and cannot be: `media.lua` binds them through `o.bind`, which is a consuming `hl.bind`, so a
 client never receives them; the play key runs `omarchy-shell media playPause` against the MPRIS
-player the shell tracks, and Flea's Quick Look (`ui/PreviewMedia.qml`, a plain QtMultimedia
+player the shell tracks, and Philemon's Quick Look (`ui/PreviewMedia.qml`, a plain QtMultimedia
 `MediaPlayer`) registers no MPRIS name, so it is untouched by it. On the sheet a chord is `^c`,
 `^N` with a capital is ctrl-shift, and two rows keep the bare key alone because `f ^f` beside
 `find in subtree` (155 px) and `a ^k` beside `add network place` (169 px) overrun the 154 px
@@ -2785,7 +2785,7 @@ column at base-size 14 in JetBrainsMono; the README carries those two chords.
 ### Prewarm correlation
 
 The current `listed` reply and two-line prewarm file carry no requested path, so the UI
-cannot tell whether prewarmed content is stale. Production ignores `FLEA_PREWARM` until
+cannot tell whether prewarmed content is stale. Production ignores `PHILEMON_PREWARM` until
 the protocol gains that correlation and a first-paint measurement proves a real win.
 
 ### MIME globs
@@ -2869,7 +2869,7 @@ names have twins carrying the same MIME type.
   two rows, the dedupe swallows the second and that row is answered only when the listing is
   replaced or the process drains. Not fixed here, because the fix is the same byte arena and
   it is a whole plan's worth of change through `Listing`, `stat_range` and the wire.
-- `main.rs`: `std::env::args()` panics with exit 101 on a non-UTF8 argv byte, so `flea --open`
+- `main.rs`: `std::env::args()` panics with exit 101 on a non-UTF8 argv byte, so `philemon --open`
   inherits it and answers none of 0, 2 or 3, but only a shell or a `.desktop` file can produce
   it and the window cannot, because `scan.rs` goes lossy in phase 1 and `Pane`'s `join` only
   ever sees that lossy name; same family as the entry above, pre-dating every mode, and the
@@ -2894,14 +2894,14 @@ names have twins carrying the same MIME type.
   rather than a step in an implementation plan.
 - `scan.rs`: `d` describes the link, not its target, so a symlink to a directory
   reports false. The UI still does not guess the target: only `d` navigates directly, and
-  every other row goes to `flea --open`, which canonicalises and answers 3 for a directory,
+  every other row goes to `philemon --open`, which canonicalises and answers 3 for a directory,
   so the pane navigates on that answer rather than on a guess of its own. The ICON does
   follow the target, see "Icons in the row".
 - `run.rs`: an unreadable stdin line stops the loop after an error line, because the
   stream's framing cannot be trusted past it.
-- `tools/flea-bench`: refuses to run against tmpfs, because `drop_caches` cannot evict
+- `tools/philemon-bench`: refuses to run against tmpfs, because `drop_caches` cannot evict
   pages that are already the filesystem.
-- `tools/flea-bench`: the directory-exists check it runs before a warm pass reads the
+- `tools/philemon-bench`: the directory-exists check it runs before a warm pass reads the
   directory and warms the cache, so a cold run must skip that check entirely; that is
   what `COLD=1` is for.
 
@@ -2960,8 +2960,8 @@ exports `QT_QPA_PLATFORMTHEME=gtk3` and the session republishes it, so a user la
 resolves icons; a bare ssh inherits neither, and `omarchy-drive env` does not emit it, so
 every name answers empty and every row draws nothing. `tests/ui.sh` imports it from
 `systemctl --user show-environment` rather than hardcoding it, and so does
-`tools/flea-field-bench`. The harness did not until Plan 5 Task 3, so every Flea row in
-`docs/baseline-2026-08-29.md` is a Flea with no icon theme. **Both corrections below come from
+`tools/philemon-field-bench`. The harness did not until Plan 5 Task 3, so every Philemon row in
+`docs/baseline-2026-08-29.md` is a Philemon with no icon theme. **Both corrections below come from
 Task 3's own A/B at `32a3e68`, three cold runs an arm, differing in nothing but whether Qt
 loaded the gtk3 platform theme. Neither is a subtraction across the two documents**, which
 would cross a unit boundary; what licenses applying the A/B to that document's rows is that its
@@ -2969,10 +2969,10 @@ theme-off arm reproduces them to within 0.02 MB, 45485 kB against a printed 45.5
 against a printed 44.8. **PSS: the theme is worth 3285 kB on the scale fixture and 3824 kB on
 the media fixture**, 45485 against 48770 and 44805 against 48629, that is 3.21 and 3.73 MiB, so
 the understatement is a pair and not the one number it was written as. **CPU: up to 0.08 s, and
-that is the scale figure alone**, medians 0.22 s against 0.30; media moved 0.26 to 0.29. **That document's Flea rows are not a valid before for
+that is the scale figure alone**, medians 0.22 s against 0.30; media moved 0.26 to 0.29. **That document's Philemon rows are not a valid before for
 anything in this plan**, and `docs/baseline-2026-08-30b.md` supersedes them. Of the rest
 of the field only `dolphin` is Qt and can move at all; the GTK entrants and the terminal ones
-cannot see the variable. The same trap catches a launch by hand: `~/bench/flea-relaunch.sh`
+cannot see the variable. The same trap catches a launch by hand: `~/bench/philemon-relaunch.sh`
 does not publish the variable either, so a window started through it draws blank icon slots
 with thumbnails still working, which reads as a renderer bug and is not one. Export it from
 `systemctl --user show-environment` for any by-hand launch.
@@ -3007,11 +3007,11 @@ alone, so the query changes Qt's key and not the file that opens.
 
 **`cache: false` was the other candidate and it was measured, not argued about.** Five interleaved
 rounds, both fixtures, both a settled listing and one after ten scroll bursts, every arm launched
-through `flea --gui` so the launcher's `PR_SET_THP_DISABLE` is in the picture. `cache: false` cost
+through `philemon --gui` so the launcher's `PR_SET_THP_DISABLE` is in the picture. `cache: false` cost
 PSS in the settled column of both fixtures in 5 of 5 pairs, median +418 kB on scale and +292 kB on
 media, because it stops the whole icon column sharing one pixmap per name. The mtime query keyed only
 the thumbnail branch and came out inside the noise, medians -79 and -6 kB with the sign flipping
-across rounds. Memory is the one GUI column Flea does not win on the media fixture, so the arm that
+across rounds. Memory is the one GUI column Philemon does not win on the media fixture, so the arm that
 costs nothing is the arm that ships.
 
 **What the mtime query does NOT cover.** The row's `m` comes from the listing while the backend
@@ -3230,7 +3230,7 @@ file already carries, so a second activation reports nothing new instead of grow
 time), and the message names how many were added. One click on the operator's real "NAS" bookmark
 now turns it into five separate, individually mountable rows: appdata, backups, data, isos,
 timemachine, each of which opens a real GVFS FUSE path once mounted, verified live against the
-real NAS both through gio directly and through Flea's own rail.
+real NAS both through gio directly and through Philemon's own rail.
 
 **Superseded, fix round 2:** the operator overruled the bookmark-expansion design above ("clicking
 the NAS in the sidebar should allow me to view all folders and go into them, that's all"). The
@@ -3283,7 +3283,7 @@ Applied this round: `ui/NetworkDialog.qml`'s two `PanelSectionHeader` texts, "Ad
 and "Dropbox", became "ADD NETWORK LOCATION" and "DROPBOX" (heading rule); `ui/EmptyState.qml`'s
 eight-phrase array was re-cased to sentence case in its source with `.toUpperCase()` at render
 (rotating-caption rule, above). Every button label, status sentence and error sentence already in
-Flea (`ui/js/Errors.js`, `ui/Pane.qml`'s inline messages, `ui/ContextMenu.qml`'s "Open", the
+Philemon (`ui/js/Errors.js`, `ui/Pane.qml`'s inline messages, `ui/ContextMenu.qml`'s "Open", the
 dialog's "Add"/"Cancel"/"Install Dropbox") already matched their registers and needed no change.
 `ui/Row.qml`'s column headers ("Name", "Mode", "Size", "Date Modified") are Title Case, a fourth
 register with no shipped-panel counterpart to check against since no OEM panel renders a data
@@ -3295,16 +3295,16 @@ The registered rule for this task was that wiring the row through `Glyph` must n
 media PSS, predicted instead to save memory by retiring `Quickshell.iconPath`'s URL-keyed
 pixmap cache. Nine interleaved pairs per fixture, alternated old (this tree at `cabcc0e`,
 `Image`-only) against new (this tree with the row swap), launched through the real product
-path `flea --gui <fixture>` with `FLEA_UI`/`FLEA_BIN` pointed at each arm so
+path `philemon --gui <fixture>` with `PHILEMON_UI`/`PHILEMON_BIN` pointed at each arm so
 `PR_SET_THP_DISABLE` stays in the picture, settled PSS read off `smaps_rollup` once three
 consecutive 300 ms samples sat within 256 kB. **Warm cache, not cold**: the 1Password
 `claude-skills` Environment mount that carries `OMARCHY_SUDO_PASS` answered empty this
 session (the desktop app was not reachable to serve it), so `drop_caches` was never run; the
 comparison is still relative and same-process, which is what this gate asks.
 
-Media fixture (`/home/flea-sandbox/flea-media-btrfs`), 9 pairs: old median 67,847 kB, new median 71,058 kB,
+Media fixture (`/home/philemon-sandbox/philemon-media-btrfs`), 9 pairs: old median 67,847 kB, new median 71,058 kB,
 every pair higher for new, spread inside each arm under 350 kB. Scale fixture
-(`/home/flea-sandbox/flea-bench-btrfs`), 9 pairs: old median 63,774 kB, new median 67,347 kB, same
+(`/home/philemon-sandbox/philemon-bench-btrfs`), 9 pairs: old median 63,774 kB, new median 67,347 kB, same
 direction, same magnitude. **The regression is a fixed roughly 3.2 to 3.6 MiB on both
 fixtures**, not proportional to row or file count, which points at `QtQuick.Shapes` and
 `Shape.CurveRenderer` module load rather than a per-row cost. A five-pair isolation swapping
@@ -3322,10 +3322,10 @@ pixmap cache; the measurement above says the opposite, 9 of 9 pairs on both fixt
 that prediction is recorded here as falsified rather than quietly dropped.
 
 **The rank check**, run against `docs/baseline-2026-08-30b.md` before ruling on the numbers
-above. Media PSS ladder, MiB: thunar 37.94, pcmanfm 38.74, nemo 53.41, flea 56.48, dolphin
-96.08, nautilus 134.47. Flea plus the measured 3.2 MiB is about 59.7, **still fourth**; the
+above. Media PSS ladder, MiB: thunar 37.94, pcmanfm 38.74, nemo 53.41, philemon 56.48, dolphin
+96.08, nautilus 134.47. Philemon plus the measured 3.2 MiB is about 59.7, **still fourth**; the
 gap to third (nemo) widens from 3.07 to about 6.3 MiB, still short of dolphin's 96.08 by a
-wide margin. Scale fixture: flea 53.75 against dolphin 194.84; plus the measured 3.5 MiB is
+wide margin. Scale fixture: philemon 53.75 against dolphin 194.84; plus the measured 3.5 MiB is
 57.25, **first place holds by 3.4x**. No rank moves on either column.
 
 **Ruling: ship the swap as implemented, `Shape.CurveRenderer` included**, not the cheaper
@@ -3370,7 +3370,7 @@ gap grew to about 17 MB against 14.5 MB of decoded pixels, so it scales with pix
 not with row count.
 
 The rule was fixed before the numbers: take the `sourceSize` arm unless it costs more than
-twice the other arm's time to fill a screen, because memory is the one GUI column Flea does
+twice the other arm's time to fill a screen, because memory is the one GUI column Philemon does
 not win on the media fixture, while a screen of thumbnails is not on the first paint path at
 all. The worst pair of the twenty put the sized arm at 1.25x and the pooled medians put it
 under 1x, so the threshold was never approached and the sized arm wins on both columns. Treat
@@ -3426,7 +3426,7 @@ like the empty state, and `ui/Pane.qml` gained a `shareBrowser` property wired t
 `preview` already was, so its own `Keys.onPressed` can route j/k/Enter/Escape to
 `Focus.shareBrowserAct` while it is active, ahead of the normal list/rail routing.
 
-Each share row is a real `Flea.Row` fed a synthetic row object
+Each share row is a real `Philemon.Row` fed a synthetic row object
 (`{ n: name, d: true, p: 0, s: 0, m: null, i: "folder" }`) rather than a hand-rolled second row
 visual: `Icons.glyphFor("folder")` already maps to the folder mark, `p: 0` renders as the mode
 column's own all-dashes string with no special-casing needed, and `d: true` already blanks the
@@ -3454,7 +3454,7 @@ the bare-root case. `mountProcess.onExited`'s old check, `exitCode !== 0 && !isB
 treated this as a hard failure for any non-bare-root uri, which is wrong: the location IS mounted,
 that is what the message says. This is reachable through the overlay in one ordinary sequence: pick
 a share, mount it, browse back to the bare root, pick the SAME share again (or a different overlay
-instance discovers a share Flea already mounted through some other route). The fix reads the
+instance discovers a share Philemon already mounted through some other route). The fix reads the
 process's own stderr instead of guessing from the uri's shape: `mountProcess` gained a
 `StdioCollector` on `stderr`, and `isAlreadyMountedQuirk(text)` (`/already mounted/i`) replaced the
 `isBareRoot()` check at that one call site. `isBareRoot()` itself stays, still used by
@@ -3539,7 +3539,7 @@ same way `ui/js/Mounts.js`'s `normalize()` already dedups the rail, so a live `g
 (trailing slash) still finds a bookmark line written without one (`ui/NetworkDialog.qml`'s own
 `appendBookmark()` strips it). Fix round 1 found two gaps: the function used to stop at the first
 matching line, so a hand-edited file carrying two bookmark lines for the same normalized uri
-(never produced by Flea's own writers, but not excluded either) left the second stale after a
+(never produced by Philemon's own writers, but not excluded either) left the second stale after a
 rename; `relabel` now rewrites every matching line in one pass and appends only when none match at
 all. Second, `name` reached the join with no defence against an embedded `\n` or `\r`; today's
 `qs.Ui` `TextField` cannot produce one, but the function is a trust boundary in its own right and
@@ -3549,7 +3549,7 @@ rewritten and every other line byte-identical, and a name carrying an embedded n
 produces a file with the same line count it started with, the newline gone rather than splitting
 one bookmark into two.
 
-### Flea ends when its last window closes, and a wedged listing no longer freezes the rail
+### Philemon ends when its last window closes, and a wedged listing no longer freezes the rail
 
 Three fixes on 2026-09-02, one on the way out and two on the rail. None of them had a line here.
 
@@ -3601,7 +3601,7 @@ control reached by a different gesture, and it is the only answer that holds the
 inventing a surface. Finishing the copy instead would run it for minutes inside a process with no
 window, no progress and no way to stop it, which is the resident-with-nothing-on-screen state the
 exit exists to prevent. A confirmation dialog would be the only one in the product: `Delete` trashes
-with no prompt, as `tools/flea-live-ops` asserts, and a cancelled copy destroys nothing, so the
+with no prompt, as `tools/philemon-live-ops` asserts, and a cancelled copy destroys nothing, so the
 dialog would guard the least destructive action of the set. A cancelled move keeps its source too,
 because `move_any` copies before it removes and the cancel path removes the partial destination.
 

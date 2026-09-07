@@ -1,19 +1,19 @@
 # Field bench manifest
 
-Written by tools/flea-bench-manifest. Every line below is read off the installed artefact.
+Written by tools/philemon-bench-manifest. Every line below is read off the installed artefact.
 The host name and the checkout path are generalised for publication; no measured value is touched.
 
 ## Run
 
 - date: 2026-09-02T20:27:22-04:00
 - host: the bench box, kernel 7.1.9-arch1-2
-- fixture: /home/flea-sandbox/flea-media-btrfs
+- fixture: /home/philemon-sandbox/philemon-media-btrfs
 - fixture payload: 2000 visible entries, filesystem btrfs
 - TUI terminal: kitty 0.48.2-1
-- flea launch line: FLEA_BIN=<repo>/target/release/flea FLEA_UI=<repo>/ui setsid nohup <repo>/target/release/flea --gui /home/flea-sandbox/flea-media-btrfs
+- philemon launch line: PHILEMON_BIN=<repo>/target/release/philemon PHILEMON_UI=<repo>/ui setsid nohup <repo>/target/release/philemon --gui /home/philemon-sandbox/philemon-media-btrfs
 - load average at start: 0.45 1.27 1.43
 - waited 10 seconds for the box to go idle before starting
-- TUI preview target: /home/flea-sandbox/flea-media-btrfs/photo_0.jpg
+- TUI preview target: /home/philemon-sandbox/philemon-media-btrfs/photo_0.jpg
 - fixture payload assertion: PASSED, 2000 visible entries against the expected 2000
 
 ## Correction, 2026-09-03: strata's three rows were re-measured
@@ -38,11 +38,11 @@ earned it, because bwrap binds the input into the helper's namespace without mov
 strata thumbnails one file at a time, so the two are paired, and all three runs recorded **205
 renders against exactly 205 fixture opens**.
 
-Everything else was held: `tools/flea-field-bench` with `ONLY=strata DROP_THUMBS=yes`, the same
+Everything else was held: `tools/philemon-field-bench` with `ONLY=strata DROP_THUMBS=yes`, the same
 fixture, the same v0.6.1 build, caches dropped before each of the three runs, and the same idle
 gate. Two differences are disclosed rather than hidden.
 
-- **The kill list was scoped to strata.** The box carried two of the operator's own packaged Flea
+- **The kill list was scoped to strata.** The box carried two of the operator's own packaged Philemon
   processes, and a full-field run would have closed them. `ONLY` now scopes both the kill list and
   the start-up refusal to the entrant named.
 - **Those two processes were resident for the re-run and were not for the batch.** A resident Qt
@@ -78,7 +78,7 @@ about the cache and a false one about the entrant.
 ## Entrants
 
 ```
-flea       gui  source b857757 (clean), release binary built 2026-09-02T20:13:50-04:00, 972008 bytes
+philemon       gui  source b857757 (clean), release binary built 2026-09-02T20:13:50-04:00, 972008 bytes
 nautilus   gui  nautilus 50.2.2-1
 thunar     gui  thunar 4.20.9-1
 pcmanfm    gui  pcmanfm 1.4.0-2
@@ -104,7 +104,7 @@ from the published release, which is equally true of every AUR entrant in the li
 
 ## The TUI bracket's configuration, as it ran
 
-Provenance per entrant is in `tools/flea-bench-tui/README.md`. lf's is AUTHORED HERE
+Provenance per entrant is in `tools/philemon-bench-tui/README.md`. lf's is AUTHORED HERE
 because lf ships no image preview at all; every other file came from that project's own docs.
 
 ### README.md
@@ -158,7 +158,7 @@ document carrying both says so rather than merging the two tables.
 # whatever font size somebody set last week is not reproducible, and nnn's preview plugin needs
 # remote control switched on, which is not something to turn on in an operator's real terminal.
 allow_remote_control yes
-listen_on unix:/tmp/flea-bench-kitty
+listen_on unix:/tmp/philemon-bench-kitty
 
 # A fixed grid, so every entrant is handed the same viewport and the same amount of preview to draw.
 font_size 12
@@ -249,7 +249,7 @@ before notes before photo. **A never-attempted count is not a capability claim.*
 this cache.** Its instrument is named there and it is not the one the other six rows used; what
 the two have in common is that each counts thumbnails the entrant actually drew on this fixture.
 
-- flea produced mkv 6, mp4 24, webm 6; refused nothing; never attempted heic 200, jpg 600, mkv 94, mp4 376, png 200, txt 200, webm 94, webp 200
+- philemon produced mkv 6, mp4 24, webm 6; refused nothing; never attempted heic 200, jpg 600, mkv 94, mp4 376, png 200, txt 200, webm 94, webp 200
 - nautilus produced heic 13, mp4 400, png 14, webm 100, webp 14; refused nothing; never attempted heic 187, jpg 600, mkv 100, png 186, txt 200, webp 186
 - thunar produced mkv 37, mp4 148, webm 36; refused nothing; never attempted heic 200, jpg 600, mkv 63, mp4 252, png 200, txt 200, webm 64, webp 200
 - pcmanfm produced mp4 400, png 105, webm 100; refused nothing; never attempted heic 200, jpg 600, mkv 100, png 95, txt 200, webp 200
@@ -272,15 +272,15 @@ the two have in common is that each counts thumbnails the entrant actually drew 
 
 ## The equal-work column
 
-`cpu_tree_s` is the column to compare work on, for every entrant and not for Flea alone: a
+`cpu_tree_s` is the column to compare work on, for every entrant and not for Philemon alone: a
 column carrying CPU-seconds for one entrant and wall-seconds for the rest is the incomparable
 rank this harness now refuses. It is on every row above.
 
-**What it does not yet include.** Flea thumbnails the viewport by design and every rival
-thumbnails the directory, so this column is comparable in units and not in work until Flea is
+**What it does not yet include.** Philemon thumbnails the viewport by design and every rival
+thumbnails the directory, so this column is comparable in units and not in work until Philemon is
 driven through the whole listing. When that lands, the residual bias belongs here too: the
-driver's own cost falls in omarchy-drive's tree and is excluded, while Flea's cost of
-servicing that drive is included and no rival pays it. That biases against Flea, which is the
+driver's own cost falls in omarchy-drive's tree and is excluded, while Philemon's cost of
+servicing that drive is included and no rival pays it. That biases against Philemon, which is the
 safe direction, and it is not a reason to leave the number out.
 
 ## Rank refusals

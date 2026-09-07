@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Menu.js" as Menu
 
 // One context-menu row: the glyph slot, the label, and the disclosure a submenu row carries.
@@ -78,21 +78,21 @@ Item {
         height: root.slotSize
 
         // A brand mark is a reproduction and takes its own component; every other row is a cut glyph.
-        Flea.Glyph {
+        Philemon.Glyph {
             anchors.fill: parent
             visible: root.entry.mark === undefined
             name: root.entry.glyph !== undefined ? root.entry.glyph : "file"
             color: root.markColor
         }
 
-        Flea.TailscaleMark {
+        Philemon.TailscaleMark {
             anchors.centerIn: parent
             visible: root.entry.mark === "tailscale"
             iconSize: root.slotSize
             color: root.markColor
         }
 
-        Flea.DropboxMark {
+        Philemon.DropboxMark {
             anchors.centerIn: parent
             visible: root.entry.mark === "dropbox"
             iconSize: root.slotSize
@@ -125,7 +125,7 @@ Item {
         width: root.isSubmenu ? Theme.font.caption : 0
         height: Theme.font.caption
 
-        Flea.Glyph {
+        Philemon.Glyph {
             anchors.fill: parent
             visible: root.isSubmenu
             name: "chevron-right"

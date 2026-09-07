@@ -1,5 +1,5 @@
 // The copy primitives every transfer is built from: streaming, symlink-preserving, and refusing to overwrite.
-use crate::error::{from_io, FleaError};
+use crate::error::{from_io, PhilemonError};
 use std::io::{Read, Write};
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
@@ -27,7 +27,7 @@ pub fn cancelled(p: &Progress) -> bool {
 }
 
 // Copies one regular file, creating the destination exclusively so an existing file is never destroyed.
-pub fn copy_file(src: &Path, dst: &Path, total: u64, p: &mut Progress) -> Result<(), FleaError> {
+pub fn copy_file(src: &Path, dst: &Path, total: u64, p: &mut Progress) -> Result<(), PhilemonError> {
     // O_NOFOLLOW closes a same-uid race: copy_any already sent symlinks to copy_symlink, so a src
     // that is a symlink here was swapped in after that stat, and it must not be followed.
     let mut r = std::fs::OpenOptions::new()
@@ -70,19 +70,19 @@ pub fn copy_file(src: &Path, dst: &Path, total: u64, p: &mut Progress) -> Result
 }
 
 // A failure after the destination was created, and not a cancel: the partial stays, and is reported for the journal.
-fn left_partial(p: &mut Progress, dst: &Path, e: FleaError) -> FleaError {
+fn left_partial(p: &mut Progress, dst: &Path, e: PhilemonError) -> PhilemonError {
     p.partial = Some(dst.to_path_buf());
     e
 }
 
 // A symlink is copied as a symlink and never followed, matching cp -a and every rival in the parity audit.
-pub fn copy_symlink(src: &Path, dst: &Path) -> Result<(), FleaError> {
+pub fn copy_symlink(src: &Path, dst: &Path) -> Result<(), PhilemonError> {
     let target = std::fs::read_link(src).map_err(|e| from_io("copy", &src.to_string_lossy(), &e))?;
     std::os::unix::fs::symlink(&target, dst).map_err(|e| from_io("copy", &dst.to_string_lossy(), &e))
 }
 
 // Copies a file, a symlink or a whole directory tree. The destination must not already exist.
-pub fn copy_any(src: &Path, dst: &Path, p: &mut Progress) -> Result<(), FleaError> {
+pub fn copy_any(src: &Path, dst: &Path, p: &mut Progress) -> Result<(), PhilemonError> {
     let meta = src
         .symlink_metadata()
         .map_err(|e| from_io("copy", &src.to_string_lossy(), &e))?;
@@ -95,7 +95,7 @@ pub fn copy_any(src: &Path, dst: &Path, p: &mut Progress) -> Result<(), FleaErro
     copy_file(src, dst, meta.len(), p)
 }
 
-fn copy_dir(src: &Path, dst: &Path, p: &mut Progress) -> Result<(), FleaError> {
+fn copy_dir(src: &Path, dst: &Path, p: &mut Progress) -> Result<(), PhilemonError> {
     std::fs::create_dir(dst).map_err(|e| from_io("copy", &dst.to_string_lossy(), &e))?;
     let r = copy_dir_entries(src, dst, p);
     if r.is_err() {
@@ -114,7 +114,7 @@ fn copy_dir(src: &Path, dst: &Path, p: &mut Progress) -> Result<(), FleaError> {
     r
 }
 
-fn copy_dir_entries(src: &Path, dst: &Path, p: &mut Progress) -> Result<(), FleaError> {
+fn copy_dir_entries(src: &Path, dst: &Path, p: &mut Progress) -> Result<(), PhilemonError> {
     let entries = std::fs::read_dir(src).map_err(|e| from_io("copy", &src.to_string_lossy(), &e))?;
     for entry in entries {
         if cancelled(p) {
@@ -127,7 +127,7 @@ fn copy_dir_entries(src: &Path, dst: &Path, p: &mut Progress) -> Result<(), Flea
 }
 
 // Same filesystem is a rename; a different one is copy-then-remove, and the source only goes once the copy is complete.
-pub fn move_any(src: &Path, dst: &Path, p: &mut Progress) -> Result<(), FleaError> {
+pub fn move_any(src: &Path, dst: &Path, p: &mut Progress) -> Result<(), PhilemonError> {
     match crate::backend::ops::rename_noreplace(src, dst) {
         Ok(()) => Ok(()),
         Err(e) if e.msg.contains("os error 18") || is_exdev(&e) => {
@@ -138,11 +138,11 @@ pub fn move_any(src: &Path, dst: &Path, p: &mut Progress) -> Result<(), FleaErro
     }
 }
 
-fn is_exdev(e: &FleaError) -> bool {
+fn is_exdev(e: &PhilemonError) -> bool {
     e.msg.contains(&format!("os error {}", EXDEV))
 }
 
-pub fn remove_any(path: &Path) -> Result<(), FleaError> {
+pub fn remove_any(path: &Path) -> Result<(), PhilemonError> {
     let meta = path
         .symlink_metadata()
         .map_err(|e| from_io("move", &path.to_string_lossy(), &e))?;
@@ -154,8 +154,8 @@ pub fn remove_any(path: &Path) -> Result<(), FleaError> {
     r.map_err(|e| from_io("move", &path.to_string_lossy(), &e))
 }
 
-fn cancel_err(path: &Path) -> FleaError {
-    FleaError {
+fn cancel_err(path: &Path) -> PhilemonError {
+    PhilemonError {
         where_: "copy".to_string(),
         path: path.to_string_lossy().to_string(),
         msg: "cancelled".to_string(),

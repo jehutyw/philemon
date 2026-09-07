@@ -7,7 +7,7 @@ use crate::backend::archivework::{archive_produced_count, is_empty_dir, run_boxe
 use crate::backend::convert;
 use crate::backend::ops::rename_noreplace;
 use crate::backend::opsreq::op_err;
-use crate::error::{from_io, FleaError};
+use crate::error::{from_io, PhilemonError};
 use std::path::{Path, PathBuf};
 
 // One archive out of a selection that all shares a parent, which is what a listing selection is.
@@ -17,7 +17,7 @@ pub fn compress(
     names: &[String],
     format: &str,
     dest: &Path,
-) -> Result<(), FleaError> {
+) -> Result<(), PhilemonError> {
     if dest.symlink_metadata().is_ok() {
         return Err(op_err("archive", &dest.to_string_lossy(), "that destination already exists"));
     }
@@ -39,7 +39,7 @@ pub fn compress(
 // Ok(true) is a verified success and Ok(false) one this could not check, which is a real difference
 // to the operator: three rounds of this branch went into an empty directory published as a success,
 // and publishing an unverified one as an ordinary success is a quieter version of the same thing.
-pub fn extract(formats: &Formats, archive: &Path, dest: &Path) -> Result<bool, FleaError> {
+pub fn extract(formats: &Formats, archive: &Path, dest: &Path) -> Result<bool, PhilemonError> {
     if dest.symlink_metadata().is_ok() {
         return Err(op_err("archive", &dest.to_string_lossy(), "that destination already exists"));
     }
@@ -54,7 +54,7 @@ pub fn extract(formats: &Formats, archive: &Path, dest: &Path) -> Result<bool, F
     // Measured on this box: bsdtar exits 1 on a .. member and de-fangs an absolute one, printing
     // "Removing leading '/'" and extracting it relative. Neither escapes the staging directory.
     run_boxed(inner, archive, &work.dir)?;
-    // compress and convert stat a path Flea never creates, so their existence check is a real test.
+    // compress and convert stat a path Philemon never creates, so their existence check is a real test.
     // This one creates its own staging directory, so the same shape always passes. Two archives
     // legally extract to nothing: an empty one, and one whose only member is the archive root, which
     // is what `tar -c -C <empty dir> .` produces.
@@ -74,7 +74,7 @@ pub fn extract(formats: &Formats, archive: &Path, dest: &Path) -> Result<bool, F
             // Nothing to extract, so an empty destination is the correct result.
             Some(_) => {}
             // The index could not be read, so this cannot be judged. Refusing would punish the
-            // operator for Flea's own verification failing, including for our own deadline, and an
+            // operator for Philemon's own verification failing, including for our own deadline, and an
             // unverifiable check is not evidence of failure. It is published and SAID to be
             // unverified, because a success nobody checked must not read as one that was checked.
             // corner: a tool that lies AND an unreadable index at once publishes an empty directory.
@@ -85,7 +85,7 @@ pub fn extract(formats: &Formats, archive: &Path, dest: &Path) -> Result<bool, F
     Ok(verified)
 }
 
-pub fn convert_one(input: &Path, dest: &Path, strip: bool) -> Result<(), FleaError> {
+pub fn convert_one(input: &Path, dest: &Path, strip: bool) -> Result<(), PhilemonError> {
     if dest.symlink_metadata().is_ok() {
         return Err(op_err("convert", &dest.to_string_lossy(), "that destination already exists"));
     }

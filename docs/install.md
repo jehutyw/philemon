@@ -1,19 +1,19 @@
-# Installing Flea
+# Installing Philemon
 
-Flea installs on Arch-based systems, including EndeavourOS. `quickshell` is the GUI runtime;
-the small Commons and Ui compatibility modules Flea uses ship with the package, so Omarchy is not
+Philemon installs on Arch-based systems, including EndeavourOS. `quickshell` is the GUI runtime;
+the small Commons and Ui compatibility modules Philemon uses ship with the package, so Omarchy is not
 required.
 
-Flea installs as an Arch package, so pacman owns both ends: `makepkg -si` puts it on, `pacman -Rns`
+Philemon installs as an Arch package, so pacman owns both ends: `makepkg -si` puts it on, `pacman -Rns`
 takes it off, and pacman's own file list is what makes the second claim provable. There is no
 install script here because there is nothing for one to do. The one step pacman cannot own, making
-Flea your default file manager, is a subcommand of the binary, `flea --default`, described below.
+Philemon your default file manager, is a subcommand of the binary, `philemon --default`, described below.
 
 ## Build and install
 
 ```
-git clone https://github.com/jehutyw/flea.git
-cd flea
+git clone https://github.com/jehutyw/philemon.git
+cd philemon
 makepkg -si
 ```
 
@@ -32,22 +32,22 @@ uncommitted edits are what gets packaged.
 
 | Path | What it is |
 |---|---|
-| `/usr/bin/flea` | the binary, backend and launcher both |
-| `/usr/share/flea/ui/` | the Quickshell UI, which `paths.rs` looks for by `shell.qml` |
-| `/usr/share/flea/ui/Commons`, `/usr/share/flea/ui/Ui` | Flea's bundled QML compatibility modules |
-| `/usr/share/applications/com.thisisgm.flea.desktop` | the desktop entry |
-| `/usr/share/icons/hicolor/scalable/apps/com.thisisgm.flea.svg` | the icon |
-| `/usr/share/licenses/flea/LICENSE` | the licence |
+| `/usr/bin/philemon` | the binary, backend and launcher both |
+| `/usr/share/philemon/ui/` | the Quickshell UI, which `paths.rs` looks for by `shell.qml` |
+| `/usr/share/philemon/ui/Commons`, `/usr/share/philemon/ui/Ui` | Philemon's bundled QML compatibility modules |
+| `/usr/share/applications/com.thisisgm.philemon.desktop` | the desktop entry |
+| `/usr/share/icons/hicolor/scalable/apps/com.thisisgm.philemon.svg` | the icon |
+| `/usr/share/licenses/philemon/LICENSE` | the licence |
 
 The count is whatever the built archive declares, not a number written down here: the UI grows a file
 whenever a component is added, so a figure pinned in this paragraph would be stale by the next commit.
-`packaging/flea-package-test` reads the count out of the archive and fails if the fake root does not
+`packaging/philemon-package-test` reads the count out of the archive and fails if the fake root does not
 hold exactly that many.
 
 ## Uninstall
 
 ```
-sudo pacman -Rns flea
+sudo pacman -Rns philemon
 ```
 
 Everything above goes, including the directories the install created. The package carries no
@@ -55,23 +55,23 @@ Everything above goes, including the directories the install created. The packag
 desktop and icon caches are re-indexed by Arch's own `update-desktop-database` and
 `gtk-update-icon-cache` hooks, which fire on Remove as well as on Install.
 
-## Make Flea the default
+## Make Philemon the default
 
-Installing registers Flea for `inode/directory`; it does not make it the default. This is a
+Installing registers Philemon for `inode/directory`; it does not make it the default. This is a
 per-user preference, so pacman cannot own it, and
 Omarchy's own `default` verbs (`omarchy default browser`, `editor`, `terminal`) set exactly this
 kind of thing without a package's help. There is no `omarchy default filemanager`, and
-`/usr/share/omarchy/` is the package's to overwrite, so Flea carries the verb itself:
+`/usr/share/omarchy/` is the package's to overwrite, so Philemon carries the verb itself:
 
 ```
-flea --default
+philemon --default
 ```
 
 It sets the directory MIME handler through `xdg-mime`. On Omarchy it also updates Omarchy's two
 file-manager keys; on other desktops it leaves keyboard shortcuts to the desktop's settings.
 It needs no root.
 
-1. **The `inode/directory` handler.** `xdg-mime default com.thisisgm.flea.desktop inode/directory`,
+1. **The `inode/directory` handler.** `xdg-mime default com.thisisgm.philemon.desktop inode/directory`,
    the stock tool, which writes one line to `~/.config/mimeapps.list`. The line printed names the
    previous handler, `org.gnome.Nautilus.desktop` on a stock Omarchy, which comes from
    `/usr/share/applications/mimeapps.list`. Only that one type: the entry registers nothing else,
@@ -85,16 +85,16 @@ It needs no root.
    `hl.unbind` then `o.bind` shape:
 
    ```lua
-   -- flea --default: begin. Written by `flea --default`; `flea --default off` removes the block whole.
+   -- philemon --default: begin. Written by `philemon --default`; `philemon --default off` removes the block whole.
    hl.unbind("SUPER + SHIFT + F")
-   o.bind("SUPER + SHIFT + F", "File manager", { launch = 'flea --gui' })
+   o.bind("SUPER + SHIFT + F", "File manager", { launch = 'philemon --gui' })
    hl.unbind("SUPER + ALT + SHIFT + F")
-   o.bind("SUPER + ALT + SHIFT + F", "File manager (cwd)", { launch = 'flea --gui "$(omarchy-cmd-terminal-cwd)"' })
-   -- flea --default: end.
+   o.bind("SUPER + ALT + SHIFT + F", "File manager (cwd)", { launch = 'philemon --gui "$(omarchy-cmd-terminal-cwd)"' })
+   -- philemon --default: end.
    ```
 
    The cwd key keeps its meaning: `omarchy-cmd-terminal-cwd` is the helper Omarchy's own Nautilus
-   binding reads the active terminal's directory with, and Flea's positional argument is a path.
+   binding reads the active terminal's directory with, and Philemon's positional argument is a path.
    After writing, `hyprctl reload` runs and `hyprctl configerrors` is read; if the config no longer
    loads, the file is put back as it was and the command fails saying what `configerrors` said. The
    output names what each key ran before, read off `hyprctl binds`. From outside the session,
@@ -106,40 +106,40 @@ Run it from a terminal inside the session, so the keys take effect at once.
 ### Undo
 
 ```
-flea --default off
+philemon --default off
 ```
 
-Removes Flea's `inode/directory` line from `~/.config/mimeapps.list`, so the handler falls back to
+Removes Philemon's `inode/directory` line from `~/.config/mimeapps.list`, so the handler falls back to
 whatever the system default is (Nautilus on stock Omarchy), and removes the marked block from
 `~/.config/hypr/bindings.lua` byte for byte, then reloads. If you had pinned another handler in
-`~/.config/mimeapps.list` before running `flea --default`, the first run printed its id as
+`~/.config/mimeapps.list` before running `philemon --default`, the first run printed its id as
 `was <id>`; `xdg-mime default <id> inode/directory` puts that pin back.
 
-### What `pacman -Rns flea` leaves behind
+### What `pacman -Rns philemon` leaves behind
 
-Everything the package installed goes, as above. The two edits `flea --default` made are per-user
+Everything the package installed goes, as above. The two edits `philemon --default` made are per-user
 state, and pacman neither knows nor should know about them, so they stay:
 
-- `inode/directory=com.thisisgm.flea.desktop` in `~/.config/mimeapps.list`. Inert once the binary
+- `inode/directory=com.thisisgm.philemon.desktop` in `~/.config/mimeapps.list`. Inert once the binary
   is gone: `xdg-mime query default` skips an entry whose `Exec` is not on `PATH`, and answered
-  `org.gnome.Nautilus.desktop` with that line in place when this was exercised without a `flea` on
+  `org.gnome.Nautilus.desktop` with that line in place when this was exercised without a `philemon` on
   `PATH`. Still litter. Delete the line, or run
   `xdg-mime default org.gnome.Nautilus.desktop inode/directory`.
-- The block between `-- flea --default: begin` and `-- flea --default: end` in
-  `~/.config/hypr/bindings.lua`. With no `flea` on `PATH` the two keys would do nothing. Delete the
+- The block between `-- philemon --default: begin` and `-- philemon --default: end` in
+  `~/.config/hypr/bindings.lua`. With no `philemon` on `PATH` the two keys would do nothing. Delete the
   block and run `hyprctl reload`.
 
-The clean order is `flea --default off` before `sudo pacman -Rns flea`, after which there is nothing
-to do by hand. `flea --default off` leaves `~/.config/mimeapps.list` in place even when it was the
+The clean order is `philemon --default off` before `sudo pacman -Rns philemon`, after which there is nothing
+to do by hand. `philemon --default off` leaves `~/.config/mimeapps.list` in place even when it was the
 one that created it, holding an empty `[Default Applications]` section: the file is the desktop's,
 other tools write to it too, and an empty section is harmless.
 
-## Why the Exec line reads `flea --gui %f`
+## Why the Exec line reads `philemon --gui %f`
 
-`%f` because Flea's positional argument is a path. A `%u` entry advertises that the program
-understands URI schemes, and Flea's positional does not: only `--select` strips a `file://` prefix
+`%f` because Philemon's positional argument is a path. A `%u` entry advertises that the program
+understands URI schemes, and Philemon's positional does not: only `--select` strips a `file://` prefix
 and percent-decodes. For a local directory the two field codes measure the same, both hand over one
-decoded path, so the difference only shows on a remote URI, where `%u` would give Flea an
+decoded path, so the difference only shows on a remote URI, where `%u` would give Philemon an
 `smb://host/share` string to treat as a relative path.
 
 `--gui` because a desktop entry always means the window. Without it the mode is inferred from
@@ -148,12 +148,12 @@ routes the launch through the session bus, so the child's stdio is the user mana
 is a worse contract than a flag.
 
 `StartupWMClass` because the window's app id comes from the `AppId` pragma at `ui/shell.qml:1` and
-is not the binary name. `packaging/flea-package-test` reads both and fails if they drift apart.
+is not the binary name. `packaging/philemon-package-test` reads both and fails if they drift apart.
 
 ## Proving it
 
 ```
-printf '%s\n' "$OMARCHY_SUDO_PASS" | packaging/flea-package-test
+printf '%s\n' "$OMARCHY_SUDO_PASS" | packaging/philemon-package-test
 ```
 
 Builds the package, installs it into a fake root, checks the fake root holds exactly the file count
@@ -165,7 +165,7 @@ trip is skipped and the rest still runs.
 ## Known gap: Open containing folder
 
 Applications that offer "Open containing folder" ask the `org.freedesktop.FileManager1` D-Bus
-interface for `ShowItems` first. Flea does not implement it, so those applications get whatever
+interface for `ShowItems` first. Philemon does not implement it, so those applications get whatever
 fallback they carry; the common one, opening the parent directory through the `inode/directory`
-handler, lands on Flea and works. Wiring `ShowItems` to the `--select` that already exists needs a
+handler, lands on Philemon and works. Wiring `ShowItems` to the `--select` that already exists needs a
 D-Bus service in the backend, which is not part of this packaging work.

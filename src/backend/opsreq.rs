@@ -3,7 +3,7 @@ use crate::backend::copyfile::{copy_any, move_any, Progress};
 use crate::backend::ops;
 use crate::backend::trash;
 use crate::backend::undo::{Entry, Step};
-use crate::error::FleaError;
+use crate::error::PhilemonError;
 use crate::json::escape;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -81,8 +81,8 @@ pub fn undone_line(op: &str, ok: bool) -> String {
     format!(r#"{{"t":"undone","op":"{}","ok":{}}}"#, escape(op), ok)
 }
 
-// A destination Flea will not create as a side effect, checked once before any item is touched.
-pub fn usable_dest(dest: &str) -> Result<PathBuf, FleaError> {
+// A destination Philemon will not create as a side effect, checked once before any item is touched.
+pub fn usable_dest(dest: &str) -> Result<PathBuf, PhilemonError> {
     let p = PathBuf::from(dest);
     if !p.is_absolute() {
         return Err(op_err("transfer", dest, "a destination must be an absolute path"));
@@ -94,8 +94,8 @@ pub fn usable_dest(dest: &str) -> Result<PathBuf, FleaError> {
     }
 }
 
-pub fn op_err(where_: &str, path: &str, msg: &str) -> FleaError {
-    FleaError { where_: where_.to_string(), path: path.to_string(), msg: msg.to_string() }
+pub fn op_err(where_: &str, path: &str, msg: &str) -> PhilemonError {
+    PhilemonError { where_: where_.to_string(), path: path.to_string(), msg: msg.to_string() }
 }
 
 fn base_name(p: &Path) -> String {
@@ -153,7 +153,7 @@ fn one_item(
     cancel: &AtomicBool,
     tx: &Sender<OpMsg>,
     steps: &mut Vec<Step>,
-) -> Result<(), FleaError> {
+) -> Result<(), PhilemonError> {
     let is_file = src.symlink_metadata().map(|m| m.is_file()).unwrap_or(false);
     let mut last = Instant::now() - PROGRESS_EVERY;
     let mut sink = |done: u64, total: u64| {
@@ -269,7 +269,7 @@ mod tests {
             "the destination is not a directory"
         );
         assert!(usable_dest("relative/path").is_err(), "a relative destination is never resolved here");
-        assert!(usable_dest(&d.join("missing").to_string_lossy()).is_err(), "Flea does not create the destination");
+        assert!(usable_dest(&d.join("missing").to_string_lossy()).is_err(), "Philemon does not create the destination");
     }
 
     #[test]

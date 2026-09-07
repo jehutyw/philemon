@@ -1,5 +1,5 @@
 import QtQuick
-import "." as Flea
+import "." as Philemon
 import "js/Tabs.js" as Tabs
 
 // The window's tab strip. Hidden with no height until a second tab exists, so the default window
@@ -120,7 +120,7 @@ Item {
                     width: Theme.hitMin
                     height: parent.height
 
-                    Flea.Glyph {
+                    Philemon.Glyph {
                         anchors.centerIn: parent
                         width: Theme.chromeMarkSize
                         height: Theme.chromeMarkSize
@@ -157,7 +157,7 @@ Item {
             Accessible.onPressAction: if (pane) Tabs.openNew(pane)
             HoverHandler { cursorShape: Qt.PointingHandCursor }
 
-            Flea.Glyph {
+            Philemon.Glyph {
                 anchors.centerIn: parent
                 width: Theme.chromeMarkSize
                 height: Theme.chromeMarkSize

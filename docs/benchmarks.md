@@ -1,6 +1,6 @@
 # Benchmark method
 
-This document describes how Flea's field benchmark works: what it measures, how its fixtures
+This document describes how Philemon's field benchmark works: what it measures, how its fixtures
 are built, how a run is set up and executed, and how to reproduce one. It carries no result
 tables. Results belong beside the claim they support (the README's comparison table); a number
 copied into a method document outlives the run that produced it and stops being citable the
@@ -15,16 +15,16 @@ median, never as a single figure worth memorizing.
 ## The two fixtures
 
 The harness runs against two fixtures, built once and reused across runs. Both fixtures are
-built by scripts in `tools/`, live under a sandbox root outside `$HOME` (`tools/flea-sandbox-guard`
+built by scripts in `tools/`, live under a sandbox root outside `$HOME` (`tools/philemon-sandbox-guard`
 enforces this; see "Where fixtures live" below), and carry a marker file so a rebuild can never
 delete the wrong directory.
 
-**The scale fixture** is 100,000 empty `.txt` files in one directory, built by `tools/flea-bench`
+**The scale fixture** is 100,000 empty `.txt` files in one directory, built by `tools/philemon-bench`
 (`N=100000` by default). It exercises the listing path alone: readdir, sort, and a windowed stat.
 Every file is the same size and holds no bytes, so nothing about content, thumbnailing, or MIME
 sniffing enters this fixture at all.
 
-**The media fixture** is 2,000 files built by `tools/flea-media-fixture` (`COUNT=2000` by
+**The media fixture** is 2,000 files built by `tools/philemon-media-fixture` (`COUNT=2000` by
 default), mixed across formats so a viewport of a few dozen rows meets several of them: jpg, png,
 webp, heic, mp4, mkv, webm, and plain text notes as the long tail. The builder encodes one seed
 file per format, then copies each seed into place rather than re-encoding per file, so building
@@ -41,8 +41,8 @@ cannot evict a tmpfs page, so a cold run against one measures nothing).
 
 ## Where fixtures live, and why that is checked rather than assumed
 
-Fixtures live under a sandbox root (`tools/flea-sandbox-guard`, default `/home/flea-sandbox`,
-overridable with `FLEA_FIXTURE_ROOT`), never under `$HOME`. Every script that builds or deletes a
+Fixtures live under a sandbox root (`tools/philemon-sandbox-guard`, default `/home/philemon-sandbox`,
+overridable with `PHILEMON_FIXTURE_ROOT`), never under `$HOME`. Every script that builds or deletes a
 fixture sources that guard first, and every delete goes through it: the target path is resolved
 to its canonical form, checked as an absolute path at least two components deep, checked against
 a list of forbidden roots (`$HOME` and the standard system trees), and checked for the fixture's
@@ -77,10 +77,10 @@ A GUI run that never asks for thumbnails (the scale fixture) does not touch this
   (`utime + stime + cutime + cstime` from `/proc/<pid>/stat`) nor the summed ticks of its live
   descendant tree have moved for a continuous 500&nbsp;ms. The descendant walk is breadth first
   over `/proc/<pid>/task/*/children` and runs only on a poll where the watched set itself earned
-  no tick, because Flea's thumbnail decode happens two process levels below the window (the
+  no tick, because Philemon's thumbnail decode happens two process levels below the window (the
   backend forks a sandboxing wrapper, which execs the thumbnailer), and a settle rule that watched
   only the top process would call the run finished while a child was still decoding. An entrant
-  that declares a second, out-of-process worker (Flea's Rust backend, matched by command name and
+  that declares a second, out-of-process worker (Philemon's Rust backend, matched by command name and
   a `--backend` argument token) has that worker added to its watched set from launch.
 - **`pss_kb` / `pss_anon_kb` / `uss_kb`**: read from `/proc/<pid>/smaps_rollup` (`Pss`,
   `Pss_Anon`, and `Private_Clean + Private_Dirty`), sampled on every poll and kept at its peak
@@ -165,7 +165,7 @@ capability pass, not by the field run.
 
 ## Capability is measured separately, and is never timed
 
-`tools/flea-bench-capability` answers "which formats can this entrant produce at all," a question
+`tools/philemon-bench-capability` answers "which formats can this entrant produce at all," a question
 the field run cannot answer because the field run's format numbers are gated by how far each
 entrant got through one directory in one pass. It copies one sample file per format out of the
 media fixture into a private, sandboxed directory, gives every entrant the same generous fixed
@@ -177,7 +177,7 @@ it did not.
 
 ## The manifest: what makes a number citable after the box moves on
 
-Every field run writes a manifest alongside its results (`tools/flea-bench-manifest`), opened
+Every field run writes a manifest alongside its results (`tools/philemon-bench-manifest`), opened
 before the run starts and closed after it ends, recording:
 
 - the kernel, the fixture path, its payload count and filesystem, and whether that count matched
@@ -186,7 +186,7 @@ before the run starts and closed after it ends, recording:
   from what the builder was asked to produce;
 - every entrant's version, read off the installed artifact rather than typed by hand: a package
   manager query for a packaged entrant, a `git describe` and build timestamp for one built from
-  source, and the exact source commit, working-tree cleanliness, and binary build time for Flea
+  source, and the exact source commit, working-tree cleanliness, and binary build time for Philemon
   itself. A number attached to a stale or dirty build is not a number about the tree it claims to
   measure;
 - how long since the box's last full package upgrade, with a warning if a run is old enough
@@ -207,32 +207,32 @@ From a clean checkout with a release build:
 cargo build --release
 
 # Build the scale fixture (100,000 files) if it does not already exist.
-tools/flea-bench
+tools/philemon-bench
 
 # Build the media fixture (2,000 files, mixed formats).
-tools/flea-media-fixture
+tools/philemon-media-fixture
 
 # Run the field bench against the scale fixture: three cold runs per entrant, no thumbnail arm.
-printf '%s\n' "<sudo password>" | tools/flea-field-bench ~/bench/scale.csv
+printf '%s\n' "<sudo password>" | tools/philemon-field-bench ~/bench/scale.csv
 
 # Run the field bench against the media fixture: three cold runs per entrant, thumbnail
 # generation exercised and the shared cache dropped before each.
 printf '%s\n' "<sudo password>" \
-  | FIXTURE=/home/flea-sandbox/flea-media-btrfs EXPECT_FILES=2000 DROP_THUMBS=yes \
-    tools/flea-field-bench ~/bench/media.csv
+  | FIXTURE=/home/philemon-sandbox/philemon-media-btrfs EXPECT_FILES=2000 DROP_THUMBS=yes \
+    tools/philemon-field-bench ~/bench/media.csv
 
 # Capability pass: what each entrant can thumbnail at all, unranked and untimed.
-tools/flea-bench-capability
+tools/philemon-bench-capability
 
 # One entrant, re-measured. ONLY scopes the kill list to it as well, so a run on a box in use
 # cannot close a window it did not start. This is how strata's rows in media-rc-2044.csv were
 # taken, a day after the rest of the field.
 printf '%s\n' "<sudo password>" \
-  | ONLY=strata FIXTURE=/home/flea-sandbox/flea-media-btrfs EXPECT_FILES=2000 DROP_THUMBS=yes \
-    tools/flea-field-bench ~/bench/strata.csv
+  | ONLY=strata FIXTURE=/home/philemon-sandbox/philemon-media-btrfs EXPECT_FILES=2000 DROP_THUMBS=yes \
+    tools/philemon-field-bench ~/bench/strata.csv
 ```
 
-`tools/flea-field-bench` launches the tree it measures, so it is meant to be run from a copy of
+`tools/philemon-field-bench` launches the tree it measures, so it is meant to be run from a copy of
 the checkout kept outside the tree under active development; measuring a tree while also editing
 it invites benching a build that does not match the source beside it. The script also checks this
 directly and refuses to run if the release binary is older than the sources that would produce

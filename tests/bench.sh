@@ -1,14 +1,14 @@
 #!/bin/bash
-# Gates tools/flea-bench-manifest, the record that makes a bench number citable, and the two values
+# Gates tools/philemon-bench-manifest, the record that makes a bench number citable, and the two values
 # the harness derives from its own entrant table to feed it. Nothing here launches an entrant: this
-# suite exists because the field bench had no gate at all and its first manifest reported Flea as
+# suite exists because the field bench had no gate at all and its first manifest reported Philemon as
 # quickshell 0.3.1.
 set -u
 # The cd comes first: a trap installed above it fires against the caller's working directory when
 # the cd fails, which is a relative-path rm -rf in somebody else's tree.
 cd "$(dirname "$0")/.." || exit 1
 repo=$PWD
-tool="$repo/tools/flea-bench-manifest"
+tool="$repo/tools/philemon-bench-manifest"
 
 # The fixture is a mktemp -d of its own, which is what hard rule 9 allows outright. Nothing here
 # reads or writes the real fixture root, and the only delete is checked absolute below.
@@ -53,10 +53,10 @@ check "no arguments is a usage error" 2 $?
 "$tool" "$scratch/m1.md" "$scratch/nothing-here" >/dev/null 2>&1
 check "a missing fixture is refused" 1 $?
 
-# Named beside $scratch/run.csv below, because flea-bench-report finds a manifest by the CSV's own
+# Named beside $scratch/run.csv below, because philemon-bench-report finds a manifest by the CSV's own
 # name. Every entrant that run holds is listed here too: the report refuses an id it has no kind for.
 man="$scratch/run.manifest.md"
-printf '%s\n' "flea|gui|qs" "dolphin|gui|dolphin" "definitely-not-a-file-manager|gui|definitely-not-a-file-manager" \
+printf '%s\n' "philemon|gui|qs" "dolphin|gui|dolphin" "definitely-not-a-file-manager|gui|definitely-not-a-file-manager" \
   "strata|gui|strata" "yazi|tui|yazi" "xplr|tui|xplr" \
   | EXPECT_FILES="$payload" "$tool" "$man" "$fixture" >/dev/null 2>&1
 check "a normal run writes a manifest" 0 $?
@@ -65,18 +65,18 @@ holds "the payload is counted from the fixture" "fixture payload: $payload visib
 holds "the histogram counts the jpgs it holds" "2 jpg" "$man"
 holds "and the one file with no extension at all" "1 no extension" "$man"
 holds "an entrant that is not installed is named" "NOT INSTALLED" "$man"
-holds "flea's row is its own source, not a package" "^flea .* source " "$man"
-# The defect this check exists for: an untrimmed id missed its own case arm, so flea fell to the
+holds "philemon's row is its own source, not a package" "^philemon .* source " "$man"
+# The defect this check exists for: an untrimmed id missed its own case arm, so philemon fell to the
 # packaged arm and pacman -Qo on its launcher reported it as quickshell.
-lacks "and flea never reports itself as its launcher" "flea.*quickshell" "$man"
+lacks "and philemon never reports itself as its launcher" "philemon.*quickshell" "$man"
 holds "a package that is not installed reads absent" " absent" "$man"
 
 # The same rows indented, which is how they arrive when they are grepped out of the harness rather
 # than expanded from its array. This is the whole of the trim regression.
 indented="$scratch/indented.md"
-printf '%s\n' '  flea|gui|qs' '  dolphin|gui|dolphin' | "$tool" "$indented" "$fixture" >/dev/null 2>&1
-holds "an indented row still reaches its own arm" "^flea .* source " "$indented"
-lacks "and is not silently mis-attributed" "flea.*quickshell" "$indented"
+printf '%s\n' '  philemon|gui|qs' '  dolphin|gui|dolphin' | "$tool" "$indented" "$fixture" >/dev/null 2>&1
+holds "an indented row still reaches its own arm" "^philemon .* source " "$indented"
+lacks "and is not silently mis-attributed" "philemon.*quickshell" "$indented"
 
 # The denominator and the run conditions, both added because a number nobody can re-derive is a
 # number nobody can check. The fixture holds one txt of its five files.
@@ -87,15 +87,15 @@ holds "and the payload assertion is recorded as having passed" "payload assertio
 # The line used to write PASSED from the presence of EXPECT_FILES alone, so a wrong count still read
 # as a pass. It compares now, and this is the check that says so.
 wrongman="$scratch/wrong.md"
-printf '%s\n' "flea|gui|qs" | EXPECT_FILES=999 "$tool" "$wrongman" "$fixture" >/dev/null 2>&1
+printf '%s\n' "philemon|gui|qs" | EXPECT_FILES=999 "$tool" "$wrongman" "$fixture" >/dev/null 2>&1
 holds "a payload that does not match is recorded as a failure" "payload assertion: \*\*FAILED\*\*" "$wrongman"
 lacks "and is not also recorded as a pass" "payload assertion: PASSED" "$wrongman"
 
-# tools/flea-bench-keys. The shell key derivation is proved to match the backend's by
+# tools/philemon-bench-keys. The shell key derivation is proved to match the backend's by
 # tests/thumbs.sh, which asks the real binary for a thumbnail and finds it at the key this same
 # printf-and-md5sum produces. What is proved here is that the map and the classifier agree with the
 # fixture they are given.
-keys="$repo/tools/flea-bench-keys"
+keys="$repo/tools/philemon-bench-keys"
 map="$scratch/fix.map"
 "$keys" map "$fixture" "$map" >/dev/null 2>&1
 check "a map builds from a plain fixture" 0 $?
@@ -142,7 +142,7 @@ check "an entrant that produced nothing is a result, not an error" 0 \
 # the fixture cannot fall a column behind the artefact it tests. It did exactly that: preview_ms was
 # appended as column 16, this fixture stayed at 15, its rows still ended in ",yes", and the suite
 # stayed green over a refusal that had stopped firing in production.
-bench_header=$(sed -n 's/^echo "\(id,run,[^"]*\)".*/\1/p' "$repo/tools/flea-field-bench")
+bench_header=$(sed -n 's/^echo "\(id,run,[^"]*\)".*/\1/p' "$repo/tools/philemon-field-bench")
 [ -n "$bench_header" ] || { echo "FAIL: could not read the bench's own CSV header"; fail=1; }
 declare -A CELL
 emit_row() {
@@ -160,7 +160,7 @@ mkdir -p "$keys_dir"
 cp "$map" "$keys_dir/fixture.map"
 {
   printf '%s\n' "$bench_header"
-  CELL=([id]=flea [run]=1 [thumbs_n]=36 [thumbs_by_format]="jpg=2;png=0;txt=0;none=0;unknown=0" [ranked]=yes [preview_ms]=-)
+  CELL=([id]=philemon [run]=1 [thumbs_n]=36 [thumbs_by_format]="jpg=2;png=0;txt=0;none=0;unknown=0" [ranked]=yes [preview_ms]=-)
   emit_row
   CELL=([id]=dolphin [run]=1 [thumbs_n]=790 [thumbs_by_format]="jpg=2;png=1;txt=0;none=0;unknown=0" [ranked]=yes [preview_ms]=-)
   emit_row
@@ -184,8 +184,8 @@ grep ' jpg$' "$map" | head -1 | cut -d' ' -f1 > "$keys_dir/dolphin-run1.fail.key
 
 "$tool" "$man" close "$csv" >/dev/null 2>&1
 check "the manifest closes against a finished run" 0 $?
-holds "an entrant's produced formats are named" "flea produced jpg 2" "$man"
-holds "a format nobody reached is never-attempted, not absent" "flea .*never attempted .*png 1" "$man"
+holds "an entrant's produced formats are named" "philemon produced jpg 2" "$man"
+holds "a format nobody reached is never-attempted, not absent" "philemon .*never attempted .*png 1" "$man"
 holds "a refusal marker is its own state" "dolphin produced .*; refused jpg 1" "$man"
 holds "an entrant the cache never saw makes no format claim" "strata: nothing reached the thumbnail cache" "$man"
 lacks "and is never recorded as having produced nothing" "strata produced nothing" "$man"
@@ -203,12 +203,12 @@ check "closing against a missing run is refused" 1 $?
 check "closing an already-closed manifest is refused" 1 $?
 check "and it still carries exactly one close section" 1 "$(grep -c '^## Run close' "$man")"
 
-# ---------------------------------------------------------------- tools/flea-bench-report
+# ---------------------------------------------------------------- tools/philemon-bench-report
 # The report renders the work column that carried the wrong claim. A cache count that saw nothing
 # must reach the page as "not measured": a 0 there was published as a capability claim about strata
 # for the whole v0.1.0 release while it drew six of the eight formats offered.
 report_out="$scratch/report.md"
-"$repo/tools/flea-bench-report" "$csv" > "$report_out" 2>"$scratch/report.err"
+"$repo/tools/philemon-bench-report" "$csv" > "$report_out" 2>"$scratch/report.err"
 check "the report runs against a closed manifest" 0 $?
 lacks "a sentinel never reaches the page as a number" "unmeasurable thumbnails" "$report_out"
 lacks "and an unseen entrant is never called a zero" "| 0 thumbnails |" "$report_out"
@@ -220,14 +220,14 @@ lacks "the old claim about the entrant's ability is gone" "drew no thumbnails" "
 comma_csv="$scratch/comma.csv"
 sed 's/cache so its work was not measured/cache, so its work was not measured/' "$csv" > "$comma_csv"
 cp "$man" "${comma_csv%.csv}.manifest.md"
-"$repo/tools/flea-bench-report" "$comma_csv" >/dev/null 2>"$scratch/comma.err"
+"$repo/tools/philemon-bench-report" "$comma_csv" >/dev/null 2>"$scratch/comma.err"
 check "a comma inside a verdict is refused" 1 $?
 holds "and the refusal names the field that holds it" "so a field holds a comma" "$scratch/comma.err"
 
 # The two CSVs this repo ships. Their values are not asserted here, only that the report can read
 # them: rows have been spliced into these by hand and a lost column is the failure that produces.
 for shipped in scale-rc-2026 media-rc-2044; do
-  "$repo/tools/flea-bench-report" "$repo/docs/bench/$shipped.csv" >/dev/null 2>&1
+  "$repo/tools/philemon-bench-report" "$repo/docs/bench/$shipped.csv" >/dev/null 2>&1
   check "the shipped $shipped.csv still parses" 0 $?
 done
 
@@ -235,10 +235,10 @@ done
 # or reordered field makes the first empty, and an empty launch line in the manifest is the exact
 # trap hard rule 7 names first. The second was derived from the class field and quietly resolved to
 # a window class rather than a program, which the manifest would have printed as "absent".
-bench="$repo/tools/flea-field-bench"
+bench="$repo/tools/philemon-field-bench"
 rows=$(sed -n '/^declare -a ENTRANTS=(/,/^)/p' "$bench" | grep '^  "' | tr -d '"')
 # -f8-, matching the bench: the command field may hold a pipe and cut -f8 would stop at it.
-flea_cmd=$(printf '%s\n' "$rows" | grep '^  flea|' | cut -d'|' -f8-)
+philemon_cmd=$(printf '%s\n' "$rows" | grep '^  philemon|' | cut -d'|' -f8-)
 tui_term=$(grep -m1 '^TUI_TERM=' "$bench" | cut -d= -f2)
 # The header and the row are written in two different places, so a column added to one and not the
 # other produces a CSV that parses and is wrong from that column rightward.
@@ -246,7 +246,7 @@ header_fields=$(sed -n 's/^echo "\(id,run,[^"]*\)".*/\1/p' "$bench" | tr ',' '\n
 row_fields=$(grep '^  printf .%s,%s' "$bench" | head -1 | grep -o '%s' | wc -l)
 check "the CSV header and the row have the same column count" "$header_fields" "$row_fields"
 
-# tools/flea-bench-capability reads the same entrant table. A row extraction that comes back empty
+# tools/philemon-bench-capability reads the same entrant table. A row extraction that comes back empty
 # would report every entrant as capable of nothing, which reads as a result.
 cap_gui=$(sed -n '/^declare -a ENTRANTS=(/,/^)/p' "$bench" | grep '^  "' | tr -d '"' | grep -c '|gui|')
 if [ "$cap_gui" -ge 5 ]; then
@@ -255,9 +255,9 @@ else
   echo "FAIL the capability pass derived $cap_gui GUI entrants from the bench table"; fail=1
 fi
 
-case $flea_cmd in
-  *"--gui"*) echo "ok   the flea launch line is derived and names --gui" ;;
-  *) echo "FAIL the flea launch line derived to '$flea_cmd'"; fail=1 ;;
+case $philemon_cmd in
+  *"--gui"*) echo "ok   the philemon launch line is derived and names --gui" ;;
+  *) echo "FAIL the philemon launch line derived to '$philemon_cmd'"; fail=1 ;;
 esac
 if [ -n "$tui_term" ] && command -v "$tui_term" >/dev/null 2>&1; then
   echo "ok   the TUI terminal is derived and installed: $tui_term"

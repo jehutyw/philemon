@@ -1,0 +1,301 @@
+#!/usr/bin/env bash
+# Which formats can each GUI entrant actually thumbnail? The field bench cannot answer that and it
+# was being read as though it could: on the 2000-file fixture nautilus produced 400 mp4 and zero of
+# 600 jpg, because the names sort by format and it settled before reaching the photos. That column
+# measures how far an entrant got. This measures what it can do.
+#
+# Eight files, one per format, a private thumbnail cache per entrant, and a generous timeout, so
+# every entrant has every format in front of it and time to do all of them. Nothing is ranked and no
+# timing is taken: this is a capability claim and nothing else.
+#
+# Read-only against the operator's box. The fixture and every cache live inside a sandbox this
+# script creates through tools/philemon-sandbox-guard, and no entrant is given $HOME/.cache.
+set -uo pipefail
+cd "$(dirname "$0")/.." || exit 1
+PHILEMON_REPO=$PWD
+. "$PHILEMON_REPO/tools/philemon-sandbox-guard"
+
+export PATH="$HOME/.local/bin:$PATH"
+eval "$(omarchy-drive env)"
+
+MEDIA=${MEDIA:-$FIXTURE_ROOT/philemon-media-btrfs}
+PHILEMON_UI="$PHILEMON_REPO/ui"
+PHILEMON_BIN="$PHILEMON_REPO/target/release/philemon"
+STRATA_BIN=${STRATA_BIN:-$HOME/Work/strata/target/release/strata}
+# The one entrant in this field that persists no thumbnail. strata renders each one in a sandboxed
+# helper that writes result.png into /tmp/strata-preview-<pid>-<n> and deletes the directory on drop
+# (src/sandbox.rs:382 names it, :53 the file, :397 removes it), so it fills the screen and leaves
+# this tool's cache empty. A live watch sees that work; a cache count is structurally blind to it.
+TRANSIENT_ID=${TRANSIENT_ID:-strata}
+TRANSIENT_PREFIX=${TRANSIENT_PREFIX:-/tmp/strata-preview-}
+# Generous on purpose. A capability answer must not be a timing answer in disguise, so an entrant
+# gets far longer than it could possibly need for eight files.
+CAP_TIMEOUT_S=${CAP_TIMEOUT_S:-45}
+# One entrant, for re-measuring a single row. The box is shared: a full pass kills every file
+# manager by name, and the operator's own Philemon is not this tool's to close.
+CAP_ONLY=${CAP_ONLY:-}
+OUT=${1:-$HOME/bench/capability.md}
+
+SB="$FIXTURE_ROOT/philemon-capability-$$"
+fail() { printf 'FAIL: %s\n' "$*" >&2; exit 1; }
+
+# The operator's real cache, parked for the duration. A private XDG_CACHE_HOME was the first shape
+# of this and it was WRONG: thunar thumbnails through tumblerd, which is D-Bus activated and runs
+# with the session's own environment, so it wrote to the real cache and this tool reported thunar as
+# capable of nothing. An entrant's own thumbnailer is not always its own process.
+THUMBS="$HOME/.cache/thumbnails"
+sandbox_cache_require "$THUMBS"
+THUMBS_PARKED_PREFIX="$HOME/.cache/thumbnails-parked-"
+THUMBS_PARKED="$THUMBS_PARKED_PREFIX$$"
+sandbox_cache_require "$THUMBS_PARKED"
+THUMBS_PARKED_OK=no
+
+# The same three functions the field bench uses, because their safety properties are proven there.
+park_thumbs() {
+  local orphan
+  for orphan in "$THUMBS_PARKED_PREFIX"*; do
+    [ -e "$orphan" ] || continue
+    fail "$orphan was parked by an invocation that was killed before its restore ran, the operator's own cache may be inside it, so this run will not park on top of it"
+  done
+  if [ -d "$THUMBS" ]; then
+    mv "$THUMBS" "$THUMBS_PARKED" || fail "could not park $THUMBS"
+  fi
+  THUMBS_PARKED_OK=yes
+}
+drop_thumbs() {
+  [ "$THUMBS_PARKED_OK" = yes ] || fail "drop_thumbs ran before park_thumbs"
+  rm -rf "$THUMBS"
+  mkdir -p "$THUMBS/large" "$THUMBS/fail"
+  local d
+  for d in "$THUMBS"/*/; do
+    [ "$(ls -A "$d" | wc -l)" = 0 ] || fail "the scratch thumbnail cache is not empty at the start: $d"
+  done
+}
+restore_thumbs() {
+  [ "$THUMBS_PARKED_OK" = yes ] || return 0
+  rm -rf "$THUMBS"
+  [ -e "$THUMBS" ] && fail "$THUMBS was recreated under the restore, refusing to bury $THUMBS_PARKED"
+  if [ -d "$THUMBS_PARKED" ]; then
+    mv -T "$THUMBS_PARKED" "$THUMBS" || fail "could not restore $THUMBS_PARKED to $THUMBS, so the operator's cache is still parked there"
+  fi
+  THUMBS_PARKED_OK=no
+}
+
+kill_entrants() {
+  local c
+  # Scoped to the entrant under test when there is only one, so a run that was asked for strata
+  # cannot close the operator's Philemon or a window another lane is driving.
+  if [ -n "$CAP_ONLY" ]; then
+    pkill -x "$CAP_ONLY" >/dev/null 2>&1
+    return 0
+  fi
+  for c in qs philemon nautilus thunar pcmanfm nemo dolphin strata tumblerd; do
+    pkill -x "$c" >/dev/null 2>&1
+  done
+}
+
+[ -d "$MEDIA" ] || fail "no media fixture at $MEDIA to take sample files from"
+[ -x "$PHILEMON_BIN" ] || fail "$PHILEMON_BIN is missing, so run cargo build --release first"
+
+# The operator's cache comes back first and the sandbox goes second: the cache is theirs and the
+# sandbox is ours.
+cap_cleanup() {
+  kill_entrants
+  restore_thumbs
+  sandbox_remove "$SB"
+}
+sandbox_make "$SB"
+trap 'cap_cleanup' EXIT INT TERM
+kill_entrants
+# A transient entrant is measured by live watch and never writes this cache, so a run for it alone
+# has no reason to move the operator's real one out from under whatever else is on screen.
+if [ "$CAP_ONLY" != "$TRANSIENT_ID" ]; then
+  park_thumbs
+fi
+
+FIXTURE="$SB/files"
+mkdir -p "$FIXTURE" || fail "could not make $FIXTURE"
+
+# One file per format the media fixture holds, taken from the fixture itself so the samples are the
+# same bytes the field bench uses rather than something generated here.
+formats=""
+for ext in jpg png webp heic mp4 webm mkv txt; do
+  src=$(ls -U "$MEDIA" | grep "\.$ext\$" | head -1)
+  if [ -z "$src" ]; then
+    printf 'SKIP: the media fixture holds no .%s, so that format is not tested\n' "$ext" >&2
+    continue
+  fi
+  cp "$MEDIA/$src" "$FIXTURE/sample.$ext" || fail "could not copy $src"
+  formats="${formats:+$formats }$ext"
+done
+[ -n "$formats" ] || fail "no sample files were copied, so there is nothing to test"
+
+MAP="$SB/fixture.map"
+"$PHILEMON_REPO/tools/philemon-bench-keys" map "$FIXTURE" "$MAP" || fail "the key map did not build"
+
+# Every key in the cache, minus the failure markers, which are their own answer.
+cap_keys() {
+  local out=$1
+  find "$THUMBS" -type f -name '*.png' -not -path "$THUMBS/fail/*" -printf '%f\n' 2>/dev/null \
+    | sed 's/\.png$//' | LC_ALL=C sort -u > "$out"
+}
+cap_fail_keys() {
+  local out=$1
+  find "$THUMBS/fail" -type f -name '*.png' -printf '%f\n' 2>/dev/null \
+    | sed 's/\.png$//' | LC_ALL=C sort -u > "$out"
+}
+
+# One directory per format holding exactly one file, so a render can only be that format's, and one
+# short run each. Counting a single mixed directory would say how many renders happened and never
+# which format earned them, because the scratch directory is named by a counter and not by the file.
+cap_transient() {
+  local id=$1 cmd=$2 ext dir n can="" cannot="" raw="" watch_pid log pids
+  log="$SB/$id.transient"
+  for ext in $formats; do
+    dir="$SB/fmt-$ext"
+    mkdir -p "$dir" || fail "could not make $dir"
+    cp "$FIXTURE/sample.$ext" "$dir/sample.$ext" || fail "could not copy the $ext sample"
+
+    : > "$log"
+    inotifywait -m -q -r -e close_write --format '%w%f' /tmp > "$log" 2>/dev/null &
+    watch_pid=$!
+    sleep 2
+    # The entrant's own launch line, pointed at this format's directory rather than the mixed one.
+    eval "${cmd//$FIXTURE/$dir}" >/dev/null 2>&1 &
+    sleep "$CAP_TIMEOUT_S"
+
+    n=$(grep -c "^$TRANSIENT_PREFIX[0-9]*-[0-9]*/result\.png\$" "$log")
+    # Two entrant processes in one window would let one format's renders be counted for another.
+    pids=$(grep -o "^$TRANSIENT_PREFIX[0-9]*" "$log" | LC_ALL=C sort -u | wc -l)
+    [ "$pids" -le 1 ] || fail "$pids $id processes wrote renders during the $ext window, so no count from it is attributable"
+    kill "$watch_pid" 2>/dev/null
+    kill_entrants
+    sleep 2
+
+    raw="${raw:+$raw;}$ext=$n"
+    if [ "$n" -gt 0 ]; then can="${can:+$can, }$ext"; else cannot="${cannot:+$cannot, }$ext"; fi
+  done
+  {
+    printf -- '- **%s** thumbnails %s\n' "$id" "${can:-nothing}"
+    printf -- '  - cannot produce: %s\n' "${cannot:-nothing, it did all of them}"
+    printf -- '  - raw: rendered `%s`; counted live, one format at a time, %ss each\n' "$raw" "$CAP_TIMEOUT_S"
+    printf -- '  - **measured by live watch, not by cache count.** This entrant writes each thumbnail\n'
+    printf -- '    to a scratch directory it deletes immediately, so it persists nothing a cache count\n'
+    printf -- '    can see and a cache count reports it as capable of nothing.\n'
+  } >> "$OUT"
+  printf '%-10s can %s | cannot %s (live watch)\n' "$id" "${can:-nothing}" "${cannot:-nothing}"
+}
+
+mkdir -p "$(dirname "$OUT")"
+{
+  echo "# What each GUI entrant can actually thumbnail"
+  echo
+  echo "Written by tools/philemon-bench-capability on $(date -Is). Eight files, one per format, a"
+  echo "private cache per entrant, and $CAP_TIMEOUT_S seconds each. **Nothing here is ranked and no"
+  echo "timing is taken.** The field bench's format column answers a different question, how far an"
+  echo "entrant got through a 2000-file directory whose names sort by format, and it was being read"
+  echo "as this one."
+  echo
+  echo "Formats offered: $formats"
+  echo
+} > "$OUT"
+
+# The entrant rows come from the field bench's own table, so the two cannot name different fields.
+# The whole list first: this loop launches programs, and one of them reading stdin would eat the
+# next entrant's row.
+# corner: one multi-statement sed, expanding the four variables the bench's command field uses. A
+# pipeline of four would be four processes to say the same thing.
+mapfile -t CAP_ROWS < <(sed -n '/^declare -a ENTRANTS=(/,/^)/p' "$PHILEMON_REPO/tools/philemon-field-bench" \
+  | grep '^  "' | tr -d '"' \
+  | sed "s|\$FIXTURE|$FIXTURE|g; s|\$PHILEMON_UI|$PHILEMON_UI|g; s|\$PHILEMON_BIN|$PHILEMON_BIN|g; s|\$STRATA_BIN|$STRATA_BIN|g")
+[ ${#CAP_ROWS[@]} -gt 0 ] || fail "no entrant rows were read out of tools/philemon-field-bench"
+
+for cap_row in "${CAP_ROWS[@]}"; do
+  IFS='|' read -r id kind class comm token helper_comm helper_token cmd <<< "$cap_row"
+  id=${id//[[:space:]]/}
+  [ "$kind" = gui ] || continue
+  [ -z "$CAP_ONLY" ] || [ "$id" = "$CAP_ONLY" ] || continue
+  if [ "$id" = strata ]; then
+    [ -x "$STRATA_BIN" ] || { printf 'SKIP: strata is not built at %s\n' "$STRATA_BIN" >&2; continue; }
+  else
+    command -v "$comm" >/dev/null 2>&1 || { printf 'SKIP: %s is not installed\n' "$id" >&2; continue; }
+  fi
+
+  if [ "$id" = "$TRANSIENT_ID" ]; then
+    cap_transient "$id" "$cmd"
+    continue
+  fi
+
+  # Cold for every entrant, and the parked cache means none of this is the operator's.
+  drop_thumbs
+  eval "$cmd" >/dev/null 2>&1 &
+
+  # Every entrant gets the whole timeout, with no early stop. Stopping once the count went quiet
+  # for a few seconds was the first shape and it is the wrong bound for a capability question:
+  # pcmanfm and nemo were cut off at 8 and 7 seconds and reported as unable to produce formats they
+  # were never given time to reach. A capability pass is patient by definition.
+  produced="$SB/$id.keys"
+  : > "$produced"
+  last_n=0
+  last_change=0
+  waited=0
+  while [ "$waited" -lt "$CAP_TIMEOUT_S" ]; do
+    sleep 1
+    waited=$(( waited + 1 ))
+    cap_keys "$produced"
+    n=$(wc -l < "$produced")
+    if [ "$n" != "$last_n" ]; then
+      last_n=$n
+      last_change=$waited
+    fi
+  done
+  cap_fail_keys "$SB/$id.fail.keys"
+
+  made=$("$PHILEMON_REPO/tools/philemon-bench-keys" classify "$MAP" "$produced")
+  refused=$("$PHILEMON_REPO/tools/philemon-bench-keys" classify "$MAP" "$SB/$id.fail.keys")
+  can=""
+  cannot=""
+  for ext in $formats; do
+    got=$(printf '%s\n' "$made" | tr ';' '\n' | grep "^$ext=" | cut -d= -f2)
+    if [ "${got:-0}" -gt 0 ]; then
+      can="${can:+$can, }$ext"
+    else
+      cannot="${cannot:+$cannot, }$ext"
+    fi
+  done
+  # An entrant that left neither a thumbnail nor a refusal marker never touched this cache at all,
+  # and "thumbnails nothing" is then a claim about the instrument rather than about the entrant.
+  # strata drew all six formats it supports while reporting exactly this, for a whole release.
+  if [ ! -s "$produced" ] && [ ! -s "$SB/$id.fail.keys" ]; then
+    {
+      printf -- '- **%s** left this cache untouched, so it is **not measured** here\n' "$id"
+      printf -- '  - neither a thumbnail nor a refusal marker was written in %ss, which is what an\n' "$CAP_TIMEOUT_S"
+      printf -- '    entrant that keeps its thumbnails in memory looks like to a cache count.\n'
+      printf -- '    Add it to TRANSIENT_ID to measure it by live watch instead.\n'
+    } >> "$OUT"
+    printf '%-10s NOT MEASURED, it left the cache untouched\n' "$id"
+    kill_entrants
+    sleep 2
+    continue
+  fi
+  {
+    printf -- '- **%s** thumbnails %s\n' "$id" "${can:-nothing}"
+    printf -- '  - cannot produce: %s\n' "${cannot:-nothing, it did all eight}"
+    printf -- '  - raw: produced `%s`, refused `%s`; last new thumbnail at %ss of %ss\n' \
+      "$made" "$refused" "$last_change" "$CAP_TIMEOUT_S"
+  } >> "$OUT"
+  printf '%-10s can %s | cannot %s\n' "$id" "${can:-nothing}" "${cannot:-nothing}"
+
+  kill_entrants
+  sleep 2
+done
+
+restore_thumbs
+
+{
+  echo
+  echo "**txt is the control.** No thumbnailer draws a text file, so an entrant that claims one here"
+  echo "is a broken measurement rather than a capable entrant."
+} >> "$OUT"
+
+echo "capability report: $OUT"

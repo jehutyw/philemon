@@ -1,7 +1,7 @@
 // Rename, duplicate and mkdir: the three operations that answer once, with no started or progress split.
 use crate::backend::copyfile::{copy_any, Progress};
 use crate::backend::undo::Step;
-use crate::error::{from_io, FleaError};
+use crate::error::{from_io, PhilemonError};
 use std::ffi::CString;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::AtomicBool;
@@ -26,7 +26,7 @@ pub fn valid_name(name: &str) -> bool {
 }
 
 // Rename that refuses to overwrite. std::fs::rename silently replaces the target on Unix, which for a file manager is unrecoverable data loss.
-pub fn rename_noreplace(from: &Path, to: &Path) -> Result<(), FleaError> {
+pub fn rename_noreplace(from: &Path, to: &Path) -> Result<(), PhilemonError> {
     let (c_from, c_to) = match (path_c(from), path_c(to)) {
         (Some(a), Some(b)) => (a, b),
         // corner: a path with an interior NUL cannot reach a syscall, and no listing can produce one.
@@ -43,8 +43,8 @@ fn path_c(p: &Path) -> Option<CString> {
     CString::new(p.as_os_str().as_encoded_bytes()).ok()
 }
 
-fn named(where_: &str, path: &Path, msg: &str) -> FleaError {
-    FleaError {
+fn named(where_: &str, path: &Path, msg: &str) -> PhilemonError {
+    PhilemonError {
         where_: where_.to_string(),
         path: path.to_string_lossy().to_string(),
         msg: msg.to_string(),
@@ -52,7 +52,7 @@ fn named(where_: &str, path: &Path, msg: &str) -> FleaError {
 }
 
 // Answers with the new path and the step that puts the old name back.
-pub fn rename(path: &Path, to_name: &str) -> Result<(PathBuf, Vec<Step>), FleaError> {
+pub fn rename(path: &Path, to_name: &str) -> Result<(PathBuf, Vec<Step>), PhilemonError> {
     if !valid_name(to_name) {
         return Err(named("rename", path, "a name cannot be empty, . or .. , or contain a separator"));
     }
@@ -92,7 +92,7 @@ pub fn free_copy_path(original: &Path, word: &str) -> Option<PathBuf> {
 
 // A same-directory copy, which for a directory row is the whole tree; cancellation belongs to transfers, so this one runs to its end.
 // Answers the outcome and, either way, the steps it left on disk: the copy, or the partial a failure left for undo to remove.
-pub fn duplicate(path: &Path) -> (Result<PathBuf, FleaError>, Vec<Step>) {
+pub fn duplicate(path: &Path) -> (Result<PathBuf, PhilemonError>, Vec<Step>) {
     let dst = match free_copy_path(path, "copy") {
         Some(d) => d,
         None => return (Err(named("duplicate", path, "every copy name for this file is already taken")), Vec::new()),
@@ -108,7 +108,7 @@ pub fn duplicate(path: &Path) -> (Result<PathBuf, FleaError>, Vec<Step>) {
 
 // A given name is created exactly or refused; an empty one takes the first free default, because a
 // client holds a window of the listing, not the directory, so it cannot know which names are taken.
-pub fn mkdir(parent: &Path, name: &str) -> Result<(PathBuf, Vec<Step>), FleaError> {
+pub fn mkdir(parent: &Path, name: &str) -> Result<(PathBuf, Vec<Step>), PhilemonError> {
     // Relative would resolve against the backend's own working directory, which no listing ever names.
     if !parent.is_absolute() {
         return Err(named("mkdir", parent, "a parent must be an absolute path"));

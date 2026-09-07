@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Keymap.js" as Keymap
 import "js/Menu.js" as Menu
 
@@ -31,6 +31,7 @@ Item {
     property bool rowInDropbox: false
     // False on a listing's empty space, where only the two rows that need no row make sense.
     property bool hasRow: true
+    property bool rowIsObsidianNote: false
 
     // The rail's own rows when ui/Sidebar.qml raised this menu, empty when the listing did. One
     // instance serves both: a second one in this tree takes the keyboard from the list, see AGENTS.md.
@@ -88,6 +89,7 @@ Item {
         if (root.forHeader)
             return Menu.headerEntries(ViewState.hiddenCols, root.showHidden)
         return Menu.listingEntries({
+            rowIsObsidianNote: root.rowIsObsidianNote,
             showHidden: root.showHidden,
             hasRow: root.hasRow,
             rowInDropbox: root.rowInDropbox,
@@ -223,7 +225,7 @@ Item {
     }
 
     // One row off the model, only so the two heights above are read from MenuRow rather than repeated here.
-    Flea.MenuRow {
+    Philemon.MenuRow {
         id: separatorProbe
         visible: false
         entry: ({ separator: true })
@@ -255,7 +257,7 @@ Item {
 
             Repeater {
                 model: root.entries
-                delegate: Flea.MenuRow {
+                delegate: Philemon.MenuRow {
                     id: row
                     required property var modelData
                     required property int index
@@ -296,7 +298,7 @@ Item {
 
             Repeater {
                 model: root.submenuEntries
-                delegate: Flea.MenuRow {
+                delegate: Philemon.MenuRow {
                     id: subRow
                     required property var modelData
                     required property int index

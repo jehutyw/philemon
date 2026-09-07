@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Protocols.js" as Protocols
 
 // The Add-network-place form: a protocol picks the scheme, prefills the port and swaps the field set,
@@ -115,7 +115,7 @@ Column {
 
         Repeater {
             model: Protocols.PROTOCOLS
-            delegate: Flea.ProtocolChip {
+            delegate: Philemon.ProtocolChip {
                 required property string modelData
                 label: modelData
                 picked: root.protocol === modelData
@@ -125,7 +125,7 @@ Column {
         }
     }
 
-    Flea.DialogField {
+    Philemon.DialogField {
         id: labelField
         width: parent.width
         label: "Label"
@@ -138,7 +138,7 @@ Column {
         width: parent.width
         spacing: Theme.spacing.gap
 
-        Flea.DialogField {
+        Philemon.DialogField {
             id: hostField
             width: (parent.width - Theme.spacing.gap) * 0.72
             label: "Host"
@@ -146,7 +146,7 @@ Column {
             onTabbed: function (from, back) { root.step(from, back ? -1 : 1) }
         }
 
-        Flea.DialogField {
+        Philemon.DialogField {
             width: parent.width - hostField.width - Theme.spacing.gap
             id: portField
             label: "Port"
@@ -156,7 +156,7 @@ Column {
     }
 
     // Share, Path or Export: the row is the same, the thing it names is not.
-    Flea.DialogField {
+    Philemon.DialogField {
         id: pathField
         width: parent.width
         label: root.spec.pathLabel
@@ -164,7 +164,7 @@ Column {
         onTabbed: function (from, back) { root.step(from, back ? -1 : 1) }
     }
 
-    Flea.DialogField {
+    Philemon.DialogField {
         id: domainField
         width: parent.width
         visible: root.spec.domain
@@ -177,7 +177,7 @@ Column {
     // Username only. A password field was here and nothing consumed it: the form writes a bookmark,
     // and gio's own prompt is what asks for a secret at mount time. Collecting one to drop it is
     // worse than not collecting it, so the field comes back when credentials reach the mount attempt.
-    Flea.DialogField {
+    Philemon.DialogField {
         id: userField
         width: parent.width
         visible: root.spec.credentials
@@ -214,7 +214,7 @@ Column {
             border.color: root.tls ? Theme.color.accent
                                    : (tlsRow.focused ? Theme.color.foreground : Theme.color.muted)
 
-            Flea.Glyph {
+            Philemon.Glyph {
                 anchors.fill: parent
                 visible: root.tls
                 name: "check"

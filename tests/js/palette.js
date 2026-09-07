@@ -24,7 +24,7 @@ function run(check) {
     // Not stricter than the truth: a theme that sets one role is still a parsed theme.
     check("one colour is already a palette",
           Palette.isPalette(Palette.parse("accent = \"#b38956\"\n")), true)
-    check("a palette naming no role Flea models is still a palette",
+    check("a palette naming no role Philemon models is still a palette",
           Palette.isPalette(Palette.parse("wallpaper_tint = \"#1b1f21\"\n")), true)
 
     var live = Palette.parse(VERNIER)

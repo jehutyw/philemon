@@ -1,5 +1,5 @@
 import QtQuick
-import "." as Flea
+import "." as Philemon
 import "js/DirSizes.js" as DirSizes
 import "js/Drag.js" as DragOps
 import "js/Filter.js" as Filter
@@ -26,7 +26,7 @@ ListView {
     property var dragRows: []
     property int dropIndex: -1
     property bool dragCopy: false
-    // The type Flea's own drag carries, so a drop can tell it from a foreign one: the compositor
+    // The type Philemon's own drag carries, so a drop can tell it from a foreign one: the compositor
     // hands this window's own platform drag back to these same DropAreas.
     readonly property string dragKey: DragOps.ROWS_MIME
     // What the lifted rows put on the wire, rebuilt at each lift and cleared with the gesture.
@@ -41,7 +41,7 @@ ListView {
     // Every property the delegate draws is a binding on index, so a row leaving the buffer is re-bound rather than rebuilt.
     reuseItems: true
 
-    delegate: Flea.Row {
+    delegate: Philemon.Row {
         id: cell
         required property int index
         // index is where the row is drawn; listingIndex is the row the backend numbers, and under a
@@ -122,7 +122,7 @@ ListView {
                     drag.accepted = false
                     return
                 }
-                // A foreign drag always copies; Flea's own takes the action Qt negotiated from the
+                // A foreign drag always copies; Philemon's own takes the action Qt negotiated from the
                 // modifier, because a platform drag runs a nested event loop in which this window
                 // receives no key events and the Keys handler that used to carry ctrl cannot fire.
                 root.dragCopy = DragOps.verbFor(DragOps.isOwnDrag(drag.getDataAsString(root.dragKey)), drag.proposedAction === Qt.CopyAction, root.pane.backend.dirDev, cell.row ? cell.row.v : 0) === "copy"
@@ -140,7 +140,7 @@ ListView {
             }
             onDropped: function (drop) {
                 // Only this window's own drag takes the internal path. The row marker names the
-                // application and not the process, so another Flea window matched it, resolved its
+                // application and not the process, so another Philemon window matched it, resolved its
                 // indices against this listing's own empty selection, and dropped nothing at all.
                 var own = DragOps.isOwnDrag(drop.getDataAsString(root.dragKey))
                 if (own) {
@@ -149,7 +149,7 @@ ListView {
                     drop.accept(copying ? Qt.CopyAction : Qt.MoveAction)
                     return
                 }
-                // Another Flea window is a foreign source like any other: it arrives by path, never
+                // Another Philemon window is a foreign source like any other: it arrives by path, never
                 // by row, and it copies. Accepted as a copy explicitly and never as the proposed
                 // action, so no source deletes its own file on the strength of this drop.
                 DragOps.dropExternal(root.pane, drop.urls, cell.listingIndex)

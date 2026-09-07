@@ -1,6 +1,6 @@
 .pragma library
 
-// Generated from keys.toml by tools/flea-keymap-gen. Do not edit.
+// Generated from keys.toml by tools/philemon-keymap-gen. Do not edit.
 function lookup(key, text, modifiers) {
     if (modifiers & Qt.ControlModifier) {
         if (modifiers & Qt.ShiftModifier) {

@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Shapes
 
 // The Omarchy spiral as the activity mark: a stroke-dash crawl along the brand path, never a
-// rotation. This and EmptyState's FleaMark are the only two places the spiral appears; rows
+// rotation. This and EmptyState's PhilemonMark are the only two places the spiral appears; rows
 // and menus never draw it, per the icon-language spec.
 Item {
     id: root

@@ -1,12 +1,12 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Facts.js" as Facts
 import "js/Kinds.js" as Kinds
 import "js/Motion.js" as Motion
 
-// The overlay lives inside the Flea window (Finder's Quick Look shape); a second window breaks
-// omarchy-drive focus flea and every test that narrows on it.
+// The overlay lives inside the Philemon window (Finder's Quick Look shape); a second window breaks
+// omarchy-drive focus philemon and every test that narrows on it.
 Item {
     id: root
     anchors.fill: parent
@@ -37,7 +37,7 @@ Item {
     // What the strip actually draws, the same "not just the lookup" idiom Row.qml's iconUrl uses;
     // shell.qml's IPC reads this instead of re-deriving the visible: expression a second time.
     readonly property alias stripVisible: mediaStrip.visible
-    // fleaWindow.itemRect needs the real Item, the same seam rowCentre already reads through pane.
+    // philemonWindow.itemRect needs the real Item, the same seam rowCentre already reads through pane.
     readonly property var seekSlider: mediaStrip.seekItem
     readonly property string status: {
         if (!root.active) return ""
@@ -221,7 +221,7 @@ Item {
             }
         }
 
-        Flea.PreviewText {
+        Philemon.PreviewText {
             id: textPane
             anchors.fill: parent
             anchors.margins: Theme.spacing.gap
@@ -291,7 +291,7 @@ Item {
                 textFormat: Text.PlainText
             }
 
-            Flea.PreviewArchive {
+            Philemon.PreviewArchive {
                 width: parent.width
                 height: parent.height - y
                 meta: root.archiveMeta
@@ -305,7 +305,7 @@ Item {
             spacing: Theme.spacing.gap
             visible: root.kind === "unsupported" || root.archiveFailed
 
-            Flea.Glyph {
+            Philemon.Glyph {
                 anchors.horizontalCenter: parent.horizontalCenter
                 // The overlay declining is a pane state standing alone, which States.dc.html draws at 40.
                 maxSize: Theme.stateMarkSize
@@ -328,14 +328,14 @@ Item {
         }
 
         // Media still buffering or an image still decoding shows the crawl; LoadingState's hold-off keeps a fast local open from flashing it.
-        Flea.LoadingState {
+        Philemon.LoadingState {
             anchors.fill: parent
             visible: (root.isMedia || root.isImage || root.isArchive) && root.status === "loading"
         }
 
         // Task 22's transport strip, MediaStrip unframed: quiet over the video and permanent on
         // audio (nothing else there to look at). The column draws the framed form of the same file.
-        Flea.MediaStrip {
+        Philemon.MediaStrip {
             id: mediaStrip
             visible: root.isMedia && (root.kind === "audio" || root.stripShown)
             anchors.left: parent.left

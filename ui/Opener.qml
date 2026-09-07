@@ -14,13 +14,22 @@ Item {
 
     property string current: ""
 
-    // flea --open decides and exits in milliseconds, so one Process serves every open.
+    // philemon --open decides and exits in milliseconds, so one Process serves every open.
     function open(path) {
+        if (Obsidian.isNote(path)) { Obsidian.openNote(path); return }
+        launch(path, "--open")
+    }
+
+    function openObsidian(path) {
+        launch(path, "--open-obsidian")
+    }
+
+    function launch(path, mode) {
         if (child.running) {
             return
         }
         root.current = path
-        child.command = [Quickshell.env("FLEA_BIN") || "flea", "--open", path]
+        child.command = [Quickshell.env("PHILEMON_BIN") || "philemon", mode, path]
         child.running = true
     }
 
@@ -40,7 +49,7 @@ Item {
     }
 
     // The system clipboard, for the listing menu's Copy Path row. wl-copy reads the text on stdin,
-    // so the one-liner hands it over; flea's own copy clipboard (Ops.clip) is a different thing
+    // so the one-liner hands it over; philemon's own copy clipboard (Ops.clip) is a different thing
     // and must stay a different thing.
     function copyText(text) {
         if (copier.running) {

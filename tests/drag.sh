@@ -11,11 +11,11 @@ set -u
 set -o pipefail
 
 repo="$(cd "$(dirname "$0")/.." && pwd)"
-# Without this the UI resolves "flea" from PATH, which is the installed package and not this tree.
-export FLEA_BIN="${FLEA_BIN:-$repo/target/release/flea}"
-. "$repo/tools/flea-sandbox-guard"
+# Without this the UI resolves "philemon" from PATH, which is the installed package and not this tree.
+export PHILEMON_BIN="${PHILEMON_BIN:-$repo/target/release/philemon}"
+. "$repo/tools/philemon-sandbox-guard"
 
-SB=$FIXTURE_ROOT/flea-drag-char-$$
+SB=$FIXTURE_ROOT/philemon-drag-char-$$
 HOMEDIR=$SB/home
 pass=0
 fail=0
@@ -31,8 +31,8 @@ note() { printf '     %s\n' "$*"; }
 check() { if [ "$2" = "$3" ]; then ok "$1"; else bad "$1"; note "expected [$3]"; note "got      [$2]"; fi; }
 
 cleanup() {
-  [ -n "${FLEA_PID:-}" ] && kill -- -"$FLEA_PID" 2>/dev/null
-  [ -n "${FLEA_PID:-}" ] && kill "$FLEA_PID" 2>/dev/null
+  [ -n "${PHILEMON_PID:-}" ] && kill -- -"$PHILEMON_PID" 2>/dev/null
+  [ -n "${PHILEMON_PID:-}" ] && kill "$PHILEMON_PID" 2>/dev/null
   sleep 0.5
   sandbox_remove "$SB" 2>/dev/null
 }
@@ -69,7 +69,7 @@ glide_to() {
 
 # ---------------------------------------------------------------- the app
 # The instance id and the process id together: the id addresses IPC, the pid finds this suite's own
-# window. Matching the window by class alone aborted three runs beside another lane's Flea, which is
+# window. Matching the window by class alone aborted three runs beside another lane's Philemon, which is
 # right to refuse but needlessly blind, because the pid is already in hand.
 myid() {
   qs list --all --json 2>/dev/null | python3 -c '
@@ -80,10 +80,10 @@ if len(hits) != 1:
 print("%s %s" % (hits[0]["id"], hits[0]["pid"]))
 ' "$repo/ui/shell.qml"
 }
-ipc() { qs ipc -i "$MYID" call flea "$@" 2>&1; }
+ipc() { qs ipc -i "$MYID" call philemon "$@" 2>&1; }
 
-HOME="$HOMEDIR" setsid qs -p "$repo/ui" >"$SB/flea.log" 2>&1 &
-FLEA_PID=$!
+HOME="$HOMEDIR" setsid qs -p "$repo/ui" >"$SB/philemon.log" 2>&1 &
+PHILEMON_PID=$!
 MYID=""
 MYPID=""
 for i in $(seq 1 60); do
@@ -97,14 +97,14 @@ done
 [ "$(ipc themeLoaded)" = "true" ] || { echo "theme did not load in the fixture home"; exit 1; }
 
 # Two guards, and both are needed. The pid finds this suite's own window, because matching on class
-# alone is ambiguous beside another lane's Flea. The refusal is separate and stands anyway: this
-# suite drives a real pointer across the screen, so a second Flea window changes the tiling under it
-# and can take the drop. One run beside a foreign Flea reported the window 30px high and failed R2
+# alone is ambiguous beside another lane's Philemon. The refusal is separate and stands anyway: this
+# suite drives a real pointer across the screen, so a second Philemon window changes the tiling under it
+# and can take the drop. One run beside a foreign Philemon reported the window 30px high and failed R2
 # for no reason but that, which is a wrong answer, not a flaky one.
-FLEACOUNT=$(hyprctl clients -j | python3 -c '
+PHILEMONCOUNT=$(hyprctl clients -j | python3 -c '
 import json, sys
-print(sum(1 for w in json.load(sys.stdin) if w["class"] == "com.thisisgm.flea"))')
-[ "$FLEACOUNT" = "1" ] || { echo "refusing: $FLEACOUNT Flea windows are open, and this suite needs the screen to itself"; exit 1; }
+print(sum(1 for w in json.load(sys.stdin) if w["class"] == "com.thisisgm.philemon"))')
+[ "$PHILEMONCOUNT" = "1" ] || { echo "refusing: $PHILEMONCOUNT Philemon windows are open, and this suite needs the screen to itself"; exit 1; }
 WIN=$(hyprctl clients -j | python3 -c '
 import json, sys
 hits = [w for w in json.load(sys.stdin) if str(w["pid"]) == sys.argv[1]]

@@ -1,6 +1,6 @@
 # What each GUI entrant can actually thumbnail
 
-Written by tools/flea-bench-capability on 2026-09-01T18:13:37-04:00. Eight files, one per format, a
+Written by tools/philemon-bench-capability on 2026-09-01T18:13:37-04:00. Eight files, one per format, a
 private cache per entrant, and 45 seconds each. **Nothing here is ranked and no
 timing is taken.** The field bench's format column answers a different question, how far an
 entrant got through a 2000-file directory whose names sort by format, and it was being read
@@ -16,7 +16,7 @@ structurally blind to that, so this file previously read "strata thumbnails noth
 drew every format it supports on screen. Its row below is counted by a live watch instead, one
 format at a time, and is not comparable to the other rows' instrument.
 
-- **flea** thumbnails jpg, png, webp, heic, mp4, webm, mkv
+- **philemon** thumbnails jpg, png, webp, heic, mp4, webm, mkv
   - cannot produce: txt
   - raw: produced `heic=1;jpg=1;mkv=1;mp4=1;png=1;txt=0;webm=1;webp=1;unknown=0`, refused `none=0`; last new thumbnail at 1s of 45s
 - **nautilus** thumbnails jpg, png, webp, heic, mp4, webm

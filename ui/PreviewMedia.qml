@@ -1,6 +1,6 @@
 import QtQuick
 import QtMultimedia
-import "." as Flea
+import "." as Philemon
 import "js/Format.js" as Format
 
 // The only file in the tree importing QtMultimedia: reached only through Preview.qml's Loader, on demand.
@@ -82,7 +82,7 @@ Item {
         visible: root.kind === "video"
     }
 
-    Flea.Glyph {
+    Philemon.Glyph {
         anchors.centerIn: parent
         width: Theme.markSize
         height: Theme.markSize
@@ -101,7 +101,7 @@ Item {
         spacing: Theme.spacing.rowPaddingX
         visible: root.kind === "audio" && !root.failed
 
-        Flea.Glyph {
+        Philemon.Glyph {
             anchors.verticalCenter: parent.verticalCenter
             width: Theme.markSize
             height: Theme.markSize
@@ -149,7 +149,7 @@ Item {
         spacing: Theme.spacing.gap
         visible: root.failed
 
-        Flea.Glyph {
+        Philemon.Glyph {
             anchors.horizontalCenter: parent.horizontalCenter
             width: Theme.markSize
             height: Theme.markSize

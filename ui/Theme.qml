@@ -8,7 +8,7 @@ import "js/Columns.js" as Columns
 import "js/Contrast.js" as Contrast
 import "js/Palette.js" as Palette
 
-// Flea is its own process, so it plays the role shell.qml plays for the bar: it feeds Color and Style.
+// Philemon is its own process, so it plays the role shell.qml plays for the bar: it feeds Color and Style.
 Singleton {
     id: root
 
@@ -19,7 +19,7 @@ Singleton {
 
     // A property and not a Motion.js var: a plain library var notifies nothing, so every Behavior
     // reading it would keep whatever it was built with when the compositor's answer arrives.
-    property bool reducedMotion: Quickshell.env("FLEA_REDUCED_MOTION") === "1"
+    property bool reducedMotion: Quickshell.env("PHILEMON_REDUCED_MOTION") === "1"
 
     // The only literal colours in the UI. This is the standalone (non-Omarchy) palette: dark CRT
     // glass, warm phosphor text and one dusty signal red. File kinds stay muted so the accent is
@@ -167,7 +167,7 @@ Singleton {
     }
 
     // The metrics contract as the app resolves it, one key=value per line in the Blueprint board's
-    // order; ui/shell.qml serves it as tokens() and tools/flea-metrics-gate diffs it. family is the
+    // order; ui/shell.qml serves it as tokens() and tools/philemon-metrics-gate diffs it. family is the
     // resolved face, never the "monospace" alias, so the gate cannot pass on a box without the font.
     function tokens() {
         var t = {
@@ -206,7 +206,7 @@ Singleton {
         return lines.join("\n");
     }
 
-    // Color owns the shared shell roles. On a standalone install it must receive Flea's fallback
+    // Color owns the shared shell roles. On a standalone install it must receive Philemon's fallback
     // too: Style's hover and selection fills derive from Color, not from the facade above.
     function applyColors(body) {
         var found = Palette.parse(body);
@@ -215,7 +215,7 @@ Singleton {
         var surface = Palette.pick(found, ["dark_background", "selection"], root.fallbackColor.surface);
         // corner: the alacritty-derived colors.toml emits neither background ladder key, so selection is third.
         root.color.surface = surface;
-        // Omarchy palettes are not authored to AA. Flea keeps the hex system and walks L until 4.5:1.
+        // Omarchy palettes are not authored to AA. Philemon keeps the hex system and walks L until 4.5:1.
         root.color.muted = Contrast.ensureRatio(
             Contrast.ensureRatio(Palette.pick(found, ["muted"], root.fallbackColor.muted), bg, 4.5), surface, 4.5);
         root.color.symlink = Contrast.ensureRatio(
@@ -283,11 +283,11 @@ Singleton {
         }
     }
 
-    // Flea agrees with the compositor rather than carrying its own switch, the rule the corner
-    // radius already follows; FLEA_REDUCED_MOTION is the test override and skips the ask.
+    // Philemon agrees with the compositor rather than carrying its own switch, the rule the corner
+    // radius already follows; PHILEMON_REDUCED_MOTION is the test override and skips the ask.
     Process {
         id: motionQuery
-        running: Quickshell.env("FLEA_REDUCED_MOTION") === "" && Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") !== ""
+        running: Quickshell.env("PHILEMON_REDUCED_MOTION") === "" && Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE") !== ""
         command: ["hyprctl", "getoption", "animations:enabled", "-j"]
         stdout: StdioCollector {
             waitForEnd: true

@@ -4,7 +4,7 @@ import "js/Drag.js" as DragOps
 import "js/Format.js" as Format
 import "js/Icons.js" as Icons
 import "js/Match.js" as Match
-import "." as Flea
+import "." as Philemon
 
 Item {
     id: root
@@ -143,7 +143,7 @@ Item {
     signal renameAbandoned()
 
     // The editor takes the name column's own box, so the row does not change shape when it opens.
-    Flea.RenameField {
+    Philemon.RenameField {
         id: editor
         visible: root.renaming
         anchors.left: icon.right

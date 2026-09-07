@@ -17,6 +17,8 @@ import "mounts.js" as MountsSuite
 import "external-devices.js" as ExternalDevicesSuite
 import "nav.js" as NavSuite
 import "ops.js" as OpsSuite
+import "obsidian.js" as ObsidianSuite
+import "notes.js" as NotesSuite
 import "palette.js" as PaletteSuite
 import "pathbar.js" as PathBarSuite
 import "places.js" as PlacesSuite
@@ -45,6 +47,8 @@ Item {
         }
 
         ArchiveSuite.run(check)
+        ObsidianSuite.run(check)
+        NotesSuite.run(check)
         ColumnsSuite.run(check)
         ContrastSuite.run(check)
         DirSizesSuite.run(check)

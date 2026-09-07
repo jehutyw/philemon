@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 
 // One glyph button in the window chrome: muted at rest, accent when it names the current view, and
 // dimmed when there is nowhere for it to go.
@@ -45,7 +45,7 @@ Item {
         NumberAnimation { duration: 150; easing.type: Easing.OutQuad }
     }
 
-    Flea.Glyph {
+    Philemon.Glyph {
         anchors.centerIn: parent
         width: Theme.chromeMarkSize
         height: Theme.chromeMarkSize

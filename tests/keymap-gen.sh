@@ -16,7 +16,7 @@ for p in "$tmp" "$probe_dir"; do
 done
 trap 'rm -f "$tmp"; rm -rf "$probe_dir"' EXIT
 
-./tools/flea-keymap-gen "$tmp" || { echo "FAIL the generator did not run"; exit 1; }
+./tools/philemon-keymap-gen "$tmp" || { echo "FAIL the generator did not run"; exit 1; }
 
 # A mistyped name emits a comparison against undefined, which is false forever and diffs clean.
 if ! command -v qml6 >/dev/null; then
@@ -48,5 +48,5 @@ if diff -u ui/js/Keymap.js "$tmp"; then
   echo "ok   ui/js/Keymap.js matches keys.toml"
   exit 0
 fi
-echo "FAIL ui/js/Keymap.js is stale, run ./tools/flea-keymap-gen"
+echo "FAIL ui/js/Keymap.js is stale, run ./tools/philemon-keymap-gen"
 exit 1
