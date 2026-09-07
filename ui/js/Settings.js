@@ -24,7 +24,7 @@ var MENU_GROUPS = [
     { label: "Basic file actions", master: true, ids: BASIC },
     { label: "Open and inspect", master: false, ids: ["openTerminal", "copypath"] },
     { label: "Extras", master: false,
-      ids: ["compress", "extract", "convert", "taildrop", "dropbox", "sharelink"] }
+      ids: ["compress", "extract", "convert", "taildrop", "dropbox", "protondrive", "sharelink"] }
 ]
 
 // Open and Show hidden files draw the lock mark instead of a box, and the board says why: a menu
@@ -52,7 +52,8 @@ var GLYPHS = {
     cut: "scissors", copy: "copy", paste: "clipboard", duplicate: "file-plus", rename: "rename",
     trash: "trash", openTerminal: "terminal", copypath: "file-text", compress: "archive",
     extract: "archive-out",
-    convert: "sliders", sharelink: "network", open: "folder-open", toggleHidden: "eye"
+    convert: "sliders", protondrive: "arrow-up", sharelink: "network", open: "folder-open",
+    toggleHidden: "eye"
 }
 
 // Taildrop and Dropbox are brand reproductions rather than cut glyphs, so they name a component the

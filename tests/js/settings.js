@@ -28,6 +28,7 @@ function runInventory(check) {
         var rows = Menu.listingEntries({
             showHidden: false, hasRow: true, dropboxPath: "/home/jw/Dropbox",
             taildropPeers: [{ id: "x", label: "Box" }], archiveFormats: ["zip"], canConvert: true,
+            protonDriveFolders: [{ id: "/my-files", label: "My files" }],
             rowInDropbox: shapes[s].rowInDropbox, rowIsArchive: shapes[s].rowIsArchive,
             rowIsImage: shapes[s].rowIsImage, hiddenActions: []
         })
@@ -165,11 +166,16 @@ function runRows(check) {
     check("and five hidden ids read as one enabled, not five",
           Settings.rows("menus", { hidden: ["cut", "copy", "paste", "duplicate", "rename"] })[1].value,
           "1 of 6")
+    // Its label reached LABELS but never MENU_GROUPS, so the board had nothing to iterate on.
+    check("the Proton Drive row has a switch, in Extras beside the other share rows",
+          find(menus, "protondrive").label + "|" + find(menus, "protondrive").glyph,
+          "Upload to Proton Drive|arrow-up")
+
     check("a hidden action's row is drawn unchecked, not dropped",
           find(menus, "paste").on, false)
     check("and an enabled one is checked", find(menus, "copy").on, true)
     check("every toggleable action the listing menu can build has a row, plus the hints row",
-          menus.filter(function (r) { return r.kind === "check" }).length, 15)
+          menus.filter(function (r) { return r.kind === "check" }).length, 16)
     // The one check that is not a menu action: it says how every row is drawn, not whether it is.
     check("the hints row is a check of its own, off until it is switched on",
           find(menus, "keyHints").label + "|" + find(menus, "keyHints").on,
