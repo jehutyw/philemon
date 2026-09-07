@@ -26,12 +26,25 @@ pub fn claim() -> i32 {
         );
         return 1;
     }
-    report(claim_chooser(), hyprkeys::float_claim())
+    // The floating rule is Hyprland syntax in the file Omarchy manages; every other desktop places
+    // the chooser window itself, so off Omarchy this half says it left the window alone rather than
+    // failing --default on a box that has no hypr/bindings.lua and never will.
+    let window = if crate::defaults::is_omarchy() {
+        hyprkeys::float_claim()
+    } else {
+        Ok("window rule: unchanged (your desktop places the chooser window)".to_string())
+    };
+    report(claim_chooser(), window)
 }
 
 // flea --picker off
 pub fn release() -> i32 {
-    report(release_chooser(), hyprkeys::float_release())
+    let window = if crate::defaults::is_omarchy() {
+        hyprkeys::float_release()
+    } else {
+        Ok("window rule: unchanged (not running under Omarchy)".to_string())
+    };
+    report(release_chooser(), window)
 }
 
 // Each half stands on its own, so a failure in one still leaves the other's line on screen.

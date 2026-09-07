@@ -48,7 +48,7 @@ pub fn release() -> i32 {
 
 // Omarchy's own directory, or the bindings file it manages: either one means the hyprkeys half has
 // a file it can legitimately rewrite.
-fn is_omarchy() -> bool {
+pub(crate) fn is_omarchy() -> bool {
     std::path::Path::new("/usr/share/omarchy").is_dir()
         || config_home()
             .map(|p| p.join("hypr").join("bindings.lua").is_file())
