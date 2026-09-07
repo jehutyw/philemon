@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 
 // One row of the settings panel's pane, drawn from the object ui/js/Settings.js rows() built. Every
 // kind is one row height, the window's own, except a hint, which wraps and takes the height its
@@ -89,21 +89,21 @@ Item {
         width: Theme.markSize
         height: Theme.markSize
 
-        Flea.Glyph {
+        Philemon.Glyph {
             anchors.fill: parent
             visible: root.row.glyph !== undefined && root.row.mark === undefined
             name: root.row.glyph !== undefined ? root.row.glyph : "file"
             color: Theme.color.muted
         }
 
-        Flea.TailscaleMark {
+        Philemon.TailscaleMark {
             anchors.centerIn: parent
             visible: root.row.mark === "tailscale"
             iconSize: Theme.markSize
             color: Theme.color.muted
         }
 
-        Flea.DropboxMark {
+        Philemon.DropboxMark {
             anchors.centerIn: parent
             visible: root.row.mark === "dropbox"
             iconSize: Theme.markSize
@@ -113,7 +113,7 @@ Item {
 
     // A ruler is the row above it continued, so it takes the boards' own continuation indent
     // rather than the label column: five settings boards draw both it and a hint at that inset.
-    Flea.SettingsRuler {
+    Philemon.SettingsRuler {
         visible: root.isRuler
         anchors.left: parent.left
         anchors.leftMargin: Theme.settings.indent
@@ -151,7 +151,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         spacing: Theme.spacing.gap
 
-        Flea.Glyph {
+        Philemon.Glyph {
             visible: root.hasSteps
             width: root.hasSteps ? Theme.markSize : 0
             height: Theme.markSize
@@ -179,14 +179,14 @@ Item {
             textFormat: Text.PlainText
         }
 
-        Flea.SettingsSegment {
+        Philemon.SettingsSegment {
             visible: root.hasSegment
             options: root.hasSegment ? root.row.options : []
             value: root.row.value || ""
             onPicked: function (i) { root.stopPicked(i) }
         }
 
-        Flea.Glyph {
+        Philemon.Glyph {
             visible: root.hasSteps
             width: root.hasSteps ? Theme.markSize : 0
             height: Theme.markSize
@@ -201,7 +201,7 @@ Item {
 
         // A locked row draws the lock mark where the box would be, so the section stays a complete
         // list of what the menu can contain rather than hiding the two rows nobody can switch off.
-        Flea.Glyph {
+        Philemon.Glyph {
             visible: root.isLock
             width: root.isLock ? Theme.markSize : 0
             height: Theme.markSize
@@ -217,7 +217,7 @@ Item {
             border.width: Theme.spacing.hairline
             border.color: root.boxGlyph.length > 0 ? Theme.color.accent : Theme.color.muted
 
-            Flea.Glyph {
+            Philemon.Glyph {
                 anchors.fill: parent
                 visible: root.boxGlyph.length > 0
                 name: root.boxGlyph

@@ -1,7 +1,7 @@
-// The undo journal, designed in from the first operation, which is why nothing in Flea needs a confirm dialog.
+// The undo journal, designed in from the first operation, which is why nothing in Philemon needs a confirm dialog.
 use crate::backend::renamecompat::rename_path;
 use crate::backend::trash;
-use crate::error::{from_io, FleaError};
+use crate::error::{from_io, PhilemonError};
 use std::path::PathBuf;
 
 // One reversible step. An operation is a list of these, reversed newest first.
@@ -61,7 +61,7 @@ impl Journal {
 
     // The whole entry is reversed or the failure is reported; a step that fails stops the rest, because
     // continuing past it would leave the operation half-reversed with nothing recording which half.
-    pub fn undo(&mut self) -> Result<String, FleaError> {
+    pub fn undo(&mut self) -> Result<String, PhilemonError> {
         let entry = match self.entries.pop() {
             Some(e) => e,
             None => return Err(err("there is nothing to undo")),
@@ -73,7 +73,7 @@ impl Journal {
     }
 }
 
-fn reverse(step: &Step) -> Result<(), FleaError> {
+fn reverse(step: &Step) -> Result<(), PhilemonError> {
     match step {
         // Back the way it came, and still refusing to clobber: something may occupy the old name now.
         Step::Moved { from, to } => rename_path(to, from),
@@ -84,7 +84,7 @@ fn reverse(step: &Step) -> Result<(), FleaError> {
 }
 
 // Only ever a path this operation itself created, so a directory it made is removed with its contents.
-fn remove(path: &PathBuf) -> Result<(), FleaError> {
+fn remove(path: &PathBuf) -> Result<(), PhilemonError> {
     let meta = path
         .symlink_metadata()
         .map_err(|e| from_io("undo", &path.to_string_lossy(), &e))?;
@@ -98,10 +98,10 @@ fn remove(path: &PathBuf) -> Result<(), FleaError> {
 
 // Only ever an empty directory this operation made. A folder the user has filled since is theirs now, so
 // undo refuses and leaves it, the way a rename undo refuses a name something else has taken meanwhile.
-fn remove_empty(path: &PathBuf) -> Result<(), FleaError> {
+fn remove_empty(path: &PathBuf) -> Result<(), PhilemonError> {
     match std::fs::remove_dir(path) {
         Ok(()) => Ok(()),
-        Err(e) if e.kind() == std::io::ErrorKind::DirectoryNotEmpty => Err(FleaError {
+        Err(e) if e.kind() == std::io::ErrorKind::DirectoryNotEmpty => Err(PhilemonError {
             where_: "undo".to_string(),
             path: path.to_string_lossy().to_string(),
             msg: "the new folder has been filled since, so undo left it in place".to_string(),
@@ -110,8 +110,8 @@ fn remove_empty(path: &PathBuf) -> Result<(), FleaError> {
     }
 }
 
-fn err(msg: &str) -> FleaError {
-    FleaError { where_: "undo".to_string(), path: String::new(), msg: msg.to_string() }
+fn err(msg: &str) -> PhilemonError {
+    PhilemonError { where_: "undo".to_string(), path: String::new(), msg: msg.to_string() }
 }
 
 #[cfg(test)]

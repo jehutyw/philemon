@@ -53,7 +53,7 @@ impl Watch {
     pub fn start(tx: Sender<Event>) -> Watch {
         let fd = unsafe { inotify_init1(IN_CLOEXEC) };
         if fd < 0 {
-            eprintln!("flea: the open folder will not follow outside changes, inotify is unavailable");
+            eprintln!("philemon: the open folder will not follow outside changes, inotify is unavailable");
             return Watch { fd: -1, wd: -1, incoming: -1 };
         }
         thread::spawn(move || pump(fd, tx));
@@ -131,7 +131,7 @@ fn pump(fd: c_int, tx: Sender<Event>) {
             if failure.kind() == io::ErrorKind::Interrupted {
                 continue;
             }
-            eprintln!("flea: the open folder stopped following outside changes, the inotify read failed: {}", failure);
+            eprintln!("philemon: the open folder stopped following outside changes, the inotify read failed: {}", failure);
             return;
         }
         // A closed descriptor ends the thread; the loop keeps running without a watch.
@@ -231,7 +231,7 @@ mod tests {
                 .map(|d| d.as_nanos())
                 .unwrap_or(0);
             let dir = std::env::temp_dir()
-                .join(format!("flea-watch-{}-{}-{}", std::process::id(), name, unique));
+                .join(format!("philemon-watch-{}-{}-{}", std::process::id(), name, unique));
             std::fs::create_dir(&dir).expect("a directory no other run already held");
             Sandbox(dir)
         }
@@ -242,14 +242,14 @@ mod tests {
             // Checked in the test and not in the reviewer's head: absolute, under the temp root, named.
             let ours = self.0.is_absolute()
                 && self.0.starts_with(std::env::temp_dir())
-                && self.0.file_name().map_or(false, |n| n.to_string_lossy().starts_with("flea-watch-"));
+                && self.0.file_name().map_or(false, |n| n.to_string_lossy().starts_with("philemon-watch-"));
             if !ours {
-                eprintln!("flea test: refusing to remove {}", self.0.display());
+                eprintln!("philemon test: refusing to remove {}", self.0.display());
                 return;
             }
             // Not a panic: this runs while a failing test is already unwinding, and two would abort.
             if let Err(e) = std::fs::remove_dir_all(&self.0) {
-                eprintln!("flea test: {} was left behind: {}", self.0.display(), e);
+                eprintln!("philemon test: {} was left behind: {}", self.0.display(), e);
             }
         }
     }

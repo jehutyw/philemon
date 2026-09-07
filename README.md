@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="docs/images/icon.svg" width="72" height="72" alt="Flea">
+  <img src="docs/images/icon.svg" width="72" height="72" alt="Philemon">
 </p>
 
-<h1 align="center">Flea</h1>
+<h1 align="center">Philemon</h1>
 
 This is the EndeavourOS/Arch compatibility fork of [thisisgm/flea](https://github.com/thisisgm/flea),
-based on upstream v0.1.3. It bundles the QML compatibility modules so Omarchy is not required,
+based on upstream v0.1.5. It bundles the QML compatibility modules so Omarchy is not required,
 provides a standalone dark theme, and recognizes USB and hot-pluggable SSDs even when they report
 non-removable media. The upstream screenshots and benchmarks below describe the original build;
 they have not been re-measured for this fork.
@@ -16,12 +16,12 @@ they have not been re-measured for this fork.
 </p>
 
 <p align="center">
-  <img src="docs/images/list.png" alt="Flea's list view: the rail, row thumbnails, and the Mode, Size, Date Modified and Kind columns">
+  <img src="docs/images/list.png" alt="Philemon's list view: the rail, row thumbnails, and the Mode, Size, Date Modified and Kind columns">
 </p>
 
 Nautilus gets four things wrong on Hyprland: the keyboard is an afterthought, remote and
 cloud handling is painful, it is slow and heavy, and it does not look like the rest of the
-desktop. Flea is a standalone application built for Omarchy from the ground up, not a
+desktop. Philemon is a standalone application built for Omarchy from the ground up, not a
 Nautilus extension. A Quickshell front end over a Rust backend that keeps the whole
 directory and hands the window only what fits on screen.
 
@@ -30,45 +30,45 @@ directory and hands the window only what fits on screen.
 On EndeavourOS and other Arch-based systems, build the package from this checkout:
 
 ```bash
-git clone https://github.com/jehutyw/flea.git
-cd flea
+git clone https://github.com/jehutyw/philemon.git
+cd philemon
 makepkg -si
 ```
 
-To make Flea the default file manager:
+To make Philemon the default file manager:
 
 ```bash
-flea --default
+philemon --default
 ```
 
-This sets Flea as the `inode/directory` handler and puts Flea in front of the other file managers
+This sets Philemon as the `inode/directory` handler and puts Philemon in front of the other file managers
 for "Show in folder". On Omarchy it also makes that desktop's two file-manager keys,
-`SUPER + SHIFT + F` and `SUPER + ALT + SHIFT + F`, open Flea instead of Nautilus; on KDE Plasma and
-every other desktop the shortcuts stay that desktop's own. `flea --default off` reverses all of it,
+`SUPER + SHIFT + F` and `SUPER + ALT + SHIFT + F`, open Philemon instead of Nautilus; on KDE Plasma and
+every other desktop the shortcuts stay that desktop's own. `philemon --default off` reverses all of it,
 which leaves the `inode/directory` default wherever the rest of the lookup resolves to rather than
 at a handler you had pinned yourself, see [`docs/install.md`](docs/install.md).
 
-The upstream AUR packages `flea` and `flea-git` require Omarchy and do not carry this fork's
-compatibility changes. Build from this repository for the EndeavourOS and Arch version.
+The upstream AUR packages `flea` and `flea-git` are Flea, require Omarchy, and do not carry this
+fork's changes. Build from this repository for Philemon.
 
-To make Flea the file chooser every application opens, the dialog behind `omarchy tailscale send`
+To make Philemon the file chooser every application opens, the dialog behind `omarchy tailscale send`
 and every Flatpak's Open and Save:
 
 ```bash
-flea --picker
+philemon --picker
 systemctl --user restart xdg-desktop-portal
 ```
 
-Flea implements `org.freedesktop.impl.portal.FileChooser`, so this replaces the GTK dialog for every
+Philemon implements `org.freedesktop.impl.portal.FileChooser`, so this replaces the GTK dialog for every
 portal caller on the box at once. It writes one interface key to
 `~/.config/xdg-desktop-portal/portals.conf` and no default, so screen sharing, screenshots and every
 other portal keep the backend they already had. It also adds one Hyprland rule that gives the chooser
-the same floating treatment Omarchy already gives the GTK one. `flea --picker off` puts both back.
+the same floating treatment Omarchy already gives the GTK one. `philemon --picker off` puts both back.
 
-"Show in folder" is one more thing `flea --default` claims. Chromium, Firefox, Steam and every
+"Show in folder" is one more thing `philemon --default` claims. Chromium, Firefox, Steam and every
 other application that reveals a downloaded file call `org.freedesktop.FileManager1` on the session
-bus, and Flea answers it by opening the file's own directory with the file selected. No process sits
-on that name while Flea is not running: D-Bus starts the service on the call and it exits again half
+bus, and Philemon answers it by opening the file's own directory with the file selected. No process sits
+on that name while Philemon is not running: D-Bus starts the service on the call and it exits again half
 a minute later.
 
 **Installing does not decide that one, and this is why.** Nautilus, Dolphin, Thunar and Nemo each
@@ -78,7 +78,7 @@ registration it reads, and which of them that is inside one directory depends on
 dbus-broker 37, the one Omarchy runs, sorts the directory; dbus-daemon 1.16.2 takes it in readdir
 order. Neither is newest-wins and neither is anything an installer can steer. On this box today,
 with four claimants installed, the one that answers is Nemo's.
-`flea --default` settles it from outside that directory instead of joining the queue, by writing one
+`philemon --default` settles it from outside that directory instead of joining the queue, by writing one
 registration to `~/.local/share/dbus-1/services`, which D-Bus reads before every system directory.
 Ask the box which one answers, and it tells you by naming the ones it threw away:
 
@@ -86,13 +86,13 @@ Ask the box which one answers, and it tells you by naming the ones it threw away
 journalctl --user -b | grep "duplicate name 'org.freedesktop.FileManager1'"
 ```
 
-The claimant that is not on that list is the one answering. `flea --default off` removes Flea's file
+The claimant that is not on that list is the one answering. `philemon --default off` removes Philemon's file
 and hands the name back.
 
 To track `main` instead of releases, use the AUR package:
 
 ```bash
-omarchy pkg aur add flea-git
+omarchy pkg aur add philemon-git
 ```
 
 Six optional packages each unlock one feature and nothing else: `libarchive` for archive listing
@@ -100,7 +100,7 @@ and extraction, `7zip` for `.7z` archives, `imagemagick` for image conversion, `
 media metadata the preview column reads, `dropbox-cli` for Dropbox share links, and `tailscale` for
 Taildrop sharing.
 
-[`docs/install.md`](docs/install.md) has the rest: what lands on disk, what `flea --default` writes
+[`docs/install.md`](docs/install.md) has the rest: what lands on disk, what `philemon --default` writes
 and how to undo it by hand, and how the package proves itself.
 
 ## Update
@@ -110,7 +110,7 @@ git pull --ff-only
 makepkg -si
 ```
 
-Your `flea --default` choice survives updates because it is a per-user preference rather than a
+Your `philemon --default` choice survives updates because it is a per-user preference rather than a
 file owned by the package.
 
 ## Measured against the field
@@ -120,14 +120,14 @@ three. Every entrant is started by its own launcher, the way you would start it,
 the harness waits rather than start a run above a one-minute load average of 0.50.
 
 Every table and every place below is printed by
-[`tools/flea-bench-report`](tools/flea-bench-report) from two runs kept on disk and read by column
+[`tools/philemon-bench-report`](tools/philemon-bench-report) from two runs kept on disk and read by column
 name: `scale-rc-2026.csv` for the 100,000 file fixture and `media-rc-2044.csv` for the media
 fixture, each beside the manifest that records the box, the fixture and the versions. The
 method, the fixtures and what each column actually measures are in
 [`docs/benchmarks.md`](docs/benchmarks.md).
 
-Entrant versions, read off the installed artefact by the harness rather than typed in. GUI: `flea`
-at `target/release/flea` as built 2026-09-02 20:13:50, 972,008 bytes; `nautilus` 50.2.2-1, `thunar`
+Entrant versions, read off the installed artefact by the harness rather than typed in. GUI: `philemon`
+at `target/release/philemon` as built 2026-09-02 20:13:50, 972,008 bytes; `nautilus` 50.2.2-1, `thunar`
 4.20.9-1, `pcmanfm` 1.4.0-2, `nemo` 6.6.4-1, `dolphin` 26.08.0-4, and `strata` v0.6.1 built from
 source. TUI, every one of them under kitty 0.48.2-1: `yazi` 26.8.15-1, `mc` 4.8.33-1, `broot`
 1.59.0-1, `nnn` 5.3-1, `lf` 42-1, `ranger` 1.9.4-5, `xplr` 1.0.1-1, `superfile` 1.6.0-1.
@@ -140,7 +140,7 @@ Anything committed after that is not in the tables below.
 
 **Every timing below is a magnitude from one machine and not a citable constant.** What survives a
 re-run is the ordering and the size of the gaps, not the digits. Two batches of this harness on
-this box, hours apart on the same day and with nothing aimed at either, put Flea's settle lead over
+this box, hours apart on the same day and with nothing aimed at either, put Philemon's settle lead over
 `dolphin` on the scale fixture at 4.27x and then at 4.57x, and moved `lf`'s settle time on the
 media fixture from 631 ms to 1,744 ms, which is 2.8x.
 
@@ -157,12 +157,12 @@ thumbnail count at all and the work column says so rather than printing a zero n
 The times compare straight across.
 
 <div align="center">
-  <img src="docs/images/bench-scale.svg" alt="The 100,000 file GUI bracket: Flea settles in 1,166 ms against nautilus at 79,025 ms, and is fifth of seven to paint a first window at 752 ms behind pcmanfm's 410 ms">
+  <img src="docs/images/bench-scale.svg" alt="The 100,000 file GUI bracket: Philemon settles in 1,166 ms against nautilus at 79,025 ms, and is fifth of seven to paint a first window at 752 ms behind pcmanfm's 410 ms">
 </div>
 
 | entrant | first window | settled listing | work done | memory, PSS | CPU, process tree | runs |
 |---|---|---|---|---|---|---|
-| `flea` | 752 ms | 1,166 ms | not measured | 106.7 MiB | 0.96 s | 3 |
+| `philemon` | 752 ms | 1,166 ms | not measured | 106.7 MiB | 0.96 s | 3 |
 | `dolphin` | 681 ms | 5,339 ms | not measured | 221.3 MiB | 9.02 s | 3 |
 | `strata` | 790 ms | 7,856 ms | not measured | 113.0 MiB | 7.62 s | 3 |
 | `nemo` | 737 ms | 22,315 ms | not measured | 460.9 MiB | 25.53 s | 3 |
@@ -170,37 +170,37 @@ The times compare straight across.
 | `pcmanfm` | 410 ms | 35,785 ms | not measured | 111.3 MiB | 24.80 s | 3 |
 | `nautilus` | 793 ms | 79,025 ms | not measured | 334.3 MiB | 18.80 s | 3 |
 
-Column by column, and the one column Flea does not win is in the same list as the three it does:
+Column by column, and the one column Philemon does not win is in the same list as the three it does:
 
 - **Time to a settled listing:** 1,166 ms, **first of seven**, ahead of `dolphin` at 5,339 ms,
-  4.57x. Flea's three runs settled at 1,398, 1,152 and 1,166 ms, and the earlier batch of the same
+  4.57x. Philemon's three runs settled at 1,398, 1,152 and 1,166 ms, and the earlier batch of the same
   day read 4.27x on this comparison, so take the lead as about 4.5x rather than as a digit.
-- **Memory, PSS:** 106.7 MiB, **first of seven**, ahead of `pcmanfm` at 111.3 MiB, 1.04x. Flea runs
+- **Memory, PSS:** 106.7 MiB, **first of seven**, ahead of `pcmanfm` at 111.3 MiB, 1.04x. Philemon runs
   a second process, its backend, sampled separately at 5.3 MiB; the pair reads 112.0 MiB, which is
-  past `pcmanfm`. That rise is Flea's own and not measurement noise, and it is not yet attributed
-  to a commit. The column above samples Flea the way it samples every other entrant.
+  past `pcmanfm`. That rise is Philemon's own and not measurement noise, and it is not yet attributed
+  to a commit. The column above samples Philemon the way it samples every other entrant.
 - **CPU, process tree:** 0.96 s, **first of seven**, ahead of `strata` at 7.62 s, 7.93x.
 - **Time to first window:** 752 ms, fifth of seven, behind `pcmanfm` at 410 ms, 1.83x.
 
 Fifth to paint a window and first to be usable, and those are not the same column. `pcmanfm` puts a
-frame on screen in 410 ms and then takes about 35.8 seconds to finish the listing Flea finishes in
+frame on screen in 410 ms and then takes about 35.8 seconds to finish the listing Philemon finishes in
 about 1.2 seconds. A window that is drawn but still filling is not a file manager you can use yet,
 which is why the settle column is the one this project optimises and the first-window column is
 reported rather than chased.
 
 The CPU column charges every entrant its whole process tree, so an out-of-process thumbnailer is
-counted against it. The memory column does not: it sampled the window process, plus Flea's backend
-because Flea is the entrant that has one, which understates any rival whose work happens elsewhere.
+counted against it. The memory column does not: it sampled the window process, plus Philemon's backend
+because Philemon is the entrant that has one, which understates any rival whose work happens elsewhere.
 
 ### 2,000 files, 1,800 of them thumbnailable, cold cache
 
 <div align="center">
-  <img src="docs/images/bench-media.svg" alt="The 2,000 file GUI bracket: Flea settles in 2,612 ms having drawn 36 thumbnails, against strata's 30,792 ms having drawn 205 and dolphin's 14,514 ms having drawn 552, with pcmanfm below the rule as unranked">
+  <img src="docs/images/bench-media.svg" alt="The 2,000 file GUI bracket: Philemon settles in 2,612 ms having drawn 36 thumbnails, against strata's 30,792 ms having drawn 205 and dolphin's 14,514 ms having drawn 552, with pcmanfm below the rule as unranked">
 </div>
 
 | entrant | first window | settled listing | work done | memory, PSS | CPU, process tree | runs |
 |---|---|---|---|---|---|---|
-| `flea` | 833 ms | 2,612 ms | 36 thumbnails | 112.6 MiB | 1.42 s | 3 |
+| `philemon` | 833 ms | 2,612 ms | 36 thumbnails | 112.6 MiB | 1.42 s | 3 |
 | `nemo` | 765 ms | 3,372 ms | 60 thumbnails | 55.3 MiB | 5.13 s | 3 |
 | `thunar` | 511 ms | 12,785 ms | 221 thumbnails | 40.7 MiB | 7.27 s | 3 |
 | `dolphin` | 672 ms | 14,514 ms | 552 thumbnails | 101.5 MiB | 68.11 s | 3 |
@@ -220,9 +220,9 @@ them; the re-run counts that work by a live watch across the same three runs tha
 The method, the run conditions and the two differences from the batch are in
 [`docs/bench/media-rc-2044.manifest.md`](docs/bench/media-rc-2044.manifest.md).
 
-**Flea settles first here while drawing the fewest thumbnails of any ranked entrant: 36 against
+**Philemon settles first here while drawing the fewest thumbnails of any ranked entrant: 36 against
 `dolphin`'s 552.** That first place means nothing read apart from the work column beside it, because
-the two were not asked the same question. Flea's 36 is the viewport and nothing else, by design:
+the two were not asked the same question. Philemon's 36 is the viewport and nothing else, by design:
 thumbnails are asked for only when the list stops moving and only for the rows on screen, which is
 the same design that takes the settle column on the 100,000 file fixture.
 
@@ -233,19 +233,19 @@ memory and a CPU number, so `pcmanfm` is counted on three of these four:
   and at a fifteenth of `dolphin`'s work, as above.
 - **CPU, process tree:** 1.42 s, **first of seven**, ahead of `strata` at 1.82 s, 1.28x.
 - **Memory, PSS:** 112.6 MiB, sixth of seven, behind `pcmanfm` at 40.5 MiB, 2.78x; fifth of the six
-  ranked entrants, behind `thunar` at 40.7 MiB. With Flea's backend, 114.6 MiB, and still sixth.
+  ranked entrants, behind `thunar` at 40.7 MiB. With Philemon's backend, 114.6 MiB, and still sixth.
 - **Time to first window:** 833 ms, seventh of seven, behind `pcmanfm` at 390 ms, 2.13x; sixth of
   the six ranked entrants, behind `thunar` at 511 ms.
 
-Ranking `strata` cost Flea a place on memory and cut the CPU lead from 3.61x over `nemo` to 1.28x
-over `strata`, now the nearest rival on that column: 1.82 s against Flea's 1.42 s, where the next
-entrant is `nemo` at 5.13 s. It is lighter than Flea too, 70.3 MiB against 112.6, while drawing 205
-thumbnails to Flea's 36. What it does not take is the settle column, where it is the slowest ranked
-entrant here at 11.8x Flea's time.
+Ranking `strata` cost Philemon a place on memory and cut the CPU lead from 3.61x over `nemo` to 1.28x
+over `strata`, now the nearest rival on that column: 1.82 s against Philemon's 1.42 s, where the next
+entrant is `nemo` at 5.13 s. It is lighter than Philemon too, 70.3 MiB against 112.6, while drawing 205
+thumbnails to Philemon's 36. What it does not take is the settle column, where it is the slowest ranked
+entrant here at 11.8x Philemon's time.
 
 First window moved the wrong way between the earlier batch of the same day and this one: 689 ms to
-752 ms on the scale fixture, and 774 ms to 833 ms here, where Flea is seventh of seven. It has never
-been a column Flea won and it blocks nothing. The scale move is smaller than the range across Flea's
+752 ms on the scale fixture, and 774 ms to 833 ms here, where Philemon is seventh of seven. It has never
+been a column Philemon won and it blocks nothing. The scale move is smaller than the range across Philemon's
 own three runs in that batch, 732 to 913 ms; the media move is larger than its own range of 795 to
 835 ms, so read the media one as a move and the scale one as noise.
 
@@ -254,13 +254,13 @@ own three runs in that batch, 732 to 913 ms; the media move is larger than its o
 Speed is not the only column. The field run above cannot answer this one: the fixture's names sort
 by format, so an entrant that settles early never reaches the photos and its per-format counts say
 where it stopped rather than what it can do. A separate probe,
-[`tools/flea-bench-capability`](tools/flea-bench-capability), gives every entrant one file per
+[`tools/philemon-bench-capability`](tools/philemon-bench-capability), gives every entrant one file per
 format, a private cache and forty-five seconds, ranks nothing and times nothing, and counts what
 landed by md5 key against the fixture's own map.
 
 | entrant | jpg | png | webp | heic | mp4 | webm | mkv | txt |
 |---|---|---|---|---|---|---|---|---|
-| `flea` | yes | yes | yes | yes | yes | yes | yes | - |
+| `philemon` | yes | yes | yes | yes | yes | yes | yes | - |
 | `nautilus` | yes | yes | yes | yes | yes | yes | - | - |
 | `thunar` | yes | yes | yes | yes | yes | yes | yes | - |
 | `pcmanfm` | - | yes | - | - | yes | yes | - | - |
@@ -278,12 +278,12 @@ this table read "thumbnails nothing" for a whole release. The field run above no
 the same way, in its own runs.
 
 The field run's own per-format counts answer the other question, how far each entrant got before it
-stopped, and they must not be read as the table above. Flea's zero in `jpg` here is the viewport it
+stopped, and they must not be read as the table above. Philemon's zero in `jpg` here is the viewport it
 drew, not a format it cannot produce.
 
 | entrant | thumbnails | by format, run 1 |
 |---|---|---|
-| `flea` | 36 | `heic=0;jpg=0;mkv=6;mp4=24;png=0;txt=0;webm=6;webp=0;unknown=0` |
+| `philemon` | 36 | `heic=0;jpg=0;mkv=6;mp4=24;png=0;txt=0;webm=6;webp=0;unknown=0` |
 | `nautilus` | 541 | `heic=13;jpg=0;mkv=0;mp4=400;png=14;txt=0;webm=100;webp=14;unknown=0` |
 | `thunar` | 221 | `heic=0;jpg=0;mkv=37;mp4=148;png=0;txt=0;webm=36;webp=0;unknown=0` |
 | `pcmanfm` | 605 | `heic=0;jpg=0;mkv=0;mp4=400;png=105;txt=0;webm=100;webp=0;unknown=0` |
@@ -296,7 +296,7 @@ drew, not a format it cannot produce.
 Judged apart and on a different measure. Every entrant runs under kitty in the configuration its own
 project documents, recorded verbatim in the manifest. These are the media fixture's rows, the run
 with a file worth previewing in it. The first-window column here is the terminal's own startup cost
-and is not comparable to a GUI row. An entrant with no image preview reads N/A, never 0. Flea's own
+and is not comparable to a GUI row. An entrant with no image preview reads N/A, never 0. Philemon's own
 terminal interface is not built yet, so it does not appear.
 
 | entrant | first window | settled listing | time to first preview | preview runs |
@@ -323,19 +323,19 @@ from none to one of three.
 A grid of thumbnails, for when the names are not the point.
 
 <p align="center">
-  <img src="docs/images/grid.png" alt="Flea's grid view: twenty photographs and clips drawn as thumbnails">
+  <img src="docs/images/grid.png" alt="Philemon's grid view: twenty photographs and clips drawn as thumbnails">
 </p>
 
 A Miller columns board, with the preview and the file's facts in the last column.
 
 <p align="center">
-  <img src="docs/images/columns.png" alt="Flea's columns view: three panes, with a video preview, its transport, and the file's facts in the last column">
+  <img src="docs/images/columns.png" alt="Philemon's columns view: three panes, with a video preview, its transport, and the file's facts in the last column">
 </p>
 
 And Space opens a Quick Look over any of them. PDFs page, media plays, archives list.
 
 <p align="center">
-  <img src="docs/images/pdf.png" alt="A PDF open in Flea's Quick Look, a contact sheet at page two of five">
+  <img src="docs/images/pdf.png" alt="A PDF open in Philemon's Quick Look, a contact sheet at page two of five">
 </p>
 
 ## Every operation says so, and `z` takes it back
@@ -344,14 +344,14 @@ The status bar is the running commentary. It carries the item count and the file
 space at its ends, and the last operation and its undo in between.
 
 <p align="center">
-  <img src="docs/images/transfer.png" alt="Flea's status bar after a copy: six items on the left, and Copied 4 items, z undoes on the right">
+  <img src="docs/images/transfer.png" alt="Philemon's status bar after a copy: six items on the left, and Copied 4 items, z undoes on the right">
 </p>
 
 Ctrl-Shift-n makes a folder and opens the rename field on it with the stem already selected, so
 the name is one typed word away.
 
 <p align="center">
-  <img src="docs/images/newfolder.png" alt="A new folder in Flea with its rename field open and the name selected, and the bar reading Created New Folder, z undoes">
+  <img src="docs/images/newfolder.png" alt="A new folder in Philemon with its rename field open and the name selected, and the bar reading Created New Folder, z undoes">
 </p>
 
 ## What it does
@@ -379,7 +379,7 @@ the name is one typed word away.
   one window, and only one listing is ever live.
 - **Columns you choose.** Right click the column titles to hide Mode, Size, Date Modified or
   Kind; the choice outlives the window, and the pane's width still wins over a column it cannot
-  carry. `Ctrl+Shift+Plus` and `Minus` walk Flea's text size along Omarchy's own stops,
+  carry. `Ctrl+Shift+Plus` and `Minus` walk Philemon's text size along Omarchy's own stops,
   `Ctrl+Shift+0` goes back to following the desktop, and the settings panel's Display section is
   the same one setting.
 - **A settings panel** on `,` and on the toolbar's sliders button, with three working groups: a text
@@ -400,7 +400,7 @@ row:
   `Ctrl+Shift+Plus` and `Ctrl+Shift+Minus` walk the same stops and `Ctrl+Shift+0` goes back to
   following, so the chord and the row are one setting and not two. Body text, captions, padding,
   row height, icon slots and marks all derive from the size in force. The monitor scale and the
-  corner rounding are read-only beside it: Flea shows the compositor's values and never steps one.
+  corner rounding are read-only beside it: Philemon shows the compositor's values and never steps one.
 - **Menus.** Every action the context menu can build, switched on or off one at a time, with a
   tri-state master over Cut, Copy, Paste, Duplicate, Rename and Move to Trash that reads the
   enabled count, "5 of 6". Open and Show hidden files are listed but locked: a menu that cannot
@@ -416,10 +416,10 @@ row:
   Default, an unrecognised stored name reads as Default, and a change rebinds in the window at
   once. Press `?` for the whole map.
 
-The choices live in `~/.local/state/flea/ui.json`, the one file Flea keeps for itself, beside the
+The choices live in `~/.local/state/philemon/ui.json`, the one file Philemon keeps for itself, beside the
 column set and everything else that outlives a window. The text size is stored as `{"mode":"system"}`
 while it follows Omarchy and `{"mode":16}` once it does not, which is a stop and never a free number.
-Every change goes through `flea --ui-state`, which takes a lock, checks the value and merges it, so a
+Every change goes through `philemon --ui-state`, which takes a lock, checks the value and merges it, so a
 setting written here never overwrites one written somewhere else, and a change it could not save is
 reported in the status bar rather than lost quietly. A value this build does not recognise falls back
 on its own without disturbing the rest of the file, and deleting the file puts every section back on
@@ -427,23 +427,23 @@ its default.
 
 ## The Omarchy cut
 
-Every mark Flea draws shares one edge, taken from the Omarchy brand spiral: lucide's 24 unit grid
+Every mark Philemon draws shares one edge, taken from the Omarchy brand spiral: lucide's 24 unit grid
 and stroke conventions, but square caps, mitered joins, and every rounded corner baked into a path
 replaced with a hard one. Genuine curves stay, because a circle is not a softened corner. Music note
 heads are squares rather than circles, which is the set's tell at 16 px.
 
 <p align="center">
-  <img src="docs/images/glyphs.svg" alt="The 47 marks Flea ships, drawn in the Omarchy cut on lucide's 24 unit grid">
+  <img src="docs/images/glyphs.svg" alt="The 47 marks Philemon ships, drawn in the Omarchy cut on lucide's 24 unit grid">
 </p>
 
-That specimen is generated by [`tools/flea-glyph-sheet`](tools/flea-glyph-sheet) from
+That specimen is generated by [`tools/philemon-glyph-sheet`](tools/philemon-glyph-sheet) from
 [`ui/js/Icons.js`](ui/js/Icons.js), the one path table in the tree: 47 marks, one `d` string each,
 drawn here at the app's own stroke of 1.5. Re-run the tool rather than editing the sheet. Nothing is added to it
 until a surface actually draws it. Colour never comes from this language either. Every mark takes a
 palette role from the live Omarchy theme rather than a brand hex, so the whole set recolours when
 the desktop does. The only literal colours anywhere in the UI are the five fallbacks in
 `Theme.qml`'s `fallbackColor`: three for roles the shell's own palette does not model, and two more
-read before the palette has loaded. Omarchy themes are not authored to WCAG AA, so Flea keeps each
+read before the palette has loaded. Omarchy themes are not authored to WCAG AA, so Philemon keeps each
 role's hue and walks its lightness until muted, symlink and executable clear 4.5:1 against the
 ground they are drawn on. On a theme that already clears it nothing moves.
 
@@ -456,15 +456,15 @@ and a local directory settles inside it, so the crawl belongs to the slow source
 mount, a cold disk, or a search still walking a subtree, which is the shot below.
 
 <p align="center">
-  <img src="docs/images/empty.png" alt="Flea's empty state: Flea's own mark drawn as a stroke, above a rotating caption">
+  <img src="docs/images/empty.png" alt="Philemon's empty state: Philemon's own mark drawn as a stroke, above a rotating caption">
 </p>
 
 <p align="center">
-  <img src="docs/images/loading.png" alt="Flea's loading crawl: the spiral drawn as a dashed stroke over the list area, while a search walks the filesystem from /">
+  <img src="docs/images/loading.png" alt="Philemon's loading crawl: the spiral drawn as a dashed stroke over the list area, while a search walks the filesystem from /">
 </p>
 
 Tailscale and Dropbox are the one exception. Both are reproduced from their own artwork rather than
-recut, because the cut governs Flea's own glyphs and stops at somebody else's identity.
+recut, because the cut governs Philemon's own glyphs and stops at somebody else's identity.
 
 The terminal interface draws characters, not paths, so it does not inherit this set. Its mark column
 is one character per kind, upgrading to Nerd Font glyphs where the terminal has them.
@@ -486,45 +486,45 @@ is one character per kind, upgrading to Nerd Font glyphs where the terminal has 
 cargo build --release
 ```
 
-The binary lands at `target/release/flea`. Running it dispatches by mode. This is what `flea`
+The binary lands at `target/release/philemon`. Running it dispatches by mode. This is what `philemon`
 prints as its own usage, so the two cannot disagree:
 
 ```bash
-flea [--tui|--gui] [--select <uri|path>] [path]
-flea --default [off]
-flea --picker [off]
-flea --ui-state [<json patch>]
-flea --version
+philemon [--tui|--gui] [--select <uri|path>] [path]
+philemon --default [off]
+philemon --picker [off]
+philemon --ui-state [<json patch>]
+philemon --version
 ```
 
-**Bare `flea` opens the window.** It does not look at stdin or stdout, so a real terminal gets the
+**Bare `philemon` opens the window.** It does not look at stdin or stdout, so a real terminal gets the
 window exactly as a `.desktop` launcher does, and `--gui` is the explicit spelling of the same
 thing. `--tui` is the only route to the terminal interface and the only mode that reads the tty at
 all: it wants both stdin and stdout to be a real terminal, not just one, so a future implementation
-cannot write escape codes into a pipeline, and `flea --tui | head` is therefore refused. That
-interface is not built yet, so `flea --tui` in a terminal exits 2 saying so. A window launch with
+cannot write escape codes into a pipeline, and `philemon --tui | head` is therefore refused. That
+interface is not built yet, so `philemon --tui` in a terminal exits 2 saying so. A window launch with
 no non-empty `WAYLAND_DISPLAY` or `DISPLAY` exits 2 rather than failing inside `qs`. Giving both
 flags is a usage error naming the conflict, never a coin flip.
 
 `--default` opens no window: it sets the `inode/directory` handler, the `org.freedesktop.FileManager1`
 registration behind "Show in folder", Omarchy's two file-manager keys and the file chooser. `off`
 runs all four back, and three of them land where they started. The keys and the picker's window rule
-are marked blocks, the chooser routing is one key, and the registration is a file of Flea's own, so
+are marked blocks, the chooser routing is one key, and the registration is a file of Philemon's own, so
 removing them leaves Omarchy's own behaviour; the handler is deleted rather than restored, so
 afterwards the `inode/directory` default is whatever the rest of the lookup resolves to,
-`org.gnome.Nautilus.desktop` on stock Omarchy. `flea --default off` names that resulting handler
+`org.gnome.Nautilus.desktop` on stock Omarchy. `philemon --default off` names that resulting handler
 on its own line, so it does not claim more than it did. If you had pinned a handler yourself, the
 claim run printed it as `was <id>`, and `xdg-mime default <id> inode/directory` is how you put
 that pin back by hand. See [`docs/install.md`](docs/install.md).
 
-The usage above lists the modes meant to be typed. It deliberately leaves out the ones Flea's own
+The usage above lists the modes meant to be typed. It deliberately leaves out the ones Philemon's own
 parts drive: `--backend`, `--prewarm`, `--open`, `--terminal`, `--pick` and `--print-target` are
 all real and all absent from it, so being unlisted says nothing about whether a mode exists.
-`flea --open <path>` is what Enter on a file other than an archive runs, and it hands the file to `gio open` and waits
-for it, while `flea --terminal <dir>` is what the topbar's terminal button and `Ctrl+T` run, and
+`philemon --open <path>` is what Enter on a file other than an archive runs, and it hands the file to `gio open` and waits
+for it, while `philemon --terminal <dir>` is what the topbar's terminal button and `Ctrl+T` run, and
 it hands the directory to `xdg-terminal-exec --dir=`. **Both print nothing whatever when they
 succeed**, and exit 0, so silence from one of them is the success case and not a missing mode.
-`flea --pick <reply-file>` is the file chooser's own entry point, run by `tools/flea-portal` for
+`philemon --pick <reply-file>` is the file chooser's own entry point, run by `tools/philemon-portal` for
 one portal request rather than by a person. See `AGENTS.md` for their contract.
 
 `--select` accepts either a `file://` URI (percent-decoded) or a bare path, opens its
@@ -532,7 +532,7 @@ parent directory, and puts the cursor and the selection on that one entry once t
 directory's first page of rows arrives. A target that does not exist still opens its
 parent, with nothing selected: this is the one nautilus call site the Dropbox panel needs
 (`Service.qml` reveals a synced file with `nautilus --select`), and it is also the whole of
-what `org.freedesktop.FileManager1.ShowItems` means, so `tools/flea-filemanager1` answers
+what `org.freedesktop.FileManager1.ShowItems` means, so `tools/philemon-filemanager1` answers
 that call by running this. `--print-target` is a
 test-only flag that resolves `--select`'s pair and prints `<parent> <target>` instead of
 opening a window; it exists so the resolution is testable without a display.
@@ -540,12 +540,12 @@ opening a window; it exists so the resolution is testable without a display.
 Run the development UI directly, bypassing the launcher, from the repository root:
 
 ```bash
-QSG_RHI_BACKEND=vulkan FLEA_PATH="$HOME" FLEA_BIN="$PWD/target/release/flea" qs -p "$PWD/ui"
+QSG_RHI_BACKEND=vulkan PHILEMON_PATH="$HOME" PHILEMON_BIN="$PWD/target/release/philemon" qs -p "$PWD/ui"
 ```
 
-`flea --gui` picks the renderer in `src/gui.rs`, so a direct `qs` launch has to name one itself;
+`philemon --gui` picks the renderer in `src/gui.rs`, so a direct `qs` launch has to name one itself;
 without it Qt takes its own default. It is still not the launcher's window: `src/gui.rs` also sets
-`FLEA_RENDERER_AUTOMATIC=1` on that implicit choice, which is what arms the one OpenGL retry in
+`PHILEMON_RENDERER_AUTOMATIC=1` on that implicit choice, which is what arms the one OpenGL retry in
 `ui/shell.qml`, and the line above deliberately leaves it unset so a scene-graph failure ends the
 dev loop instead of detaching a second process behind it.
 
@@ -564,7 +564,7 @@ and the application cannot disagree.
 | Ctrl-d, Ctrl-u | Half a viewport |
 | `h`, Backspace, Ctrl-Up | Parent directory; Ctrl-Up under the Mac preset |
 | `l` | Browse forward: enter a directory, preview a file, page a PDF, or activate a rail/share row; unused in media |
-| Return, Enter, Ctrl-Down | Open a directory, open an archive in Flea's own view, or open any other file with the desktop's handler; Ctrl-Down under the Mac preset |
+| Return, Enter, Ctrl-Down | Open a directory, open an archive in Philemon's own view, or open any other file with the desktop's handler; Ctrl-Down under the Mac preset |
 | Space | Quick Look, and close it |
 | Left, Right | Page a PDF, or seek in media |
 | `v` | Toggle selection on the row |
@@ -605,7 +605,7 @@ is not duplicate, because Ctrl-d already pages with Ctrl-u as its pair (duplicat
 row). The keymap sheet writes a chord as `^c`, and `^N` with a capital means Ctrl-Shift.
 
 `j`, `k` and the arrows stop at the first and the last row. Issue 27 asked for them to come round
-instead, so `"wrapAtEnds": true` in `~/.local/state/flea/ui.json` turns that on: a step taken from
+instead, so `"wrapAtEnds": true` in `~/.local/state/philemon/ui.json` turns that on: a step taken from
 an end wraps, one that merely overshoots from the middle still stops at the end it was heading for,
 and `J`, `K` and the shifted arrows keep the clamp, because an extend that wrapped would take every
 row between the two ends with it. It ships off, and there is no key and no settings row for it,
@@ -678,12 +678,12 @@ cargo test                    # unit tests
 ./tests/bench.sh              # the field bench harness itself
 ./tests/budget.sh             # the file-budget tool
 ./tests/keymap-gen.sh         # ui/js/Keymap.js still matches keys.toml
-FLEA_PACKAGE_FILE=/path/to/flea.pkg.tar.zst ./tests/package.sh # real makepkg archive
-./tools/flea-acceptance       # the everything-works battery
-./tools/flea-file-budget      # the file budget, against this tree
-./tools/flea-field-bench      # the cold field run against the other file managers
-./tools/flea-media-fixture    # builds the 2,000 file media fixture
-./tools/flea-bench-report     # a field run's CSV as the tables in this README
+PHILEMON_PACKAGE_FILE=/path/to/philemon.pkg.tar.zst ./tests/package.sh # real makepkg archive
+./tools/philemon-acceptance       # the everything-works battery
+./tools/philemon-file-budget      # the file budget, against this tree
+./tools/philemon-field-bench      # the cold field run against the other file managers
+./tools/philemon-media-fixture    # builds the 2,000 file media fixture
+./tools/philemon-bench-report     # a field run's CSV as the tables in this README
 ```
 
 `./tests/run-all.sh` is the main headless command. It builds both cargo profiles unconditionally,
@@ -694,16 +694,16 @@ and stops when it cannot find its binary, rather than reporting every case as a 
 runs every suite that needs nothing but a shell, and reads each suite's own exit code, not a
 pipeline's.
 It then names the suites it cannot run and says what each needs: `ui.sh` the display, `drag.sh` the
-display and a real pointer through uinput, `picker.sh` the display, a session bus and Flea
+display and a real pointer through uinput, `picker.sh` the display, a session bus and Philemon
 activatable as the chooser backend, `bench.sh` its own benchmark contract, `package.sh` a real
-makepkg archive in `FLEA_PACKAGE_FILE`, and `network-live.sh` live share credentials and the
+makepkg archive in `PHILEMON_PACKAGE_FILE`, and `network-live.sh` live share credentials and the
 approved runtime bundle. A suite in neither of the two lists fails the runner, so one cannot go
 uninvoked again. There is no CI, and `PKGBUILD`'s `check()` runs `cargo test --release --locked`,
 `tests/js.sh` and `tests/keymap-gen.sh`, which are the two that need no built binary.
 
-`tools/flea-acceptance` derives its checklist at run time from the protocol document, the
+`tools/philemon-acceptance` derives its checklist at run time from the protocol document, the
 key table, the context menu, the design canvas and the sidebar, so it cannot be smaller
-than the product. `tools/flea-sandbox-guard` owns every destructive path in the tools
+than the product. `tools/philemon-sandbox-guard` owns every destructive path in the tools
 above: nothing writes or deletes outside a fixture root that carries its own marker file.
 
 ## Support

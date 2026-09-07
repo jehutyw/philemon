@@ -15,7 +15,7 @@ function run(check) {
     check("ctrl u is half a page up", Keymap.lookup(Qt.Key_U, "u", ctrl), "pageUp")
 
     // Issue 28: the full-size keyboard's own four, reusing the actions the vim keys already carry so
-    // no new name reaches tools/flea-acceptance's checklist and no second control does the same job.
+    // no new name reaches tools/philemon-acceptance's checklist and no second control does the same job.
     check("home goes to the first row", Keymap.lookup(Qt.Key_Home, "", none), "cursorFirst")
     check("end goes to the last row", Keymap.lookup(Qt.Key_End, "", none), "cursorLast")
     check("page down is the page key, not only the chord", Keymap.lookup(Qt.Key_PageDown, "", none), "pageDown")

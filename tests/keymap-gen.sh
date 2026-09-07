@@ -16,7 +16,7 @@ for p in "$tmp" "$probe_dir"; do
 done
 trap 'rm -f "$tmp"; rm -rf "$probe_dir"' EXIT
 
-./tools/flea-keymap-gen "$tmp" || { echo "FAIL the generator did not run"; exit 1; }
+./tools/philemon-keymap-gen "$tmp" || { echo "FAIL the generator did not run"; exit 1; }
 
 # SettingsKeys.html says conflicts fail the build, and until now they did not: a second mac ctrl-1
 # claiming viewGrid emitted two overlay rows, exited 0, and let the first silently win. The broken
@@ -33,7 +33,7 @@ keys = "ctrl-1"
 action = "viewGrid"
 label = "grid view"
 CONFLICT
-if ./tools/flea-keymap-gen "$probe_dir/conflict.js" "$conflict" 2>"$probe_dir/conflict.err"; then
+if ./tools/philemon-keymap-gen "$probe_dir/conflict.js" "$conflict" 2>"$probe_dir/conflict.err"; then
   echo "FAIL the generator accepted a preset claiming ctrl-1 twice"
   exit 1
 fi
@@ -94,5 +94,5 @@ if diff -u ui/js/Keymap.js "$tmp"; then
   echo "ok   ui/js/Keymap.js matches keys.toml"
   exit 0
 fi
-echo "FAIL ui/js/Keymap.js is stale, run ./tools/flea-keymap-gen"
+echo "FAIL ui/js/Keymap.js is stale, run ./tools/philemon-keymap-gen"
 exit 1

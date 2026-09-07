@@ -1,13 +1,13 @@
-//@ pragma AppId com.thisisgm.flea
-//@ pragma ShellId flea
+//@ pragma AppId com.thisisgm.philemon
+//@ pragma ShellId philemon
 //@ pragma NativeTextRendering
-//@ pragma CacheDir $BASE/flea
+//@ pragma CacheDir $BASE/philemon
 
 import Quickshell
 import QtQuick
 import qs.Commons
 import "."
-import "." as Flea
+import "." as Philemon
 import "js/TextSize.js" as TextSize
 import "js/Nav.js" as Nav
 import "js/Ops.js" as Ops
@@ -16,8 +16,8 @@ import "js/Search.js" as Search
 
 ShellRoot {
     FloatingWindow {
-        id: fleaWindow
-        title: "Flea // wired"
+        id: philemonWindow
+        title: "Philemon // wired"
         implicitWidth: 900
         implicitHeight: 600
         property bool rendererFallbackStarted: false
@@ -25,8 +25,8 @@ ShellRoot {
         function handleSceneGraphError(error, message) {
             var backendName = Quickshell.env("QSG_RHI_BACKEND")
             console.warn("graphics backend " + backendName + " failed (" + error + "): " + message)
-            var retry = Renderer.fallbackCommand(backendName, Quickshell.env("FLEA_RENDERER_AUTOMATIC"),
-                                                 Quickshell.env("FLEA_BIN"))
+            var retry = Renderer.fallbackCommand(backendName, Quickshell.env("PHILEMON_RENDERER_AUTOMATIC"),
+                                                 Quickshell.env("PHILEMON_BIN"))
             if (retry && !rendererFallbackStarted) {
                 rendererFallbackStarted = true
                 Quickshell.execDetached(retry)
@@ -37,7 +37,7 @@ ShellRoot {
         // Null while this loads and the QQuickWindow once it exists, which is before the scene graph starts.
         Connections {
             target: view.Window.window
-            function onSceneGraphError(error, message) { fleaWindow.handleSceneGraphError(error, message) }
+            function onSceneGraphError(error, message) { philemonWindow.handleSceneGraphError(error, message) }
         }
 
         // Quickshell 0.3.1 has no exit API and Qt.quit() is a no-op, so the shell signals itself.
@@ -61,14 +61,14 @@ ShellRoot {
         function centreOf(item) {
             if (!item)
                 return ""
-            var rect = fleaWindow.itemRect(item)
+            var rect = philemonWindow.itemRect(item)
             return Math.round(rect.x + rect.width / 2) + " " + Math.round(rect.y + rect.height / 2)
         }
         // centreOf's sibling, "x width centre": the edges round because a click needs a whole pixel, the centre keeps three decimals because the misalignment it reads is half of one.
         function boxOf(item) {
             if (!item)
                 return ""
-            var rect = fleaWindow.itemRect(item)
+            var rect = philemonWindow.itemRect(item)
             return Math.round(rect.x) + " " + Math.round(rect.width) + " " + (rect.x + rect.width / 2).toFixed(3)
         }
 
@@ -90,7 +90,7 @@ ShellRoot {
 
             // The canvas's own top chrome: where you are on the left, how you are looking at it on
             // the right. The path lives here, which is why the status bar below carries counts instead.
-            Flea.ChromeBar {
+            Philemon.ChromeBar {
                 id: chrome
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -124,7 +124,7 @@ ShellRoot {
                 function onPeeked(path, hidden, total, rows, readFailed, mode) { chrome.completeWith(path, hidden, rows) }
             }
 
-            Flea.TabBar {
+            Philemon.TabBar {
                 id: tabBar
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -132,7 +132,7 @@ ShellRoot {
                 pane: pane
             }
 
-            Flea.Pane {
+            Philemon.Pane {
                 id: pane
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -150,11 +150,11 @@ ShellRoot {
                 onPathBarRequested: chrome.startEdit()
                 // Issue 9. ViewState persists the stop and Theme derives its own tokens from it, so
                 // the whole window follows without any surface reading the chord itself.
-                onTextSizeRequested: function (direction) { fleaWindow.applyTextSize(direction) }
+                onTextSizeRequested: function (direction) { philemonWindow.applyTextSize(direction) }
                 onOpened: function (path) { shareBrowser.close() }
             }
 
-            Flea.StatusBar {
+            Philemon.StatusBar {
                 id: bar
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -174,16 +174,16 @@ ShellRoot {
                 onTransferCancelRequested: function (id) { backend.transfercancel(id) }
             }
 
-            Flea.Preview { id: preview; pane: pane }
+            Philemon.Preview { id: preview; pane: pane }
 
-            Flea.ConvertDialog {
+            Philemon.ConvertDialog {
                 id: convertDialog
                 anchors.fill: parent
                 onAccepted: function (format, strip) { Ops.convert(pane, format, strip) }
             }
 
             // The keymap sheet ? opens, over the whole window as the convert popup is.
-            Flea.KeymapSheet {
+            Philemon.KeymapSheet {
                 id: keymapSheet
                 anchors.fill: parent
             }
@@ -191,12 +191,12 @@ ShellRoot {
             // The settings panel, reached by the comma key from either view, by the toolbar's sliders
             // button, and by the third door the Settings board draws: the background menu's own
             // Settings row, which ui/js/Menu.js backgroundEntries builds and ui/Pane.qml act routes.
-            Flea.SettingsPanel {
+            Philemon.SettingsPanel {
                 id: settingsPanel
                 anchors.fill: parent
             }
 
-            Flea.NetworkDialog {
+            Philemon.NetworkDialog {
                 id: networkDialog
                 // FocusScope remembers its own last-focused child, list or rail, and restores it.
                 onClosed: pane.forceActiveFocus()
@@ -219,7 +219,7 @@ ShellRoot {
             // In the columns view that area is all three columns, so the mark takes the middle one:
             // an empty current directory is that column's answer, not the parent column's.
             // listArea is measured inside pane, which starts below the chrome bar, so pane's own y is added; pane.x is zero.
-            Flea.EmptyState {
+            Philemon.EmptyState {
                 id: emptyState
                 x: pane.listArea.x + (pane.viewMode === "columns" ? pane.columnsArea.columnWidth : 0)
                 y: pane.y + pane.listArea.y
@@ -237,7 +237,7 @@ ShellRoot {
             }
 
             // The loading crawl, same listArea placement; its own hold-off keeps fast listings clean.
-            Flea.LoadingState {
+            Philemon.LoadingState {
                 x: pane.listArea.x
                 y: pane.y + pane.listArea.y
                 width: pane.listArea.width
@@ -246,7 +246,7 @@ ShellRoot {
             }
 
             // A bare Network entry's own shares, same listArea placement as EmptyState above.
-            Flea.ShareBrowser {
+            Philemon.ShareBrowser {
                 id: shareBrowser
                 x: pane.listArea.x
                 y: pane.y + pane.listArea.y
@@ -273,17 +273,17 @@ ShellRoot {
             }
 
             Component.onCompleted: {
-                var start = Quickshell.env("FLEA_PATH") || Quickshell.env("HOME")
+                var start = Quickshell.env("PHILEMON_PATH") || Quickshell.env("HOME")
                 // Read once: Pane.applyPendingSelect() forgets it after the first rows response.
-                pane.pendingSelect = Quickshell.env("FLEA_SELECT") || ""
+                pane.pendingSelect = Quickshell.env("PHILEMON_SELECT") || ""
                 pane.open(start)
             }
         }
     }
 
     // The seam the tests drive, see AGENTS.md "Testing". Every reader lives in ui/Ipc.qml.
-    Flea.Ipc {
-        fleaWindow: fleaWindow
+    Philemon.Ipc {
+        philemonWindow: philemonWindow
         pane: pane
         bar: bar
         backend: backend

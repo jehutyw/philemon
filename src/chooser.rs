@@ -1,19 +1,19 @@
-// flea --picker: the per-user step that routes the desktop's file chooser here, see docs/install.md.
+// philemon --picker: the per-user step that routes the desktop's file chooser here, see docs/install.md.
 use crate::hyprkeys;
 use crate::userfile::{config_home, create_file, data_file, replace_file};
 use std::fs;
 use std::path::PathBuf;
 
-// The interface Flea's backend implements, and the only key in portals.conf that is Flea's to write.
+// The interface Philemon's backend implements, and the only key in portals.conf that is Philemon's to write.
 const IFACE: &str = "org.freedesktop.impl.portal.FileChooser";
-// gtk stays behind flea, so a box whose flea.portal went missing still has a chooser at all.
-const PREFERRED: &str = "flea;gtk";
-// What tools/flea-portal registers as; xdg-desktop-portal names a backend by this file's stem.
-const PORTAL_FILE: &str = "flea.portal";
+// gtk stays behind philemon, so a box whose philemon.portal went missing still has a chooser at all.
+const PREFERRED: &str = "philemon;gtk";
+// What tools/philemon-portal registers as; xdg-desktop-portal names a backend by this file's stem.
+const PORTAL_FILE: &str = "philemon.portal";
 const GROUP: &str = "[preferred]";
 
-// flea --picker
-// --default asks this before claiming, because a box with no flea.portal has nothing to prefer.
+// philemon --picker
+// --default asks this before claiming, because a box with no philemon.portal has nothing to prefer.
 pub fn backend_installed() -> bool {
     installed_portal().is_some()
 }
@@ -21,7 +21,7 @@ pub fn backend_installed() -> bool {
 pub fn claim() -> i32 {
     if installed_portal().is_none() {
         eprintln!(
-            "flea: {} is not installed in any portal directory, so there is no backend to prefer; install the package first",
+            "philemon: {} is not installed in any portal directory, so there is no backend to prefer; install the package first",
             PORTAL_FILE
         );
         return 1;
@@ -37,7 +37,7 @@ pub fn claim() -> i32 {
     report(claim_chooser(), window)
 }
 
-// flea --picker off
+// philemon --picker off
 pub fn release() -> i32 {
     let window = if crate::defaults::is_omarchy() {
         hyprkeys::float_release()
@@ -54,7 +54,7 @@ fn report(routing: Result<String, String>, window: Result<String, String>) -> i3
         match half {
             Ok(line) => println!("{}", line),
             Err(why) => {
-                eprintln!("flea: {}", why);
+                eprintln!("philemon: {}", why);
                 status = 1;
             }
         }
@@ -112,10 +112,10 @@ fn release_chooser() -> Result<String, String> {
     // A file left holding nothing but the group heading was this command's own, so it goes with the key.
     if next.trim() == GROUP {
         fs::remove_file(&path).map_err(|e| format!("{} could not be removed ({:?})", path.display(), e.kind()))?;
-        return Ok(format!("{}: Flea's line removed, and {} held nothing else, so it is gone", IFACE, path.display()));
+        return Ok(format!("{}: Philemon's line removed, and {} held nothing else, so it is gone", IFACE, path.display()));
     }
     replace_file(&path, &next)?;
-    Ok(format!("{}: Flea's line removed from {}", IFACE, path.display()))
+    Ok(format!("{}: Philemon's line removed from {}", IFACE, path.display()))
 }
 
 fn conf_path() -> Result<PathBuf, String> {
@@ -143,10 +143,10 @@ fn installed_portal() -> Option<PathBuf> {
     data_file(&format!("xdg-desktop-portal/portals/{}", PORTAL_FILE))
 }
 
-// portals.conf(5) is a key file, of which only one key in one group is Flea's:
+// portals.conf(5) is a key file, of which only one key in one group is Philemon's:
 //   [preferred]
 //   default=hyprland;gtk
-//   org.freedesktop.impl.portal.FileChooser=flea;gtk
+//   org.freedesktop.impl.portal.FileChooser=philemon;gtk
 // Returns the file with `key=value` in [preferred], or None when it already says exactly that. A
 // default= line is never touched: it is what every other interface still resolves through.
 pub fn set_preferred(text: &str, key: &str, value: &str) -> Option<String> {
@@ -225,20 +225,20 @@ mod tests {
     #[test]
     fn set_preferred_adds_the_key_without_touching_the_default() {
         let out = set_preferred(BOX_SHAPE, IFACE, PREFERRED).expect("the file gains a line");
-        assert_eq!(out, "[preferred]\ndefault=hyprland;gtk\norg.freedesktop.impl.portal.FileChooser=flea;gtk\n");
+        assert_eq!(out, "[preferred]\ndefault=hyprland;gtk\norg.freedesktop.impl.portal.FileChooser=philemon;gtk\n");
     }
 
     #[test]
     fn set_preferred_creates_the_group_when_the_file_has_another_one() {
         let out = set_preferred("[something]\nkey=value\n", IFACE, PREFERRED).expect("the file gains a group");
-        assert_eq!(out, "[something]\nkey=value\n[preferred]\norg.freedesktop.impl.portal.FileChooser=flea;gtk\n");
+        assert_eq!(out, "[something]\nkey=value\n[preferred]\norg.freedesktop.impl.portal.FileChooser=philemon;gtk\n");
     }
 
     #[test]
     fn set_preferred_replaces_another_backend_and_answers_none_for_its_own() {
         let held = "[preferred]\norg.freedesktop.impl.portal.FileChooser=gtk\ndefault=hyprland\n";
         let out = set_preferred(held, IFACE, PREFERRED).expect("the value changes");
-        assert_eq!(out, "[preferred]\norg.freedesktop.impl.portal.FileChooser=flea;gtk\ndefault=hyprland\n");
+        assert_eq!(out, "[preferred]\norg.freedesktop.impl.portal.FileChooser=philemon;gtk\ndefault=hyprland\n");
         assert_eq!(set_preferred(&out, IFACE, PREFERRED), None);
     }
 
@@ -246,12 +246,12 @@ mod tests {
     fn set_preferred_puts_the_key_inside_the_group_and_not_after_the_next_one() {
         let two = "[preferred]\ndefault=hyprland\n\n[other]\nkey=value\n";
         let out = set_preferred(two, IFACE, PREFERRED).expect("the file gains a line");
-        assert_eq!(out, "[preferred]\ndefault=hyprland\n\norg.freedesktop.impl.portal.FileChooser=flea;gtk\n[other]\nkey=value\n");
+        assert_eq!(out, "[preferred]\ndefault=hyprland\n\norg.freedesktop.impl.portal.FileChooser=philemon;gtk\n[other]\nkey=value\n");
     }
 
     #[test]
-    fn drop_preferred_removes_only_fleas_line() {
-        let held = "[preferred]\ndefault=hyprland;gtk\norg.freedesktop.impl.portal.FileChooser=flea;gtk\n";
+    fn drop_preferred_removes_only_philemons_line() {
+        let held = "[preferred]\ndefault=hyprland;gtk\norg.freedesktop.impl.portal.FileChooser=philemon;gtk\n";
         assert_eq!(drop_preferred(held, IFACE), Some("[preferred]\ndefault=hyprland;gtk\n".to_string()));
         assert_eq!(drop_preferred(BOX_SHAPE, IFACE), None);
         assert_eq!(drop_preferred("", IFACE), None);

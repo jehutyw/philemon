@@ -1,5 +1,5 @@
 import QtQuick
-import "." as Flea
+import "." as Philemon
 import "js/DirSizes.js" as DirSizes
 import "js/Drag.js" as DragOps
 import "js/Filter.js" as Filter
@@ -26,7 +26,7 @@ ListView {
     property var dragRows: []
     property int dropIndex: -1
     property bool dragCopy: false
-    // The type Flea's own drag carries, so a drop can tell it from a foreign one: the compositor
+    // The type Philemon's own drag carries, so a drop can tell it from a foreign one: the compositor
     // hands this window's own platform drag back to these same DropAreas.
     readonly property string dragKey: DragOps.ROWS_MIME
     // What the lifted rows put on the wire, rebuilt at each lift and cleared with the gesture.
@@ -41,14 +41,14 @@ ListView {
     // Every property the delegate draws is a binding on index, so a row leaving the buffer is re-bound rather than rebuilt.
     reuseItems: true
 
-    delegate: Flea.Row {
+    delegate: Philemon.Row {
         id: cell
         required property int index
         // index is where the row is drawn; listingIndex is the row the backend numbers, and under a
         // filter the two are different. Everything that leaves this delegate takes the listing one.
         readonly property int listingIndex: Filter.at(root.pane.shown, index)
         width: root.width
-        // FleaWindow.html and Search.html are the two surfaces that end a directory name with a slash.
+        // PhilemonWindow.html and Search.html are the two surfaces that end a directory name with a slash.
         dirSuffix: true
         row: root.pane.rowFor(listingIndex)
         cursor: listingIndex === root.pane.cursorIndex
@@ -111,7 +111,7 @@ ListView {
             Drag.dragType: Drag.Automatic
             // Copy alone, because supportedActions is the only one of these another application
             // ever sees: offering Qt.MoveAction told Chromium the drop was a move, which Google's
-            // uploader refuses, and liftEnded removes nothing so it was a promise Flea cannot keep.
+            // uploader refuses, and liftEnded removes nothing so it was a promise Philemon cannot keep.
             Drag.supportedActions: Qt.CopyAction
             Drag.proposedAction: Qt.CopyAction
             Drag.mimeData: root.dragMime
@@ -142,7 +142,7 @@ ListView {
             }
             onDropped: function (drop) {
                 // Only this window's own drag takes the internal path. The row marker names the
-                // application and not the process, so another Flea window matched it, resolved its
+                // application and not the process, so another Philemon window matched it, resolved its
                 // indices against this listing's own empty selection, and dropped nothing at all.
                 var marker = drop.getDataAsString(root.dragKey)
                 if (DragOps.isOwnDrag(marker)) {
@@ -150,7 +150,7 @@ ListView {
                     drop.accept(Qt.CopyAction)
                     return
                 }
-                // Another Flea window is a foreign source like any other: it arrives by path, never
+                // Another Philemon window is a foreign source like any other: it arrives by path, never
                 // by row, and it copies. Both branches accept a copy and never the proposed action,
                 // so no source deletes its own file on the strength of this drop.
                 DragOps.dropExternal(root.pane, drop.urls, cell.listingIndex)

@@ -121,7 +121,7 @@ mod tests {
     use std::os::unix::fs::symlink;
 
     fn fixture(tag: &str) -> (String, Listing) {
-        let d = format!("/tmp/flea-meta-{}-{}", tag, std::process::id());
+        let d = format!("/tmp/philemon-meta-{}-{}", tag, std::process::id());
         let _ = fs::remove_dir_all(&d);
         fs::create_dir_all(&d).unwrap();
         fs::write(format!("{}/three.txt", d), "abc").unwrap();
@@ -183,7 +183,7 @@ mod tests {
 
     #[test]
     fn only_a_symlink_whose_target_is_a_directory_reports_target_is_dir() {
-        let d = format!("/tmp/flea-meta-{}-{}", "linktarget", std::process::id());
+        let d = format!("/tmp/philemon-meta-{}-{}", "linktarget", std::process::id());
         let _ = fs::remove_dir_all(&d);
         fs::create_dir_all(format!("{}/realdir", d)).unwrap();
         fs::write(format!("{}/real.txt", d), "abc").unwrap();

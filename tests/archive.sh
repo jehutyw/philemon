@@ -3,13 +3,13 @@
 # operations design insists is proven on this bsdtar build rather than trusted as a libarchive default.
 set -u
 # Hard rule 9's guard, which owns FIXTURE_ROOT and every create and delete below.
-. "$(dirname "$0")/../tools/flea-sandbox-guard"
+. "$(dirname "$0")/../tools/philemon-sandbox-guard"
 
 cd "$(dirname "$0")/.." || exit 1
-BIN=./target/debug/flea
+BIN=./target/debug/philemon
 # Without this every case below drives a missing binary and reports the result as a product failure.
 [ -x "$BIN" ] || { echo "archive.sh: $BIN is missing, run cargo build" >&2; exit 1; }
-D="$FIXTURE_ROOT/flea-archive-test-$$"
+D="$FIXTURE_ROOT/philemon-archive-test-$$"
 fail=0
 
 
@@ -115,7 +115,7 @@ send "{\"c\":\"archive\",\"op\":\"extract\",\"path\":\"$D/notreally.zip\",\"dest
 await '"t":"archivedone"' || fail=1
 check "a corrupt archive fails" "1" "$(seen '"ok":false')"
 check "and no destination was left behind" "no" "$([ -e "$D/nowhere" ] && echo yes || echo no)"
-check "and no work directory survived it" "0" "$(find "$D" -maxdepth 1 -name '.flea-work-*' | wc -l | tr -d ' ')"
+check "and no work directory survived it" "0" "$(find "$D" -maxdepth 1 -name '.philemon-work-*' | wc -l | tr -d ' ')"
 stop_backend
 
 echo "--- the hostile archive: nothing escapes the destination ---"
@@ -134,8 +134,8 @@ stop_backend
 
 echo "--- convert, with and without the metadata strip ---"
 magick -size 64x48 xc:navy "$D/shot.png"
-magick "$D/shot.png" -set comment 'flea test comment' "$D/tagged.png"
-before=$(magick identify -verbose "$D/tagged.png" 2>/dev/null | grep -c 'flea test comment')
+magick "$D/shot.png" -set comment 'philemon test comment' "$D/tagged.png"
+before=$(magick identify -verbose "$D/tagged.png" 2>/dev/null | grep -c 'philemon test comment')
 check "the fixture really carries the metadata to be stripped" "1" "$before"
 start_backend
 send "{\"c\":\"convert\",\"path\":\"$D/shot.png\",\"dest\":\"$D/shot (converted).jpg\",\"strip\":false}"
@@ -145,9 +145,9 @@ check "and the jpeg is on disk" "JPEG" "$(magick identify -format '%m' "$D/shot 
 check "the source is untouched" "PNG" "$(magick identify -format '%m' "$D/shot.png" 2>/dev/null)"
 send "{\"c\":\"convert\",\"path\":\"$D/tagged.png\",\"dest\":\"$D/tagged (stripped).png\",\"strip\":true}"
 await '"t":"convertdone","id":2' || fail=1
-after=$(magick identify -verbose "$D/tagged (stripped).png" 2>/dev/null | grep -c 'flea test comment')
+after=$(magick identify -verbose "$D/tagged (stripped).png" 2>/dev/null | grep -c 'philemon test comment')
 check "strip actually removed the metadata" "0" "$after"
-check "and the original still has it" "1" "$(magick identify -verbose "$D/tagged.png" 2>/dev/null | grep -c 'flea test comment')"
+check "and the original still has it" "1" "$(magick identify -verbose "$D/tagged.png" 2>/dev/null | grep -c 'philemon test comment')"
 stop_backend
 
 # The count is exact however long the listing is; only the names are capped, and the tile's
@@ -249,7 +249,7 @@ echo "  $bad"
 stop_backend
 
 echo "--- no work directory is left behind ---"
-check "every private work directory was cleaned up" "0" "$(find "$D" -maxdepth 2 -name '.flea-work-*' | wc -l | tr -d ' ')"
+check "every private work directory was cleaned up" "0" "$(find "$D" -maxdepth 2 -name '.philemon-work-*' | wc -l | tr -d ' ')"
 
 echo
 if [ "$fail" = 0 ]; then echo "archive.sh: all checks passed"; else echo "archive.sh: FAILURES above"; fi

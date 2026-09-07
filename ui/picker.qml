@@ -1,26 +1,26 @@
 // Its own app id, so one Hyprland rule can give the chooser the floating treatment Omarchy already
-// gives xdg-desktop-portal-gtk without touching the window; flea --picker writes that rule.
-//@ pragma AppId com.thisisgm.flea.picker
-//@ pragma ShellId fleapicker
+// gives xdg-desktop-portal-gtk without touching the window; philemon --picker writes that rule.
+//@ pragma AppId com.thisisgm.philemon.picker
+//@ pragma ShellId philemonpicker
 //@ pragma NativeTextRendering
-//@ pragma CacheDir $BASE/flea
+//@ pragma CacheDir $BASE/philemon
 
 import Quickshell
 import Quickshell.Io
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Picker.js" as Picker
 
 // One portal request, one window: the org.freedesktop.impl.portal.FileChooser dialog every caller on
-// the box gets, opened by flea --pick and answered through the reply file tools/flea-portal reads.
+// the box gets, opened by philemon --pick and answered through the reply file tools/philemon-portal reads.
 // The same Backend, Row, Theme and places the browser window draws with, and none of its operations:
 // a chooser that can rename or delete is a file manager wearing a dialog's clothes.
 ShellRoot {
     FloatingWindow {
         id: win
 
-        readonly property var req: Picker.request(Quickshell.env("FLEA_PICKER"))
+        readonly property var req: Picker.request(Quickshell.env("PHILEMON_PICKER"))
         readonly property string home: Quickshell.env("HOME")
 
         title: Picker.title(win.req)
@@ -50,7 +50,7 @@ ShellRoot {
         // Where Back goes, and it only ever goes back: Parent is its own button and pushes here too.
         property var history: []
         // The save mode's own name, which starts as the caller's suggestion only when that
-        // suggestion is a filename: tools/flea-portal passes current_name through verbatim, so a
+        // suggestion is a filename: tools/philemon-portal passes current_name through verbatim, so a
         // separator in it would put a path outside this folder in the field before anyone typed.
         property string saveName: Picker.validName(win.req.name) ? win.req.name : ""
 
@@ -177,7 +177,7 @@ ShellRoot {
         }
 
         // The one write out of this process. The window closes only once the reply file is on disk,
-        // because tools/flea-portal reads it after this process exits and a lost write is a fault.
+        // because tools/philemon-portal reads it after this process exits and a lost write is a fault.
         function finish(response, list) {
             if (win.answered)
                 return
@@ -200,7 +200,7 @@ ShellRoot {
 
         FileView {
             id: replyFile
-            path: Quickshell.env("FLEA_PICKER_REPLY")
+            path: Quickshell.env("PHILEMON_PICKER_REPLY")
             atomicWrites: true
             // The reply file does not exist until this window writes it, and a preload read of a
             // path that is not there is not an error worth a line; onSaveFailed below is.
@@ -230,7 +230,7 @@ ShellRoot {
         // exactly as ui/shell.qml does, once the backend says it has drained.
         Connections { target: backend; function onQuitReady() { Quickshell.execDetached(["kill", String(Quickshell.processId)]) } }
 
-        Flea.Backend {
+        Philemon.Backend {
             id: backend
 
             onListed: function (n, readMs, sortMs) {
@@ -250,7 +250,7 @@ ShellRoot {
 
         // The history the Recent location lists, read only when that location is opened. The listing
         // is the client's own order, so the backend is asked for these paths and never to sort them.
-        Flea.PickerRecent {
+        Philemon.PickerRecent {
             id: recents
             onRefreshed: if (win.recent) backend.listPaths(recents.paths, win.windowSize)
         }
@@ -262,7 +262,7 @@ ShellRoot {
             // The save field takes the keyboard from the list, and Escape has to refuse from there too.
             Keys.onEscapePressed: win.cancel()
 
-            Flea.PickerChrome {
+            Philemon.PickerChrome {
                 id: chrome
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -275,7 +275,7 @@ ShellRoot {
                 onChipChosen: function (index) { win.filterIndex = index }
             }
 
-            Flea.PickerPlaces {
+            Philemon.PickerPlaces {
                 id: places
                 anchors.left: parent.left
                 anchors.top: chrome.bottom
@@ -287,7 +287,7 @@ ShellRoot {
                 onChosen: function (path) { win.open(path); list.forceActiveFocus() }
             }
 
-            Flea.PickerList {
+            Philemon.PickerList {
                 id: list
                 anchors.left: places.right
                 anchors.right: parent.right
@@ -300,7 +300,7 @@ ShellRoot {
             }
 
             // The same empty hero the browser window draws, over the list area alone.
-            Flea.EmptyState {
+            Philemon.EmptyState {
                 x: list.x
                 y: list.y
                 width: list.width
@@ -308,7 +308,7 @@ ShellRoot {
                 visible: win.listingState === "empty"
             }
 
-            Flea.PickerSave {
+            Philemon.PickerSave {
                 id: save
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -375,7 +375,7 @@ ShellRoot {
 
         // The seam tests/picker.sh drives, the same read-only shape ui/Ipc.qml has for the window.
         IpcHandler {
-            target: "fleapicker"
+            target: "philemonpicker"
             function ready(): bool { return true }
             function path(): string { return win.path }
             function total(): int { return win.total }

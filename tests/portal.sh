@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Drives tools/flea-portal over a real D-Bus round trip and asserts what the handler decoded.
+# Drives tools/philemon-portal over a real D-Bus round trip and asserts what the handler decoded.
 #
 # The defect this exists for looked correct in isolation. path_option() gated on
 # isinstance(value, bytes), and PyGObject 3.56.3 on Python 3.14 unpacks a D-Bus `ay` as a list of
@@ -8,35 +8,35 @@
 # own 600 s timeout. A synthetic GLib.Variant unpack proves the shape and nothing else; only a call
 # arriving over a bus proves the handler, which is why this suite exists rather than a unit test.
 #
-# No window opens: FLEA_BIN names a stub that records the request and writes the reply, which is the
-# seam tools/flea-portal already reads. The bus is a private one this suite starts and takes with it,
+# No window opens: PHILEMON_BIN names a stub that records the request and writes the reply, which is the
+# seam tools/philemon-portal already reads. The bus is a private one this suite starts and takes with it,
 # so the operator's own chooser routing is never touched and no D-Bus service file is written.
 set -u
 set -o pipefail
 
 # The re-exec comes before everything, including the guard: every case needs a session bus and this
 # suite must never borrow the operator's, where owning the backend's name would shadow the real one.
-if [ -z "${FLEA_PORTAL_PRIVATE_BUS:-}" ]; then
+if [ -z "${PHILEMON_PORTAL_PRIVATE_BUS:-}" ]; then
     command -v dbus-run-session >/dev/null 2>&1 || {
         printf 'portal.sh: dbus-run-session is missing, and this suite will not run on the session bus\n' >&2
         exit 1
     }
-    export FLEA_PORTAL_PRIVATE_BUS=1
+    export PHILEMON_PORTAL_PRIVATE_BUS=1
     exec dbus-run-session -- "$0" "$@"
 fi
 
 # Hard rule 9's guard, which owns FIXTURE_ROOT and every create and delete below.
-. "$(dirname "$0")/../tools/flea-sandbox-guard"
+. "$(dirname "$0")/../tools/philemon-sandbox-guard"
 cd "$(dirname "$0")/.." || exit 1
 
-backend=tools/flea-portal
+backend=tools/philemon-portal
 [ -f "$backend" ] || { printf 'portal.sh: %s is missing, refusing to report on nothing\n' "$backend" >&2; exit 1; }
 python3 -c 'import gi; gi.require_version("Gio", "2.0")' 2>/dev/null || {
     printf 'portal.sh: python-gobject is missing, which is the backend the suite drives\n' >&2
     exit 1
 }
 
-dir="$FIXTURE_ROOT/flea-portal-$$"
+dir="$FIXTURE_ROOT/philemon-portal-$$"
 # The one child this suite starts, so the one it may signal: the pid came from its own spawn.
 portal=0
 cleanup() {
@@ -54,15 +54,15 @@ capture="$dir/request.json"
 # The picker the backend spawns, standing in for the window: it records the request the backend
 # built and writes the reply the backend reads back. 1 is the user's own refusal, which carries no
 # URI, so every case here stays about the request and not about the answer.
-cat > "$dir/flea" <<'STUB'
+cat > "$dir/philemon" <<'STUB'
 #!/bin/sh
-printf '%s' "$FLEA_PICKER" > "$FLEA_PORTAL_CAPTURE"
+printf '%s' "$PHILEMON_PICKER" > "$PHILEMON_PORTAL_CAPTURE"
 printf '{"response":1}' > "$2"
 STUB
-chmod +x "$dir/flea"
+chmod +x "$dir/philemon"
 
 # XDG_RUNTIME_DIR is where the backend's own mkdtemp goes, so it is pointed inside the sandbox.
-env FLEA_BIN="$dir/flea" FLEA_PORTAL_CAPTURE="$capture" XDG_RUNTIME_DIR="$dir/run" \
+env PHILEMON_BIN="$dir/philemon" PHILEMON_PORTAL_CAPTURE="$capture" XDG_RUNTIME_DIR="$dir/run" \
     python3 "$backend" > "$dir/portal.log" 2>&1 &
 portal=$!
 
@@ -79,7 +79,7 @@ check() {
   fi
 }
 
-out=$(env FLEA_PORTAL_CAPTURE="$capture" FLEA_PORTAL_FOLDER="$dir/folder" python3 - <<'ASK'
+out=$(env PHILEMON_PORTAL_CAPTURE="$capture" PHILEMON_PORTAL_FOLDER="$dir/folder" python3 - <<'ASK'
 import json
 import os
 import sys
@@ -90,15 +90,15 @@ import gi
 gi.require_version("Gio", "2.0")
 from gi.repository import Gio, GLib
 
-BACKEND = "org.freedesktop.impl.portal.desktop.flea"
+BACKEND = "org.freedesktop.impl.portal.desktop.philemon"
 OBJECT_PATH = "/org/freedesktop/portal/desktop"
 CHOOSER = "org.freedesktop.impl.portal.FileChooser"
 # A caller waits 600 s for a response; ten seconds is long enough to tell answered from never.
 CALL_TIMEOUT_MS = 10000
 READY_TIMEOUT_SEC = 15
 
-capture = os.environ["FLEA_PORTAL_CAPTURE"]
-folder = os.environ["FLEA_PORTAL_FOLDER"]
+capture = os.environ["PHILEMON_PORTAL_CAPTURE"]
+folder = os.environ["PHILEMON_PORTAL_FOLDER"]
 bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
 
 
@@ -123,7 +123,7 @@ while not owns_the_name():
 def ask(method, options, token):
     with open(capture, "w"):
         pass
-    handle = "%s/request/fleaportaltest/%s" % (OBJECT_PATH, token)
+    handle = "%s/request/philemonportaltest/%s" % (OBJECT_PATH, token)
     try:
         reply = bus.call_sync(BACKEND, OBJECT_PATH, CHOOSER, method,
                               GLib.Variant("(osssa{sv})", (handle, "portal.sh", "", "portal.sh", options)),

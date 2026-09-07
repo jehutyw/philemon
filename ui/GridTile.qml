@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Format.js" as Format
 import "js/Icons.js" as Icons
 
@@ -59,7 +59,7 @@ Item {
             cache: false
         }
 
-        Flea.Glyph {
+        Philemon.Glyph {
             anchors.fill: parent
             visible: !root.thumbDrawn
             // The tile is the mark's own slot: without its own ceiling Glyph caps a 46 px tile at the 19 px row mark.

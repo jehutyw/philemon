@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Filter.js" as Filter
 import "js/Match.js" as Match
 import "js/Picker.js" as Picker
@@ -62,7 +62,7 @@ ListView {
             color: Theme.color.accent
         }
 
-        Flea.Row {
+        Philemon.Row {
             anchors.fill: parent
             leadingSlot: root.checkSize + Theme.spacing.gap
             compactDate: true
@@ -85,7 +85,7 @@ ListView {
             border.width: Theme.spacing.hairline * 2
             border.color: cell.isMarked ? Theme.color.accent : Theme.color.muted
 
-            Flea.Glyph {
+            Philemon.Glyph {
                 anchors.fill: parent
                 visible: cell.isMarked
                 name: "check"

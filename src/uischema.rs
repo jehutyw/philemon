@@ -1,7 +1,7 @@
 // The shipped ui.json shape and the rule each key is measured against; src/uistate.rs applies them.
 use crate::jsondoc::{self, Json};
 
-// The shape and every default, copied from docs/flea-0.1.4-build-handoff.md section 1.
+// The shape and every default, copied from docs/philemon-0.1.4-build-handoff.md section 1.
 pub const DEFAULTS: &str = r#"{
   "view": "list",
   "density": "normal",
@@ -49,7 +49,7 @@ pub enum Rule {
     Paths,
     // dual.paths is the pair handoff 5a specifies, or the empty array that means nothing remembered.
     Pair,
-    // menu.hidden is deliberately open: a closed list would make this Flea drop an id a newer one hid.
+    // menu.hidden is deliberately open: a closed list would make this Philemon drop an id a newer one hid.
     Ids,
     Count(f64, f64),
     TextSize,
@@ -83,7 +83,7 @@ pub const PREVIEW: &[(&str, Rule)] = &[
 // mode is "system" or one stop, so there is nowhere to put a free number; see the handoff's Display row.
 pub const TEXT_SIZE: &[(&str, Rule)] = &[("mode", Rule::TextSize)];
 
-// textSize alone. Window opacity, icon theme and shadows are the compositor's, and Flea mirrors it
+// textSize alone. Window opacity, icon theme and shadows are the compositor's, and Philemon mirrors it
 // rather than carrying a second writable copy of a setting Hyprland already owns.
 pub const DISPLAY: &[(&str, Rule)] = &[("textSize", Rule::Group(TEXT_SIZE))];
 

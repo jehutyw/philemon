@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Exercises overlapping public openShare calls through real Quickshell Process instances.
 set -u
-. "$(dirname "$0")/../tools/flea-sandbox-guard"
+. "$(dirname "$0")/../tools/philemon-sandbox-guard"
 cd "$(dirname "$0")/.." || exit 1
 
-test_root="$FIXTURE_ROOT/flea-network-open-share-$$"
+test_root="$FIXTURE_ROOT/philemon-network-open-share-$$"
 sandbox_make "$test_root"
 cleanup() { sandbox_remove "$test_root"; }
 trap cleanup EXIT
@@ -24,7 +24,7 @@ case "$1 $2" in
   "mount -l") exit 0 ;;
   "info smb://first/") exit 0 ;;
   "list smb://first/")
-    : > "$FLEA_TEST_LIST_STARTED"
+    : > "$PHILEMON_TEST_LIST_STARTED"
     sleep 1
     printf 'first-share\n'
     ;;
@@ -43,7 +43,7 @@ EOS
 chmod +x "$test_root/bin/gio"
 
 output=$(env \
-    FLEA_TEST_LIST_STARTED="$list_started" \
+    PHILEMON_TEST_LIST_STARTED="$list_started" \
     HOME="$test_root/home" \
     PATH="$test_root/bin:/usr/bin:/bin" \
     QT_QPA_PLATFORM=offscreen \

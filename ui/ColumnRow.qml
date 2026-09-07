@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Icons.js" as Icons
 
 // One row of a Miller column: a mark, a name, and the chevron a chosen directory carries. Simpler
@@ -48,7 +48,7 @@ Item {
         width: Theme.iconSize
         height: Theme.iconSize
 
-        Flea.Glyph {
+        Philemon.Glyph {
             anchors.fill: parent
             name: root.row ? Icons.glyphForRow(root.row.i, root.row.p) : "file"
             color: root.cursor ? Theme.color.accent : Theme.color.muted
@@ -79,7 +79,7 @@ Item {
         width: root.showChevron ? Theme.font.caption : 0
         height: Theme.font.caption
 
-        Flea.Glyph {
+        Philemon.Glyph {
             anchors.fill: parent
             visible: root.showChevron
             name: "chevron-right"

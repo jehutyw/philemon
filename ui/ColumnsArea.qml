@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Facts.js" as Facts
 import "js/Nav.js" as Nav
 import "js/Thumbs.js" as Thumbs
@@ -208,7 +208,7 @@ Item {
 
         // The parent, showing where the current directory sits among its own siblings. Its own row
         // for the current directory is the cursor trail: lifted like a hover, never accented.
-        Flea.ColumnPane {
+        Philemon.ColumnPane {
             width: root.columnWidth
             height: parent.height
             rows: root.rowsFor(root.parentPath)
@@ -220,7 +220,7 @@ Item {
         }
 
         // The pane's own listing, which is why this column and only this one takes the accent.
-        Flea.ColumnPane {
+        Philemon.ColumnPane {
             id: active
             width: root.columnWidth
             height: parent.height
@@ -240,7 +240,7 @@ Item {
             width: root.width - 2 * root.columnWidth
             height: parent.height
 
-            Flea.ColumnPane {
+            Philemon.ColumnPane {
                 anchors.fill: parent
                 visible: root.cursorIsDir
                 rows: root.rowsFor(root.childPath)
@@ -249,7 +249,7 @@ Item {
                 onActivated: function (name, isDir) { root.activateNeighbour(root.childPath, name, isDir) }
             }
 
-            Flea.PreviewColumn {
+            Philemon.PreviewColumn {
                 id: preview
                 anchors.fill: parent
                 visible: !root.cursorIsDir

@@ -4,7 +4,7 @@
 set -u
 set -o pipefail
 # Hard rule 9's guard, which owns FIXTURE_ROOT and every create and delete this suite makes.
-. "$(dirname "$0")/../tools/flea-sandbox-guard"
+. "$(dirname "$0")/../tools/philemon-sandbox-guard"
 
 fail() {
     printf 'FAIL: %s\n' "$*" >&2
@@ -37,8 +37,8 @@ fi
 [[ -n "$QT_QPA_PLATFORMTHEME" ]] || fail "no session, and no running client, published QT_QPA_PLATFORMTHEME, so every row would draw no icon at all"
 
 repo="$(cd "$(dirname "$0")/.." && pwd)"
-flea_ui="$repo/ui"
-flea_bin="${FLEA_BIN:-$repo/target/release/flea}"
+philemon_ui="$repo/ui"
+philemon_bin="${PHILEMON_BIN:-$repo/target/release/philemon}"
 # Sample input: let finished = Command::new("gio")
 # Every opener stub below is named from the product's own exec target, the same derivation
 # tests/modes.sh makes: a stub named by hand goes stale the day the target is renamed, and the run
@@ -53,16 +53,16 @@ open_handoff=$(handoff_in "$repo/src/open.rs")
 case "$open_handoff" in
     ''|*[!a-z0-9-]*) fail "src/open.rs must name exactly one handoff; got '$open_handoff'" ;;
 esac
-bench_dir="${FLEA_BENCH_DIR:-$FIXTURE_ROOT/flea-bench-btrfs}"
+bench_dir="${PHILEMON_BENCH_DIR:-$FIXTURE_ROOT/philemon-bench-btrfs}"
 # Every root sits under the fixture root and takes no override, because a root the environment can
 # replace is a root nothing checks: these four are deleted whole on every exit path.
-fixture_root="$FIXTURE_ROOT/flea-ui-fixtures-$$"
+fixture_root="$FIXTURE_ROOT/philemon-ui-fixtures-$$"
 # Hard links need the media fixture's filesystem, and the pid keeps a previous run's cache entries out of this delta.
-thumb_fixture="$FIXTURE_ROOT/flea-ui-thumbs-$$"
+thumb_fixture="$FIXTURE_ROOT/philemon-ui-thumbs-$$"
 # Its own tree because case_hashcache redirects the whole cache root into it.
-hash_fixture="$FIXTURE_ROOT/flea-ui-hash-$$"
+hash_fixture="$FIXTURE_ROOT/philemon-ui-hash-$$"
 # Its own tree again, because case_stale redirects the cache root as well and regenerates an entry inside it.
-stale_fixture="$FIXTURE_ROOT/flea-ui-stale-$$"
+stale_fixture="$FIXTURE_ROOT/philemon-ui-stale-$$"
 thumb_rows=200
 # A settle is 120 ms and a round trip through the pool is tens of ms, so a screen has a second.
 thumb_fill_s=20
@@ -73,15 +73,15 @@ drain_wait_s=30
 # Hard rule 9 covers writes, not only deletes: an overridable path that is truncated or written into
 # is the same hazard as one that is deleted, so both of these are pinned rather than taken from the
 # environment. Neither override had a caller.
-evidence_dir=/tmp/flea-ui-evidence
+evidence_dir=/tmp/philemon-ui-evidence
 # Quickshell truncates nothing, so each case gets a fresh log and every log lands in the run log.
-flea_log=/tmp/flea.log
-run_log=/tmp/flea-ui-run.log
+philemon_log=/tmp/philemon.log
+run_log=/tmp/philemon-ui-run.log
 # One case's own output, re-read for the refusal check rather than piped. Pid-scoped like every
 # fixture root here, because two runs sharing it would read each other's output, and truncated before
 # each case because a failed redirect would otherwise leave the previous case's bytes for the
 # refusal grep to find and report a refusal for a case that never ran.
-case_log=/tmp/flea-ui-case-$$.log
+case_log=/tmp/philemon-ui-case-$$.log
 
 # Ten bursts of twelve clicks moved the 100k viewport about eleven rows when measured.
 scroll_bursts=10
@@ -111,51 +111,51 @@ stale_mtime_back_s=86400
 preview_play_wait_s=5
 
 ipc() {
-    omarchy-drive ipc -p "$flea_ui" flea "$@"
+    omarchy-drive ipc -p "$philemon_ui" philemon "$@"
 }
 
 # Window class used by every preflight, focus check and injected keystroke.
-flea_window_class=com.thisisgm.flea
+philemon_window_class=com.thisisgm.philemon
 
 settle() {
     sleep "$settle_s"
 }
 
-flea_pids() {
+philemon_pids() {
     local pid
     for pid in $(pgrep -x qs || true); do
         [[ -r "/proc/$pid/cmdline" ]] || continue
         # Redirections apply left to right, so the silencer has to precede the read it is silencing.
-        if tr '\0' ' ' 2>/dev/null < "/proc/$pid/cmdline" | grep -Fq "$flea_ui"; then
+        if tr '\0' ' ' 2>/dev/null < "/proc/$pid/cmdline" | grep -Fq "$philemon_ui"; then
             printf '%s\n' "$pid"
         fi
     done
 }
 
-# Any Flea from this checkout that we did not start, captured once before anything is killed. The
-# operator works at this box, and flea_pids cannot tell their window from ours: both match "$flea_ui".
-foreign_pids=$(flea_pids | tr '\n' ' ')
+# Any Philemon from this checkout that we did not start, captured once before anything is killed. The
+# operator works at this box, and philemon_pids cannot tell their window from ours: both match "$philemon_ui".
+foreign_pids=$(philemon_pids | tr '\n' ' ')
 if [[ -n "${foreign_pids// /}" ]]; then
-    printf 'REFUSED a Flea from %s is already running (pid%s %s)\n' \
-        "$flea_ui" "$( [[ $(wc -w <<< "$foreign_pids") -gt 1 ]] && printf s )" "${foreign_pids% }"
-    printf 'REFUSED this suite kills every Flea it finds, so it will not run beside one it did not start.\n'
+    printf 'REFUSED a Philemon from %s is already running (pid%s %s)\n' \
+        "$philemon_ui" "$( [[ $(wc -w <<< "$foreign_pids") -gt 1 ]] && printf s )" "${foreign_pids% }"
+    printf 'REFUSED this suite kills every Philemon it finds, so it will not run beside one it did not start.\n'
     printf 'REFUSED close it, or run the suite against a git archive export at another path.\n'
     exit 1
 fi
 
-# A packaged Flea uses another UI path, but still makes every title/class-based drive ambiguous.
+# A packaged Philemon uses another UI path, but still makes every title/class-based drive ambiguous.
 windows_status=0
 windows_json=$(omarchy-drive --json windows) || windows_status=$?
 [[ "$windows_status" -eq 0 ]] \
     || fail "omarchy-drive windows failed with status $windows_status, so foreign-window state is unknown"
-foreign_window_count=$(jq -er --arg class "$flea_window_class" \
+foreign_window_count=$(jq -er --arg class "$philemon_window_class" \
     'select(.ok == true and (.windows | type == "array")) | [.windows[] | select(.class == $class)] | length' \
     <<< "$windows_json") \
     || fail "omarchy-drive windows returned an invalid payload, so foreign-window state is unknown"
 if [[ "$foreign_window_count" -ne 0 ]]; then
-    printf 'REFUSED %s Flea window%s already open outside this suite.\n' \
+    printf 'REFUSED %s Philemon window%s already open outside this suite.\n' \
         "$foreign_window_count" "$( [[ "$foreign_window_count" -ne 1 ]] && printf s )"
-    printf 'REFUSED close every Flea window before running pointer-driven tests.\n'
+    printf 'REFUSED close every Philemon window before running pointer-driven tests.\n'
     exit 1
 fi
 unset foreign_window_count windows_json windows_status
@@ -163,30 +163,30 @@ unset foreign_window_count windows_json windows_status
 # The backend outlives the qs that spawned it, and only its own drain may publish or remove its temps.
 backend_pids() {
     local pid
-    for pid in $(pgrep -x flea || true); do
+    for pid in $(pgrep -x philemon || true); do
         [[ -r "/proc/$pid/cmdline" ]] || continue
-        if tr '\0' ' ' 2>/dev/null < "/proc/$pid/cmdline" | grep -Fq -- "$flea_bin --backend"; then
+        if tr '\0' ' ' 2>/dev/null < "/proc/$pid/cmdline" | grep -Fq -- "$philemon_bin --backend"; then
             printf '%s\n' "$pid"
         fi
     done
 }
 
-flea_pid() {
+philemon_pid() {
     local -a pids
-    mapfile -t pids < <(flea_pids)
-    [[ ${#pids[@]} -eq 1 ]] || fail "expected one exact Flea qs pid, got ${#pids[@]}"
+    mapfile -t pids < <(philemon_pids)
+    [[ ${#pids[@]} -eq 1 ]] || fail "expected one exact Philemon qs pid, got ${#pids[@]}"
     printf '%s\n' "${pids[0]}"
 }
 
-kill_flea() {
+kill_philemon() {
     local pid found waited
-    for pid in $(flea_pids); do
+    for pid in $(philemon_pids); do
         [[ " $foreign_pids " == *" $pid "* ]] && continue
         kill "$pid"
     done
     while :; do
         found=0
-        for pid in $(flea_pids); do
+        for pid in $(philemon_pids); do
             [[ " $foreign_pids " == *" $pid "* ]] && continue
             found=1
         done
@@ -215,7 +215,7 @@ sandbox_make "$stale_fixture"
 cleanup() {
     local wedged=0
     # fail is an exit that || true cannot catch, so the reap runs in a subshell and its status is re-raised below.
-    ( kill_flea ) || wedged=1
+    ( kill_philemon ) || wedged=1
     local root
     for root in "$fixture_root" "$thumb_fixture" "$hash_fixture" "$stale_fixture"; do
         sandbox_remove "$root"
@@ -259,14 +259,14 @@ focused_class() {
 assert_focus() {
     local seen
     seen=$(focused_class || true)
-    [[ "$seen" == "$flea_window_class" ]] \
-        || fail "focus is on class '$seen', not $flea_window_class, so this case sends no more keys"
+    [[ "$seen" == "$philemon_window_class" ]] \
+        || fail "focus is on class '$seen', not $philemon_window_class, so this case sends no more keys"
 }
 
 # Every keystroke goes through here, because a rule each case has to remember is not a gate.
 key() {
     assert_focus
-    omarchy-drive key --window flea "$@"
+    omarchy-drive key --window philemon "$@"
 }
 
 hotkey() {
@@ -320,22 +320,22 @@ fixture_home_make() {
 
 assert_window() {
     local count class
-    count=$(omarchy-drive windows --json | jq '[.windows[] | select(.title == "Flea")] | length')
-    [[ "$count" == "1" ]] || fail "expected one Flea window, got $count"
-    class=$(omarchy-drive windows --json | jq -r '.windows[] | select(.title == "Flea") | .class')
-    [[ "$class" == "$flea_window_class" ]] || fail "unexpected Flea class '$class'"
+    count=$(omarchy-drive windows --json | jq '[.windows[] | select(.title == "Philemon")] | length')
+    [[ "$count" == "1" ]] || fail "expected one Philemon window, got $count"
+    class=$(omarchy-drive windows --json | jq -r '.windows[] | select(.title == "Philemon") | .class')
+    [[ "$class" == "$philemon_window_class" ]] || fail "unexpected Philemon class '$class'"
     assert_theme
 }
 
-# The state a case needs the window to start from, written through flea --ui-state so the schema
+# The state a case needs the window to start from, written through philemon --ui-state so the schema
 # sees it too, into a state home inside the fixture root: hard rule 9 covers writes, so no case here
-# reaches the operator's own ~/.local/state/flea/ui.json. Exports it, because launch() below hands
+# reaches the operator's own ~/.local/state/philemon/ui.json. Exports it, because launch() below hands
 # the window whatever environment the case is holding.
 seed_ui_state() {
     local state="$1" patch="$2"
     sandbox_scratch "$state"
-    env XDG_STATE_HOME="$state" "$flea_bin" --ui-state "$patch" >/dev/null \
-        || fail "the seeding write through flea --ui-state failed for $patch"
+    env XDG_STATE_HOME="$state" "$philemon_bin" --ui-state "$patch" >/dev/null \
+        || fail "the seeding write through philemon --ui-state failed for $patch"
     export XDG_STATE_HOME="$state"
 }
 
@@ -348,16 +348,16 @@ menu_shipped='["delete","openwith","openTerminal","moveto","copyto","properties"
 
 launch() {
     local start_path="$1"
-    kill_flea
-    cat "$flea_log" >> "$run_log" 2>/dev/null || true
-    : > "$flea_log"
+    kill_philemon
+    cat "$philemon_log" >> "$run_log" 2>/dev/null || true
+    : > "$philemon_log"
     # The renderer is stated because src/gui.rs owns that choice and a direct qs launch never runs it.
-    QSG_RHI_BACKEND="${QSG_RHI_BACKEND:-vulkan}" FLEA_PATH="$start_path" FLEA_BIN="$flea_bin" \
-        setsid nohup qs -p "$flea_ui" >"$flea_log" 2>&1 </dev/null &
-    omarchy-drive wait window flea --timeout 15 >/dev/null
-    omarchy-drive focus flea >/dev/null
+    QSG_RHI_BACKEND="${QSG_RHI_BACKEND:-vulkan}" PHILEMON_PATH="$start_path" PHILEMON_BIN="$philemon_bin" \
+        setsid nohup qs -p "$philemon_ui" >"$philemon_log" 2>&1 </dev/null &
+    omarchy-drive wait window philemon --timeout 15 >/dev/null
+    omarchy-drive focus philemon >/dev/null
     assert_window
-    printf 'LAUNCH path=%q pid=%s\n' "$start_path" "$(flea_pid)"
+    printf 'LAUNCH path=%q pid=%s\n' "$start_path" "$(philemon_pid)"
 }
 
 wait_listing() {
@@ -379,12 +379,12 @@ wait_listing_wall() {
     local want_total="$1" timeout_s="${2:-20}" total=unavailable row=loading state=unavailable
     local deadline=$(( $(date +%s%3N) + timeout_s * 1000 ))
     while (( $(date +%s%3N) < deadline )); do
-        total=$(timeout 1 omarchy-drive ipc -p "$flea_ui" flea total 2>/dev/null || printf unavailable)
+        total=$(timeout 1 omarchy-drive ipc -p "$philemon_ui" philemon total 2>/dev/null || printf unavailable)
         if [[ "$want_total" == 0 ]]; then
-            state=$(timeout 1 omarchy-drive ipc -p "$flea_ui" flea state 2>/dev/null || printf unavailable)
+            state=$(timeout 1 omarchy-drive ipc -p "$philemon_ui" philemon state 2>/dev/null || printf unavailable)
             [[ "$total" == 0 && "$state" == empty ]] && return 0
         else
-            row=$(timeout 1 omarchy-drive ipc -p "$flea_ui" flea rowAt 0 2>/dev/null || printf loading)
+            row=$(timeout 1 omarchy-drive ipc -p "$philemon_ui" philemon rowAt 0 2>/dev/null || printf loading)
             [[ "$total" == "$want_total" && "$row" != "loading" ]] && return 0
         fi
         sleep 0.05
@@ -396,7 +396,7 @@ wait_path_wall() {
     local want="$1" timeout_s="${2:-20}" seen=unavailable
     local deadline=$(( $(date +%s%3N) + timeout_s * 1000 ))
     while (( $(date +%s%3N) < deadline )); do
-        seen=$(timeout 1 omarchy-drive ipc -p "$flea_ui" flea path 2>/dev/null || printf unavailable)
+        seen=$(timeout 1 omarchy-drive ipc -p "$philemon_ui" philemon path 2>/dev/null || printf unavailable)
         [[ "$seen" == "$want" ]] && return 0
         sleep 0.05
     done
@@ -407,9 +407,9 @@ find_row_wall() {
     local want="$1" timeout_s="${2:-20}" total=0 seen="" path=unavailable row
     local deadline=$(( $(date +%s%3N) + timeout_s * 1000 ))
     while (( $(date +%s%3N) < deadline )); do
-        total=$(timeout 1 omarchy-drive ipc -p "$flea_ui" flea total 2>/dev/null || printf 0)
+        total=$(timeout 1 omarchy-drive ipc -p "$philemon_ui" philemon total 2>/dev/null || printf 0)
         for ((row = 0; row < total && $(date +%s%3N) < deadline; row++)); do
-            seen=$(timeout 1 omarchy-drive ipc -p "$flea_ui" flea rowAt "$row" 2>/dev/null || true)
+            seen=$(timeout 1 omarchy-drive ipc -p "$philemon_ui" philemon rowAt "$row" 2>/dev/null || true)
             if [[ "$seen" == "$want|"* ]]; then
                 printf '%s\n' "$row"
                 return 0
@@ -418,7 +418,7 @@ find_row_wall() {
         sleep 0.05
     done
     [[ "$total" =~ ^[0-9]+$ ]] || total=-1
-    path=$(timeout 1 omarchy-drive ipc -p "$flea_ui" flea path 2>/dev/null || printf unavailable)
+    path=$(timeout 1 omarchy-drive ipc -p "$philemon_ui" philemon path 2>/dev/null || printf unavailable)
     printf 'NETWORKLIVE traversal expected=%s total=%s path=%s\n' "$want" "$total" "$path" >&2
     return 1
 }
@@ -444,10 +444,10 @@ wait_rail() {
     fail "the rail never reached $want entries, it has $count"
 }
 
-# The Flea window is tiled here, so a pane coordinate needs its origin added before a click.
+# The Philemon window is tiled here, so a pane coordinate needs its origin added before a click.
 window_box() {
     omarchy-drive windows --json \
-        | jq -r '.windows[] | select(.title == "Flea") | "\(.at[0]) \(.at[1]) \(.size[0]) \(.size[1])"'
+        | jq -r '.windows[] | select(.title == "Philemon") | "\(.at[0]) \(.at[1]) \(.size[0]) \(.size[1])"'
 }
 
 click_row() {
@@ -587,7 +587,7 @@ assert_invalid_network_port() {
     settle
     uri=$(ipc networkUri)
     dialog=$(ipc dialogOpen)
-    visible_text=$(omarchy-drive ocr flea 2>/dev/null || true)
+    visible_text=$(omarchy-drive ocr philemon 2>/dev/null || true)
     error=missing
     grep -Fq "Enter a valid host and port." <<< "$visible_text" && error=visible
     bytes=changed
@@ -693,7 +693,7 @@ probe_network_mark_target() {
 # A single IPC call may consume its own two-second timeout, so count wall time and bound each read;
 # a retry count alone turned one nominal 25-second wait into more than eight minutes.
 
-# ui/Opener.qml spawns flea --terminal and returns, so the stub's line lands after the key has
+# ui/Opener.qml spawns philemon --terminal and returns, so the stub's line lands after the key has
 # been answered: waited for, never slept at, and the path it carries is checked here rather than
 # by the caller so a wrong directory reads as a timeout with the log printed.
 wait_terminal() {
@@ -710,7 +710,7 @@ wait_terminal() {
 wait_message() {
     local want="$1" seen="" deadline=$(( $(date +%s%3N) + 25000 ))
     while (( $(date +%s%3N) < deadline )); do
-        seen=$(timeout 1 omarchy-drive ipc -p "$flea_ui" flea lastMessage 2>/dev/null || true)
+        seen=$(timeout 1 omarchy-drive ipc -p "$philemon_ui" philemon lastMessage 2>/dev/null || true)
         if [[ "$seen" == "$want" ]]; then
             return 0
         fi
@@ -724,7 +724,7 @@ wait_network_result() {
     local want="$1" timeout_s="${2:-40}" seen=""
     local deadline=$(( $(date +%s%3N) + timeout_s * 1000 ))
     while (( $(date +%s%3N) < deadline )); do
-        seen=$(timeout 1 omarchy-drive ipc -p "$flea_ui" flea networkResult 2>/dev/null || true)
+        seen=$(timeout 1 omarchy-drive ipc -p "$philemon_ui" philemon networkResult 2>/dev/null || true)
         [[ "$seen" == "$want" ]] && return 0
         sleep 0.1
     done
@@ -735,7 +735,7 @@ wait_network_entry_state() {
     local want="$1" timeout_s="${2:-20}" seen=""
     local deadline=$(( $(date +%s%3N) + timeout_s * 1000 ))
     while (( $(date +%s%3N) < deadline )); do
-        seen=$(timeout 1 omarchy-drive ipc -p "$flea_ui" flea networkEntries 2>/dev/null || true)
+        seen=$(timeout 1 omarchy-drive ipc -p "$philemon_ui" philemon networkEntries 2>/dev/null || true)
         [[ "$seen" == *"|network|share|$want" ]] && return 0
         sleep 0.1
     done
@@ -859,7 +859,7 @@ wait_thumb_ready() {
 shot() {
     local name="$1"
     mkdir -p "$evidence_dir"
-    omarchy-drive shot "$evidence_dir/$name.png" flea >/dev/null
+    omarchy-drive shot "$evidence_dir/$name.png" philemon >/dev/null
     printf 'SHOT %s\n' "$evidence_dir/$name.png"
 }
 
@@ -909,13 +909,13 @@ case_terminal() {
     launch "$dir"
     wait_listing 1
     local qs_pid backend_pid
-    qs_pid=$(flea_pid)
-    backend_pid=$(pgrep -P "$qs_pid" -x flea)
-    [[ -n "$backend_pid" ]] || fail "no flea backend child of qs $qs_pid"
+    qs_pid=$(philemon_pid)
+    backend_pid=$(pgrep -P "$qs_pid" -x philemon)
+    [[ -n "$backend_pid" ]] || fail "no philemon backend child of qs $qs_pid"
     printf 'TERMINAL qs=%s backend=%s before state=%s total=%s row=%q\n' \
         "$qs_pid" "$backend_pid" "$(ipc state)" "$(ipc total)" "$(ipc rowAt 0)"
     kill "$backend_pid"
-    omarchy-drive wait ipc -p "$flea_ui" flea state error --timeout 15 >/dev/null \
+    omarchy-drive wait ipc -p "$philemon_ui" philemon state error --timeout 15 >/dev/null \
         || fail "the pane stayed in state '$(ipc state)' after the backend died"
     [[ "$(ipc total)" == "0" ]] || fail "the stale total $(ipc total) survived the backend"
     [[ "$(ipc rowAt 0)" == "loading" ]] || fail "the stale row $(ipc rowAt 0) survived the backend"
@@ -930,7 +930,7 @@ case_terminal() {
     assert_window
 }
 
-# The row and menu presentation the 0.1.4 boards specify: FleaWindow.html's symlink row, its own
+# The row and menu presentation the 0.1.4 boards specify: PhilemonWindow.html's symlink row, its own
 # trailing slash on a directory, and Menus.html's right-aligned key beside every bound row.
 # Catches deleting decoratedName, sizeText's link branch or Icons.glyphForRow from ui/Row.qml, and
 # the hint slot from ui/MenuRow.qml.
@@ -1089,7 +1089,7 @@ case_open() {
     seek_row_named subdir
     key l >/dev/null
     wait_path "$dir/subdir"
-    omarchy-drive wait ipc -p "$flea_ui" flea state empty --timeout 10 >/dev/null \
+    omarchy-drive wait ipc -p "$philemon_ui" philemon state empty --timeout 10 >/dev/null \
         || fail "open: subdir never reached its empty listing, state is $(ipc state)"
     [[ ! -s "$opened" ]] || fail "l on a directory handed $(cat "$opened") to $open_handoff open"
     [[ -z "$(ipc lastMessage)" ]] || fail "open: entering the empty subdir said $(ipc lastMessage)"
@@ -1148,11 +1148,11 @@ case_open() {
     [[ "$(grep -c OPENED "$opened")" == "1" ]] || fail "a broken symlink was handed to $open_handoff open"
     [[ "$(ipc total)" == "8" ]] || fail "the listing did not survive Enter on a broken symlink"
 
-    # The operator's 0.1.4 ruling: Enter on an archive opens Flea's own view and hands nothing on,
+    # The operator's 0.1.4 ruling: Enter on an archive opens Philemon's own view and hands nothing on,
     # because every archive type this box can name defaults to org.gnome.Nautilus.desktop.
     seek_row_named sample.zip
     key -k Return >/dev/null
-    omarchy-drive wait ipc -p "$flea_ui" flea previewState archive --timeout 10 >/dev/null \
+    omarchy-drive wait ipc -p "$philemon_ui" philemon previewState archive --timeout 10 >/dev/null \
         || fail "Enter on an archive left the preview at $(ipc previewState), kind $(ipc previewKind), and the log holds $(cat "$opened")"
     printf 'OPEN archive kind=%q state=%q log=%q\n' "$(ipc previewKind)" "$(ipc previewState)" "$(cat "$opened")"
     shot open-archive
@@ -1172,10 +1172,10 @@ case_openterminal() {
     sandbox_scratch "$dir"
     mkdir -p "$dir/bin"
     printf 'abc' > "$dir/target.txt"
-    local ran="$dir/ran.log" opened="$dir/opened.log" real_bin="$flea_bin"
+    local ran="$dir/ran.log" opened="$dir/opened.log" real_bin="$philemon_bin"
     : > "$ran"
     : > "$opened"
-    # FLEA_BIN is the backend's binary as well as the opener's, so only --terminal is intercepted
+    # PHILEMON_BIN is the backend's binary as well as the opener's, so only --terminal is intercepted
     # and every other mode execs the real one: a stub that swallowed --backend would leave the
     # window with no listing to press a key in. The sleep is what makes the single-flight guard and
     # the two-paths-at-once check observable at all.
@@ -1185,8 +1185,8 @@ case_openterminal() {
       printf 'sleep 1\n'
       printf 'printf "TERMINAL %%s\\n" "$2" >> %q\n' "$ran"
       printf 'exit 0\n'
-    } > "$dir/bin/flea"
-    chmod +x "$dir/bin/flea"
+    } > "$dir/bin/philemon"
+    chmod +x "$dir/bin/philemon"
     # Only the open subcommand is intercepted, so stubbing the opener leaves the gio mount calls
     # ui/NetworkMounts.qml makes on every launch answering from the real gio. That name is the mount
     # tool's own and is spelled by hand here; the stub's name is derived from src/open.rs instead.
@@ -1203,10 +1203,10 @@ case_openterminal() {
     seed_ui_state "$fixture_root/openterminal-state" "{\"menu\":{\"hidden\":$terminal_shown}}"
     local saved_path="$PATH"
     export PATH="$dir/bin:$PATH"
-    flea_bin="$dir/bin/flea"
+    philemon_bin="$dir/bin/philemon"
     launch "$dir"
     export PATH="$saved_path"
-    flea_bin="$real_bin"
+    philemon_bin="$real_bin"
     # bin, opened.log, ran.log, target.txt.
     wait_listing 4
 
@@ -1223,7 +1223,7 @@ case_openterminal() {
 
     # The keyboard half, from the list.
     : > "$ran"
-    hotkey --global ctrl t flea >/dev/null
+    hotkey --global ctrl t philemon >/dev/null
     wait_terminal "$ran" "$dir" "ctrl+t in the list"
 
     # And from the rail, which owns its own keys and would otherwise swallow the chord.
@@ -1231,7 +1231,7 @@ case_openterminal() {
     key -k Tab >/dev/null
     settle
     [[ "$(ipc focusView)" == "rail" ]] || fail "openterminal: tab did not reach the rail"
-    hotkey --global ctrl t flea >/dev/null
+    hotkey --global ctrl t philemon >/dev/null
     wait_terminal "$ran" "$dir" "ctrl+t on the rail"
     key -k Escape >/dev/null
     settle
@@ -1241,22 +1241,22 @@ case_openterminal() {
     # has exited, is not: without the second half this check passes for a key that does nothing.
     # The drop is announced, because a swallowed keypress with nothing on screen is the defect.
     : > "$ran"
-    hotkey --global ctrl t flea >/dev/null
+    hotkey --global ctrl t philemon >/dev/null
     settle
-    hotkey --global ctrl t flea >/dev/null
+    hotkey --global ctrl t philemon >/dev/null
     wait_message "Still opening the last terminal; try again in a moment."
     wait_terminal "$ran" "$dir" "the single-flight guard"
     sleep 1
     [[ "$(grep -c . "$ran")" == "1" ]] || fail "openterminal: two terminals were started, log is $(cat "$ran")"
     : > "$ran"
-    hotkey --global ctrl t flea >/dev/null
+    hotkey --global ctrl t philemon >/dev/null
     wait_terminal "$ran" "$dir" "a request after the child exited"
 
     # Both at once: the terminal child is still sleeping when Enter opens a file, so a shared path or
     # a shared Process would show up as one of the two logs carrying the other's argument.
     : > "$ran"
     : > "$opened"
-    hotkey --global ctrl t flea >/dev/null
+    hotkey --global ctrl t philemon >/dev/null
     seek_row_named target.txt
     key -k Return >/dev/null
     local waited
@@ -1276,17 +1276,17 @@ case_openterminal() {
       printf '#!/bin/sh\n'
       printf '[ "$1" = --terminal ] || exec %q "$@"\n' "$real_bin"
       printf 'exit 2\n'
-    } > "$dir/bin/flea"
-    chmod +x "$dir/bin/flea"
+    } > "$dir/bin/philemon"
+    chmod +x "$dir/bin/philemon"
     : > "$ran"
-    hotkey --global ctrl t flea >/dev/null
+    hotkey --global ctrl t philemon >/dev/null
     wait_message "That directory could not be opened in a terminal; nothing on this system took it."
     shot openterminal-failed
     [[ ! -s "$ran" ]] || fail "openterminal: the failing stub still logged $(cat "$ran")"
 
     printf 'OPENTERMINAL menu=ok list=ok rail=ok single-flight=ok crossed=ok failure=ok\n'
     if [[ -n "$real_state" ]]; then export XDG_STATE_HOME="$real_state"; else unset XDG_STATE_HOME; fi
-    kill_flea
+    kill_philemon
 }
 
 # The operator's defect of 2026-09-02, in their own words: "when clicking a single click opens the
@@ -1533,7 +1533,7 @@ case_click() {
     settle
     printf 'CLICK back-climb path=%q\n' "$(ipc path)"
     [[ "$(ipc path)" == "$up" ]] || fail "click: the back button with no history left went to $(ipc path), not $up"
-    kill_flea
+    kill_philemon
 }
 
 # Catches narrowing the delegate TapHandler back to Qt.LeftButton in ui/Pane.qml.
@@ -1563,7 +1563,7 @@ case_menu() {
     printf 'MENU on-file visible=%s cursor=%s\n' "$(ipc contextMenuVisible)" "$(ipc cursor)"
     shot menu-open
     printf 'MENU_OCR_BEGIN\n'
-    omarchy-drive ocr flea || true
+    omarchy-drive ocr philemon || true
     printf 'MENU_OCR_END\n'
     [[ "$(ipc contextMenuVisible)" == "true" ]] || fail "right click did not open the context menu"
     [[ "$(ipc cursor)" == "1" ]] || fail "right click did not set the cursor, it is $(ipc cursor)"
@@ -1649,7 +1649,7 @@ case_background() {
         "$(ipc contextMenuGlyphs)" "$(ipc contextMenuHints)"
     shot background-menu
     printf 'BACKGROUND_OCR_BEGIN\n'
-    omarchy-drive ocr flea || true
+    omarchy-drive ocr philemon || true
     printf 'BACKGROUND_OCR_END\n'
     [[ "$(ipc contextMenuVisible)" == "true" ]] \
         || fail "background: a right click on empty space opened no menu"
@@ -1845,7 +1845,7 @@ case_hidden() {
     [[ "$(ipc rowAt 0)" == "visible.txt|"* ]] || fail "hidden: toggling back off left the dotfile visible, row 0 is $(ipc rowAt 0)"
 
     printf 'HIDDEN default=ok toggle-on=ok menu-label=ok toggle-off=ok\n'
-    kill_flea
+    kill_philemon
 }
 
 # Toggle, extend, select-all, clear, and the invariant that matters most: an index into a
@@ -1886,7 +1886,7 @@ case_selection() {
     [[ "$(ipc selectedIndices)" == "1,2,3" ]] || fail "selection: extend covered $(ipc selectedIndices), not 1,2,3"
     shot selection-extend
 
-    hotkey --global ctrl a flea >/dev/null
+    hotkey --global ctrl a philemon >/dev/null
     settle
     [[ "$(ipc selectionCount)" == "5" ]] || fail "selection: ctrl+a selected $(ipc selectionCount), not every row"
 
@@ -1903,7 +1903,7 @@ case_selection() {
     [[ "$(ipc selectionCount)" == "0" ]] || fail "selection: a new listing kept a stale selection"
 
     printf 'SELECTION toggle=ok extend=ok all=ok clear=ok stale=ok\n'
-    kill_flea
+    kill_philemon
 }
 
 # Issue 68, driven exactly as it was reported: the reporter's own four changes made from outside
@@ -1925,7 +1925,7 @@ case_watch() {
     rm "$dir/beta.txt"
     mkdir "$dir/brand-new-folder"
     # The 400 ms settle plus the re-read; the reporter waited several seconds and saw nothing move.
-    omarchy-drive wait ipc -p "$flea_ui" flea total 4 --timeout 15 >/dev/null \
+    omarchy-drive wait ipc -p "$philemon_ui" philemon total 4 --timeout 15 >/dev/null \
         || fail "watch: the listing stayed at $(ipc total) rows after four outside changes"
     settle
     printf 'WATCH total=%s row0=%q row1=%q row2=%q\n' \
@@ -1948,7 +1948,7 @@ case_watch() {
     [[ "$(ipc rowAt "$(ipc cursor)")" == preview-me.txt\|* ]] \
         || fail "watch: the cursor did not start on preview-me.txt"
     printf 'z\n' > "$dir/AAA-above-the-cursor.txt"
-    omarchy-drive wait ipc -p "$flea_ui" flea total 5 --timeout 15 >/dev/null \
+    omarchy-drive wait ipc -p "$philemon_ui" philemon total 5 --timeout 15 >/dev/null \
         || fail "watch: the second outside create left the listing at $(ipc total) rows"
     settle
     printf 'WATCH cursor=%s row=%q\n' "$(ipc cursor)" "$(ipc rowAt "$(ipc cursor)")"
@@ -1966,7 +1966,7 @@ case_watch() {
     [[ "$(ipc selectionCount)" == "1" ]] || fail "watch: the held selection was cleared anyway"
     # Clearing the selection is what pays the debt the notification left standing.
     key -k Escape >/dev/null
-    omarchy-drive wait ipc -p "$flea_ui" flea total 6 --timeout 15 >/dev/null \
+    omarchy-drive wait ipc -p "$philemon_ui" philemon total 6 --timeout 15 >/dev/null \
         || fail "watch: clearing the selection did not run the owed re-read, total is $(ipc total)"
     printf 'WATCH deferred=ok paid=ok total=%s\n' "$(ipc total)"
 
@@ -2010,7 +2010,7 @@ case_watch() {
     key -k Escape >/dev/null
     settle
     assert_window
-    kill_flea
+    kill_philemon
 }
 
 # Mirrors the two env vars src/gui.rs sets from a resolved --select; tests/modes.sh covers the resolution itself.
@@ -2021,14 +2021,14 @@ case_select() {
     : > "$dir/b.txt"
     : > "$dir/c.txt"
 
-    kill_flea
-    cat "$flea_log" >> "$run_log" 2>/dev/null || true
-    : > "$flea_log"
+    kill_philemon
+    cat "$philemon_log" >> "$run_log" 2>/dev/null || true
+    : > "$philemon_log"
     # The renderer is stated because src/gui.rs owns that choice and a direct qs launch never runs it.
-    QSG_RHI_BACKEND="${QSG_RHI_BACKEND:-vulkan}" FLEA_PATH="$dir" FLEA_SELECT="$dir/b.txt" FLEA_BIN="$flea_bin" \
-        setsid nohup qs -p "$flea_ui" >"$flea_log" 2>&1 </dev/null &
-    omarchy-drive wait window flea --timeout 15 >/dev/null
-    omarchy-drive focus flea >/dev/null
+    QSG_RHI_BACKEND="${QSG_RHI_BACKEND:-vulkan}" PHILEMON_PATH="$dir" PHILEMON_SELECT="$dir/b.txt" PHILEMON_BIN="$philemon_bin" \
+        setsid nohup qs -p "$philemon_ui" >"$philemon_log" 2>&1 </dev/null &
+    omarchy-drive wait window philemon --timeout 15 >/dev/null
+    omarchy-drive focus philemon >/dev/null
     assert_window
     wait_listing 3
     [[ "$(ipc path)" == "$dir" ]] || fail "select: opened $(ipc path), not $dir"
@@ -2039,21 +2039,21 @@ case_select() {
     [[ "$(ipc selectedIndices)" == "$want_index" ]] || fail "select: selectedIndices is $(ipc selectedIndices), not $want_index"
 
     # A missing target still opens its directory, with nothing selected.
-    kill_flea
-    cat "$flea_log" >> "$run_log" 2>/dev/null || true
-    : > "$flea_log"
+    kill_philemon
+    cat "$philemon_log" >> "$run_log" 2>/dev/null || true
+    : > "$philemon_log"
     # The renderer is stated because src/gui.rs owns that choice and a direct qs launch never runs it.
-    QSG_RHI_BACKEND="${QSG_RHI_BACKEND:-vulkan}" FLEA_PATH="$dir" FLEA_SELECT="$dir/does-not-exist.txt" FLEA_BIN="$flea_bin" \
-        setsid nohup qs -p "$flea_ui" >"$flea_log" 2>&1 </dev/null &
-    omarchy-drive wait window flea --timeout 15 >/dev/null
-    omarchy-drive focus flea >/dev/null
+    QSG_RHI_BACKEND="${QSG_RHI_BACKEND:-vulkan}" PHILEMON_PATH="$dir" PHILEMON_SELECT="$dir/does-not-exist.txt" PHILEMON_BIN="$philemon_bin" \
+        setsid nohup qs -p "$philemon_ui" >"$philemon_log" 2>&1 </dev/null &
+    omarchy-drive wait window philemon --timeout 15 >/dev/null
+    omarchy-drive focus philemon >/dev/null
     assert_window
     wait_listing 3
     [[ "$(ipc path)" == "$dir" ]] || fail "select: a missing target opened $(ipc path), not $dir"
     [[ "$(ipc selectionCount)" == "0" ]] || fail "select: a missing target still selected $(ipc selectionCount)"
 
     printf 'SELECT reveal=ok missing=ok\n'
-    kill_flea
+    kill_philemon
 }
 
 # Catches restoring the directory accent branch of Row.nameColor in ui/Row.qml.
@@ -2291,7 +2291,7 @@ case_columns() {
     click_chrome list
     settle
     [[ "$(ipc viewMode)" == "list" ]] || fail "columns: the list button did not switch back"
-    kill_flea
+    kill_philemon
 }
 
 case_operations() {
@@ -2362,7 +2362,7 @@ case_operations() {
     [[ "$(magick identify -format '%m' "$dir/shot.png")" == "PNG" ]] \
         || fail "operations: the source was written over"
     printf 'OPERATIONS converted=%s\n' "$(ipc lastMessage)"
-    kill_flea
+    kill_philemon
 }
 
 case_grid() {
@@ -2414,7 +2414,7 @@ case_grid() {
     settle
     (( $(ipc cursor) == start + 1 )) \
         || fail "grid: after switching back the list did not take one step, so focus stayed with the grid"
-    kill_flea
+    kill_philemon
 }
 
 case_header() {
@@ -2441,7 +2441,7 @@ case_header() {
     (( date_x >= size_x + size_w )) || fail "header: date starts at $date_x, before size ends at $((size_x + size_w))"
     (( kind_x >= date_x + date_w )) || fail "header: kind starts at $kind_x, before date ends at $((date_x + date_w))"
 
-    kill_flea
+    kill_philemon
 }
 
 # contentWidth exceeds width only when elide is missing, since elide always caps it to width; this guards elide, not sizing.
@@ -2459,7 +2459,7 @@ case_overflow() {
     printf 'OVERFLOW row0=%s row=%s\n' "$overflow" "$(ipc rowAt 0)"
     shot overflow
     [[ "$overflow" == "0|0|0|0" ]] || fail "overflow: a cell painted past its own column, $overflow"
-    kill_flea
+    kill_philemon
 }
 
 # The OEM modules are reached by symlink, so a broken link is a silent palette regression.
@@ -2469,13 +2469,13 @@ case_oem() {
     fg=$(ipc themeForeground)
     expected_fg=$(theme_key foreground)
     [[ "${fg,,}" == "${expected_fg,,}" ]] \
-        || fail "oem: Flea's foreground is $fg, the theme's is $expected_fg"
+        || fail "oem: Philemon's foreground is $fg, the theme's is $expected_fg"
     local ladder
     ladder=$(ipc selectedFill)
     [[ -n "$ladder" && "$ladder" != "#00000000" ]] \
         || fail "oem: the OEM state ladder did not resolve, selectedFill is $ladder"
     printf 'OEM foreground=%s selectedFill=%s\n' "$fg" "$ladder"
-    kill_flea
+    kill_philemon
 }
 
 # Catches removing the icon slot from ui/Row.qml or its theme fallback.
@@ -2500,7 +2500,7 @@ case_icons() {
         [[ -n "$(ipc rowGlyph "$i")" ]] || fail "row $i has no glyph name at all"
     done
     [[ "$(glyph_of subdir)" == "folder" ]] || fail "the directory row is not the folder glyph: $(glyph_of subdir)"
-    # FleaWindow.html and GridView.html both draw a symlink with the link mark, whatever it points at,
+    # PhilemonWindow.html and GridView.html both draw a symlink with the link mark, whatever it points at,
     # so the mark follows the mode here while the backend's i still follows the target; the backend
     # side of that split is tests/protocol.sh "and draws as a folder".
     [[ "$(glyph_of linkdir)" == "symlink" ]] || fail "the symlink to a directory is not the link glyph: $(glyph_of linkdir)"
@@ -2517,15 +2517,15 @@ case_icons() {
 
 # Catches turning the settle timer in ui/Pane.qml into a request per scrolled frame.
 case_thumbs() {
-    [[ -d "$FIXTURE_ROOT/flea-media-btrfs" ]] || fail "the media fixture is missing"
+    [[ -d "$FIXTURE_ROOT/philemon-media-btrfs" ]] || fail "the media fixture is missing"
     sandbox_make "$thumb_fixture"
     local i
     for i in $(seq 0 $((thumb_rows - 1))); do
-        ln "$FIXTURE_ROOT/flea-media-btrfs/photo_0.jpg" "$thumb_fixture/p$i.jpg"
+        ln "$FIXTURE_ROOT/philemon-media-btrfs/photo_0.jpg" "$thumb_fixture/p$i.jpg"
     done
-    # kill_flea waits out the previous backend's drain, so the baseline is stable before this one generates.
+    # kill_philemon waits out the previous backend's drain, so the baseline is stable before this one generates.
     local before_large
-    kill_flea
+    kill_philemon
     before_large=$(ls -A "$cache_large" | wc -l)
     launch "$thumb_fixture"
     wait_listing "$thumb_rows"
@@ -2585,7 +2585,7 @@ case_thumbs() {
     local screen_rows requests added
     screen_rows=$(ipc visibleRows)
     requests=$(ipc thumbRequests)
-    kill_flea
+    kill_philemon
     sandbox_make "$thumb_fixture"
     added=$(( $(ls -A "$cache_large" | wc -l) - before_large ))
     # A window that is not row aligned straddles one more row than it holds, so the bound is the viewport rule plus that row.
@@ -2615,18 +2615,18 @@ case_thumbs() {
     # while moving" property is carried by the request-count bounds above.
     (( moved_without_request >= 1 )) \
         || fail "the fling did not move the viewport at all, so the bounds above prove nothing"
-    [[ "$(ls -A "$cache_large" | grep -c '^\.flea-')" == "0" ]] || fail "a temp file was left in the shared cache"
+    [[ "$(ls -A "$cache_large" | grep -c '^\.philemon-')" == "0" ]] || fail "a temp file was left in the shared cache"
 }
 
 # Catches encodeURI in ui/Row.qml leaving # or ? literal, which Qt reads as URL syntax and cannot open.
 case_hashcache() {
-    [[ -d "$FIXTURE_ROOT/flea-media-btrfs" ]] || fail "the media fixture is missing"
+    [[ -d "$FIXTURE_ROOT/philemon-media-btrfs" ]] || fail "the media fixture is missing"
     local pics="$hash_fixture/pics"
     # The two bytes encodeURI leaves alone, in the half of the path that can legally hold them.
     local cache="$hash_fixture/c#a?che"
     sandbox_make "$hash_fixture"
     mkdir -p "$pics" "$cache/thumbnails/large" "$cache/thumbnails/fail"
-    ln "$FIXTURE_ROOT/flea-media-btrfs/photo_0.jpg" "$pics/one.jpg"
+    ln "$FIXTURE_ROOT/philemon-media-btrfs/photo_0.jpg" "$pics/one.jpg"
     # Exported inside this case's own subshell, so no other case reads or writes the redirected root.
     export XDG_CACHE_HOME="$cache"
     launch "$pics"
@@ -2652,7 +2652,7 @@ case_hashcache() {
         || fail "the backend did not use the redirected cache root, so no # ever reached the row: $file"
     [[ "$icon" == *%23* && "$icon" == *%3F* ]] || fail "the row URL left # or ? unescaped: $icon"
     [[ "$status" == "$image_ready" ]] || fail "the row URL never opened, Image.status is $status: $icon"
-    kill_flea
+    kill_philemon
     sandbox_make "$hash_fixture"
 }
 
@@ -2714,7 +2714,7 @@ case_stale() {
         || fail "the backend never regenerated the thumbnail, so the screen below has nothing new to show"
     (( blue_after > 0 )) || fail "the regenerated thumbnail drew no blue pixel, so the row is showing the old frame"
     (( red_after == 0 )) || fail "the row still draws $red_after red pixels of the thumbnail it replaced"
-    kill_flea
+    kill_philemon
     sandbox_make "$stale_fixture"
 }
 
@@ -2723,7 +2723,7 @@ case_nosweep() {
     [[ -d "$bench_dir" ]] || fail "the 100,000-file fixture is missing at $bench_dir"
     # Same shape as case_thumbs: the drain the previous backend owes this cache is finished before the baseline.
     local before_large after_large wx wy ww wh burst
-    kill_flea
+    kill_philemon
     before_large=$(ls -A "$cache_large" | wc -l)
     launch "$bench_dir"
     wait_listing 100000
@@ -2742,7 +2742,7 @@ case_nosweep() {
     shot nosweep
     [[ "$(ipc thumbRequests)" == "0" ]] || fail "a directory of text files produced $(ipc thumbRequests) thumb requests"
     [[ "$before_large" == "$after_large" ]] || fail "the cache grew from $before_large to $after_large"
-    [[ "$(ls -A "$cache_large" | grep -c '^\.flea-')" == "0" ]] || fail "a temp file was left in the shared cache"
+    [[ "$(ls -A "$cache_large" | grep -c '^\.philemon-')" == "0" ]] || fail "a temp file was left in the shared cache"
 
     # Task 16's twin: every row here is a dirsize candidate; the delta bound stands in for a literal zero, see AGENTS.md "Thumbnail requests".
     local dirsweep_dir before_requests after_requests delta
@@ -2751,7 +2751,7 @@ case_nosweep() {
         sandbox_scratch "$dirsweep_dir"
         seq 1 100000 | sed "s#^#$dirsweep_dir/dir_#" | xargs mkdir
     fi
-    kill_flea
+    kill_philemon
     launch "$dirsweep_dir"
     wait_listing 100000
     read -r wx wy ww wh < <(window_box)
@@ -2777,7 +2777,7 @@ case_focus() {
     : > "$dir/plain.txt"
     launch "$dir"
     wait_listing 1
-    [[ "$(ipc focusView)" == "list" ]] || fail "focus: Flea does not start on the list"
+    [[ "$(ipc focusView)" == "list" ]] || fail "focus: Philemon does not start on the list"
     key -k Tab >/dev/null
     settle
     [[ "$(ipc focusView)" == "rail" ]] || fail "focus: tab did not reach the rail"
@@ -2806,7 +2806,7 @@ case_focus() {
     [[ "$(ipc focusView)" == "list" ]] || fail "focus: escape did not return to the list"
     printf 'FOCUS view=%s railCursor=%s path=%s\n' "$(ipc focusView)" "$(ipc railCursor)" "$(ipc path)"
     shot focus-listed
-    kill_flea
+    kill_philemon
 }
 
 # Catches t not opening a tab, 1-9 not switching, w not closing, or the bar showing with one tab.
@@ -2854,37 +2854,37 @@ case_tabs() {
     [[ "$(ipc tabIndex)" == "0" ]] || fail "tabs: clicking tab 0 did not select it, index=$(ipc tabIndex)"
     shot tabs-two
     printf 'TABS count=%s index=%s labels=%s\n' "$(ipc tabCount)" "$(ipc tabIndex)" "$(ipc tabLabels)"
-    kill_flea
+    kill_philemon
 }
 
 # The one scene-graph failure found to be raisable here: Qt's GL backend with no EGL vendor file to load.
 case_renderer() {
-    kill_flea
+    kill_philemon
     local dir="$fixture_root/renderer"
     sandbox_scratch "$dir"
     local log="$dir/shell.log"
     local relaunched="$dir/relaunch.log"
     : > "$relaunched"
-    printf '#!/bin/sh\nprintf "RAN %%s\\n" "$*" >> %q\n' "$relaunched" > "$dir/flea-stub"
-    chmod +x "$dir/flea-stub"
+    printf '#!/bin/sh\nprintf "RAN %%s\\n" "$*" >> %q\n' "$relaunched" > "$dir/philemon-stub"
+    chmod +x "$dir/philemon-stub"
     # The marker is set, so the renderer's own name is the only thing standing between this and a retry.
-    env QSG_RHI_BACKEND=opengl FLEA_RENDERER_AUTOMATIC=1 \
+    env QSG_RHI_BACKEND=opengl PHILEMON_RENDERER_AUTOMATIC=1 \
         __EGL_VENDOR_LIBRARY_FILENAMES="$dir/no-such-egl-vendor.json" \
-        FLEA_PATH="$dir" FLEA_BIN="$dir/flea-stub" \
-        setsid nohup qs -p "$flea_ui" > "$log" 2>&1 </dev/null &
+        PHILEMON_PATH="$dir" PHILEMON_BIN="$dir/philemon-stub" \
+        setsid nohup qs -p "$philemon_ui" > "$log" 2>&1 </dev/null &
     local waited
     for waited in $(seq 1 200); do
         grep -aq 'graphics backend opengl failed' "$log" && break
         sleep 0.1
     done
-    kill_flea
+    kill_philemon
     printf 'RENDERER ran=%q\n' "$(tr '\n' ' ' < "$relaunched")"
     grep -aq 'graphics backend opengl failed' "$log" \
         || fail "no scene-graph error reached ui/shell.qml, so its Connections never held the window"
     # The denominator: with no stub run at all, the count of retries below would be zero for free.
     local ran retried
     ran=$(grep -c -- '--backend' "$relaunched" || true)
-    [[ "$ran" != "0" ]] || fail "the stub Flea was never run, so no retry could have been recorded either"
+    [[ "$ran" != "0" ]] || fail "the stub Philemon was never run, so no retry could have been recorded either"
     retried=$(grep -c -- '--gui' "$relaunched" || true)
     [[ "$retried" == "0" ]] || fail "the retry fired for a renderer the operator named: $(cat "$relaunched")"
 }
@@ -2907,7 +2907,7 @@ case_preview() {
       printf 'printf "OPENED %%s\\n" "$2" >> %q\n' "$opened"
     } > "$dir/bin/$open_handoff"
     chmod +x "$dir/bin/$open_handoff"
-    printf 'hello from flea\n' > "$dir/sample.txt"
+    printf 'hello from philemon\n' > "$dir/sample.txt"
     printf '# Notes\n\nSome *text*.\n' > "$dir/notes.md"
     truncate -s 2M "$dir/big.txt"
     # A 440 Hz tone and not silence, so playback is provable by ear and not just by state. Fifteen
@@ -3088,9 +3088,9 @@ PYEOF
         || fail "preview: the pdf overlay reports $(ipc previewState), so it fell through to the refusal"
     [[ "$(ipc previewPdfPage)" == "0" ]] || fail "preview: manual.pdf opened on page $(ipc previewPdfPage), not page 0"
     key l >/dev/null
-    omarchy-drive wait ipc -p "$flea_ui" flea previewPdfPage 1 --timeout 10 >/dev/null \
+    omarchy-drive wait ipc -p "$philemon_ui" philemon previewPdfPage 1 --timeout 10 >/dev/null \
         || fail "preview: l left manual.pdf on page $(ipc previewPdfPage), not page 1"
-    omarchy-drive wait ocr flea PAGETWO --timeout 10 >/dev/null \
+    omarchy-drive wait ocr philemon PAGETWO --timeout 10 >/dev/null \
         || fail "preview: l advanced manual.pdf state but left page 1 painted"
     shot preview-pdf
     key -k Escape >/dev/null
@@ -3107,7 +3107,7 @@ PYEOF
     [[ "$(ipc previewOpen)" == "false" ]] || fail "preview: escape did not close the final preview"
 
     printf 'PREVIEW text=ok markdown=ok audio=ok video=ok toolarge=ok mediacontrols=ok striphide=ok\n'
-    kill_flea
+    kill_philemon
 }
 
 # Catches the Network group failing to self-hide, the add dialog's keyboard path breaking the
@@ -3548,7 +3548,7 @@ EOS
     # The arm above runs against a listing-only gio, so the cache arms below need this case's own
     # stub back and a window started under it. Its saved places go with it: they are the arm above's
     # subject, not this one's, and the rail rows they draw are nothing below reads.
-    kill_flea
+    kill_philemon
     rm -f "$bookmarks"
     export HOME="$fixture_home"
     launch "$dir"
@@ -3612,7 +3612,7 @@ EOS
 
     printf 'NETWORK empty=ok a-scoped=ok dialog=ok submit-path=ok keyboard-after=ok guest-smb=anonymous nfs=plain caches=isolated\n'
     export PATH="$saved_path"
-    kill_flea
+    kill_philemon
     sandbox_remove "$gio_stub"
     sandbox_remove "$fixture_home"
     sandbox_remove "$fake_root"
@@ -3688,7 +3688,7 @@ case_netmark() {
     printf 'NETMARK stops=7 caption=%s..%s probes=4 zoom=%s..%s\n' \
         "$smallest" "$largest" "$zoom_small" "$zoom_large"
     export PATH="$saved_path"
-    kill_flea
+    kill_philemon
     sandbox_remove "$fixture_home"
     sandbox_remove "$fake_root"
     sandbox_remove "$dir"
@@ -3717,8 +3717,8 @@ case_networkauth() {
     assert_runtime_canary_absent() {
         local surface method value
         for surface in "$fixture_root" "$thumb_fixture" "$hash_fixture" "$stale_fixture" \
-            "$evidence_dir" "$flea_log" "$run_log" "$case_log" \
-            "$repo/.superpowers/flea/release-014-20260904/reports/baseline-authenticated-ui.md"; do
+            "$evidence_dir" "$philemon_log" "$run_log" "$case_log" \
+            "$repo/.superpowers/philemon/release-014-20260904/reports/baseline-authenticated-ui.md"; do
             [[ -e "$surface" ]] || continue
             ! printf '%s\n' "$runtime_canary" | grep -R -a -F -q -f - "$surface" 2>/dev/null \
                 || fail "networkauth: runtime canary reached byte-addressable surface"
@@ -3770,7 +3770,7 @@ case "\$1 \${2:-}" in
 *) exit 1 ;;
 esac
 EOS
-    cat > "$dir/bin/flea-gio-auth" <<'EOS'
+    cat > "$dir/bin/philemon-gio-auth" <<'EOS'
 #!/bin/sh
 [ "$#" -eq 1 ] || exit 2
 IFS= read -r secret || exit 3
@@ -3785,12 +3785,12 @@ printf 'argc=1 uri=%s stdin-lines=1\n' "$1" >> "$state/helper.log"
 printf '%s\n' "$1" > "$state/mounted"
 secret=
 EOS
-    chmod +x "$dir/bin/gio" "$dir/bin/flea-gio-auth"
+    chmod +x "$dir/bin/gio" "$dir/bin/philemon-gio-auth"
 
     local real_home="$HOME" saved_path="$PATH"
     export HOME="$fixture_home"
     export PATH="$dir/bin:$PATH"
-    export FLEA_GIO_AUTH="$dir/bin/flea-gio-auth"
+    export PHILEMON_GIO_AUTH="$dir/bin/philemon-gio-auth"
     launch "$dir"
     export HOME="$real_home"
     wait_listing_wall 3
@@ -3800,7 +3800,7 @@ EOS
     local want_entries='Own slot|network|share|true' seen_entries="" entries_deadline
     entries_deadline=$(( $(date +%s%3N) + 12000 ))
     while (( $(date +%s%3N) < entries_deadline )); do
-        seen_entries=$(timeout 1 omarchy-drive ipc -p "$flea_ui" flea networkEntries 2>/dev/null || true)
+        seen_entries=$(timeout 1 omarchy-drive ipc -p "$philemon_ui" philemon networkEntries 2>/dev/null || true)
         [[ "$seen_entries" == "$want_entries" ]] && break
         sleep 0.1
     done
@@ -3825,7 +3825,7 @@ EOS
     [[ "$(cat "$state/unmount-uri")" == 'sftp://tester@slot.test/' ]] \
         || fail "networkauth: projected row unmounted its saved descendant URI"
     printf 'NETWORKAUTH descendant-dedup=ok saved-uri=ok mount-uri=ok\n'
-    kill_flea
+    kill_philemon
     : > "$state/mounted"
     printf '%s\n' \
         'dav://tester@plain-default.test/ Plain 80' \
@@ -3849,7 +3849,7 @@ EOS
     [[ "$(ipc networkPort)" == 443 && "$(ipc networkUri)" == 'dav://tester@plain-secure-port.test:443/' ]] \
         || fail "networkauth: dav :443 reparsed as port $(ipc networkPort), URI $(ipc networkUri)"
     printf 'NETWORKAUTH dav-default=80 dav-explicit=443\n'
-    kill_flea
+    kill_philemon
     : > "$bookmarks"
     : > "$state/info-uri"
     export HOME="$fixture_home"
@@ -3902,7 +3902,7 @@ EOS
     key "tester" >/dev/null
     key -k Tab >/dev/null
     [[ "$(ipc networkFocus)" == "Password" ]] || fail "networkauth: Password did not follow Username"
-    printf '%s' "$runtime_canary" | omarchy-drive key --window flea - >/dev/null
+    printf '%s' "$runtime_canary" | omarchy-drive key --window philemon - >/dev/null
     [[ "$(ipc networkPasswordState)" == "masked|set" ]] \
         || fail "networkauth: typed password is not masked"
     shot networkauth-password-masked
@@ -3971,8 +3971,8 @@ EOS
     for _field in Port Share Domain Username Password; do key -k Tab >/dev/null; done
     [[ "$(ipc networkFocus)" == "Password" ]] \
         || fail "networkauth: missing-helper setup did not reach Password"
-    printf '%s' "$runtime_canary" | omarchy-drive key --window flea - >/dev/null
-    mv "$dir/bin/flea-gio-auth" "$dir/bin/flea-gio-auth.real"
+    printf '%s' "$runtime_canary" | omarchy-drive key --window philemon - >/dev/null
+    mv "$dir/bin/philemon-gio-auth" "$dir/bin/philemon-gio-auth.real"
     key -k Return >/dev/null
     wait_network_result failed 5
     [[ "$(ipc dialogOpen)" == "true" \
@@ -3982,8 +3982,8 @@ EOS
     [[ "$(wc -l < "$helper_log")" -eq "$helper_calls" ]] \
         || fail "networkauth: missing helper wrote helper output"
 
-    cp "$dir/bin/flea-gio-auth.real" "$dir/bin/flea-gio-auth"
-    chmod 0644 "$dir/bin/flea-gio-auth"
+    cp "$dir/bin/philemon-gio-auth.real" "$dir/bin/philemon-gio-auth"
+    chmod 0644 "$dir/bin/philemon-gio-auth"
     key -k Escape >/dev/null
     key -k Return >/dev/null
     wait_network_result failed 5
@@ -3995,12 +3995,12 @@ EOS
         || fail "networkauth: permission-denied helper wrote helper output"
 
     # A helper that never exits must be stopped by the product deadline, not by this driver's wait.
-    cat > "$dir/bin/flea-gio-auth" <<'EOS'
+    cat > "$dir/bin/philemon-gio-auth" <<'EOS'
 #!/bin/sh
 IFS= read -r _password || exit 3
 sleep 120
 EOS
-    chmod +x "$dir/bin/flea-gio-auth"
+    chmod +x "$dir/bin/philemon-gio-auth"
     key -k Escape >/dev/null
     key -k Return >/dev/null
     wait_network_result mounting 5
@@ -4012,8 +4012,8 @@ EOS
 
     # After another restart the same saved row has no map entry. Submitting its populated form with
     # an empty password keeps it open and does not launch any helper.
-    cp "$dir/bin/flea-gio-auth.real" "$dir/bin/flea-gio-auth"
-    chmod +x "$dir/bin/flea-gio-auth"
+    cp "$dir/bin/philemon-gio-auth.real" "$dir/bin/philemon-gio-auth"
+    chmod +x "$dir/bin/philemon-gio-auth"
     key -k Escape >/dev/null
     export HOME="$fixture_home"
     launch "$dir"
@@ -4036,7 +4036,7 @@ EOS
     for _field in Port Share Domain Username Password; do key -k Tab >/dev/null; done
     [[ "$(ipc networkFocus)" == "Password" ]] \
         || fail "networkauth: corrected-retry setup did not reach Password"
-    printf '%s' "$runtime_canary" | omarchy-drive key --window flea - >/dev/null
+    printf '%s' "$runtime_canary" | omarchy-drive key --window philemon - >/dev/null
     key -k Return >/dev/null
     wait_network_result mounted
     [[ "$(cat "$state/info-uri")" == "smb://tester@slot.test/data" ]] \
@@ -4055,7 +4055,7 @@ EOS
     key -k Tab >/dev/null
     key "tester" >/dev/null
     key -k Tab >/dev/null
-    printf '%s' "$runtime_canary" | omarchy-drive key --window flea - >/dev/null
+    printf '%s' "$runtime_canary" | omarchy-drive key --window philemon - >/dev/null
     : > "$state/fail"
     key -k Return >/dev/null
     wait_network_result failed
@@ -4093,9 +4093,9 @@ EOS
         || fail "networkauth: corrected Retry retained stale error text"
 
     printf 'NETWORKAUTH artifact=ok stdin=one persistence=none retry=corrected eye=held missing-session=no-launch\n'
-    unset FLEA_GIO_AUTH
+    unset PHILEMON_GIO_AUTH
     export PATH="$saved_path"
-    kill_flea
+    kill_philemon
     sandbox_remove "$fixture_home"
 }
 
@@ -4153,20 +4153,20 @@ EOS
 
     printf 'NETWORKTIMEOUT retained=ok retry=ok\n'
     export PATH="$saved_path"
-    kill_flea
+    kill_philemon
     sandbox_remove "$fixture_home"
 }
 
 case_networklive() {
-    local uri=${FLEA_NETWORK_LIVE_URI:-}
-    local mount_uri=${FLEA_NETWORK_LIVE_MOUNT_URI:-$uri}
-    local mount_root=${FLEA_NETWORK_LIVE_ROOT:-}
-    local relative=${FLEA_NETWORK_LIVE_RELATIVE:-}
-    local protocol=${FLEA_NETWORK_LIVE_PROTOCOL:-}
-    local host=${FLEA_NETWORK_LIVE_HOST:-}
-    local remote_path=${FLEA_NETWORK_LIVE_PATH:-}
-    local remote_user=${FLEA_NETWORK_LIVE_USER:-}
-    local auth=${FLEA_NETWORK_LIVE_AUTH:-none}
+    local uri=${PHILEMON_NETWORK_LIVE_URI:-}
+    local mount_uri=${PHILEMON_NETWORK_LIVE_MOUNT_URI:-$uri}
+    local mount_root=${PHILEMON_NETWORK_LIVE_ROOT:-}
+    local relative=${PHILEMON_NETWORK_LIVE_RELATIVE:-}
+    local protocol=${PHILEMON_NETWORK_LIVE_PROTOCOL:-}
+    local host=${PHILEMON_NETWORK_LIVE_HOST:-}
+    local remote_path=${PHILEMON_NETWORK_LIVE_PATH:-}
+    local remote_user=${PHILEMON_NETWORK_LIVE_USER:-}
+    local auth=${PHILEMON_NETWORK_LIVE_AUTH:-none}
     local product_root
     [[ "$uri" == *://* && "$mount_uri" == *://* \
         && "$mount_root" == "/run/user/$(id -u)/gvfs/"* ]] \
@@ -4207,7 +4207,7 @@ case_networklive() {
             || fail "networklive: password field did not receive focus"
         [[ "$(ipc networkPasswordState)" == "masked|empty" ]] \
             || fail "networklive: password was populated before stdin delivery"
-        omarchy-drive key --window flea - >/dev/null
+        omarchy-drive key --window philemon - >/dev/null
         [[ "$(ipc networkPasswordState)" == "masked|set" ]] \
             || fail "networklive: password stdin was empty"
         key -k Return >/dev/null
@@ -4286,17 +4286,17 @@ case_networklive() {
     ! gio mount -l 2>/dev/null | grep -Fq -- "-> $mount_uri" || fail "networklive: GIO mount survived"
 
     printf 'NETWORKLIVE protocol=%s cold-mount=ok rail=ok browse=ok preview=ok unmount=ok saved=false\n' "$protocol"
-    kill_flea
+    kill_philemon
     sandbox_remove "$fixture_home"
 }
 
 case_gvfs_cleanup() {
-    ( kill_flea ) >/dev/null 2>&1 || true
-    if [[ -n "${FLEA_GVFS_CASE_DIR:-}" ]]; then
-        DIR="$FLEA_GVFS_CASE_DIR" ./tools/flea-gvfs-fixture clean >/dev/null 2>&1 || true
+    ( kill_philemon ) >/dev/null 2>&1 || true
+    if [[ -n "${PHILEMON_GVFS_CASE_DIR:-}" ]]; then
+        DIR="$PHILEMON_GVFS_CASE_DIR" ./tools/philemon-gvfs-fixture clean >/dev/null 2>&1 || true
     fi
-    if [[ -n "${FLEA_GVFS_CASE_HOME:-}" ]]; then
-        sandbox_remove "$FLEA_GVFS_CASE_HOME"
+    if [[ -n "${PHILEMON_GVFS_CASE_HOME:-}" ]]; then
+        sandbox_remove "$PHILEMON_GVFS_CASE_HOME"
     fi
 }
 
@@ -4308,14 +4308,14 @@ case_gvfs() {
     local share_dir="$fixture_root/gvfs-share"
     local fixture_home="$fixture_root/gvfs-home"
     fixture_home_make "$fixture_home"
-    FLEA_GVFS_CASE_DIR="$share_dir"
-    FLEA_GVFS_CASE_HOME="$fixture_home"
+    PHILEMON_GVFS_CASE_DIR="$share_dir"
+    PHILEMON_GVFS_CASE_HOME="$fixture_home"
     trap case_gvfs_cleanup EXIT HUP INT TERM
     local real_home="$HOME"
     local uri local_path
 
-    uri=$(DIR="$share_dir" ./tools/flea-gvfs-fixture make)
-    DIR="$share_dir" ./tools/flea-gvfs-fixture mount
+    uri=$(DIR="$share_dir" ./tools/philemon-gvfs-fixture make)
+    DIR="$share_dir" ./tools/philemon-gvfs-fixture mount
     local_path=$(gio info "$uri" | sed -n 's/^local path: //p')
     [[ "$local_path" == "/run/user/$(id -u)/gvfs/"* ]] \
         || fail "gvfs: fixture has no FUSE path, got $local_path"
@@ -4337,7 +4337,7 @@ case_gvfs() {
     wait_path "$local_path"
     wait_listing 2
     [[ "$(ipc rowAt 0)" == "alpha.txt|"* || "$(ipc rowAt 1)" == "alpha.txt|"* ]] \
-        || fail "gvfs: alpha.txt absent from Flea listing"
+        || fail "gvfs: alpha.txt absent from Philemon listing"
 
     key -k Escape >/dev/null
     open_row alpha.txt
@@ -4360,7 +4360,7 @@ case_gvfs() {
         sleep 0.05
     done
     [[ -z "$(ipc networkEntries)" ]] || fail "gvfs: row survived unmount"
-    ! gio mount -l | grep -Fq -- "-> $uri" || fail "gvfs: GIO mount survived Flea unmount"
+    ! gio mount -l | grep -Fq -- "-> $uri" || fail "gvfs: GIO mount survived Philemon unmount"
 
     printf 'GVFS rail=ok browse=ok preview=ok unmount=ok\n'
     case_gvfs_cleanup
@@ -4561,7 +4561,7 @@ EOS
         || fail "sharebrowser: a mount that genuinely failed navigated to $(ipc path)"
 
     printf 'SHAREBROWSER list=ok escape=ok mount-open=ok already-mounted-quirk=ok mount-failure=ok\n'
-    kill_flea
+    kill_philemon
     sandbox_remove "$fixture_home"; sandbox_remove "$share1_dir"; sandbox_remove "$share2_dir"
 }
 
@@ -4674,7 +4674,7 @@ EOS
     # against a product that never ended the listing at all. A bare server root ends in gio list,
     # which hangs here exactly as gio info did, and nothing else in the chain is left to end it.
     # The stub and the fixture home are exported around this launch exactly as they were around the
-    # first: a relaunch that inherits the restored HOME starts Flea on the operator's own rail.
+    # first: a relaunch that inherits the restored HOME starts Philemon on the operator's own rail.
     export PATH="$dir/bin:$PATH"
     export HOME="$fixture_home"
     launch "$dir"
@@ -4707,7 +4707,7 @@ EOS
     [[ "$(ipc path)" == "$dir" ]] || fail "hangshare: the timed-out listing navigated to $(ipc path)"
 
     printf 'HANGSHARE busy-refusal=ok deadline=ok next-share-opens=ok list-deadline=ok\n'
-    kill_flea
+    kill_philemon
     sandbox_remove "$fixture_home"; sandbox_remove "$good_dir"
 }
 
@@ -4833,7 +4833,7 @@ EOS
         || fail "unmount: Remove took a live mount off the rail, got $(ipc networkEntries)"
 
     printf 'UNMOUNT menu=ok escape=ok fire=ok no-menu-on-favourite=ok keyboard=ok unsaved=ok\n'
-    kill_flea
+    kill_philemon
 
     # The next two need a saved place, so the file goes in before the launch that reads it: one line
     # for the share the stub reports live, one for a place nothing mounts.
@@ -4912,7 +4912,7 @@ EOS
         || fail "unmount: the refused press rewrote the file, mtime moved from $before_press4"
 
     printf 'UNMOUNT remove saved-mounted=ok saved-only=ok pressed-again=ok\n'
-    kill_flea
+    kill_philemon
     sandbox_remove "$fixture_home"
 }
 
@@ -4923,7 +4923,7 @@ EOS
 case_eject() {
     local dir="$fixture_root/eject"
     sandbox_scratch "$dir"
-    mkdir -p "$dir/bin" "$dir/mnt/FLEASTICK"
+    mkdir -p "$dir/bin" "$dir/mnt/PHILEMONSTICK"
     : > "$dir/0-one.txt"
     : > "$dir/0-two.txt"
 
@@ -4936,13 +4936,13 @@ case_eject() {
 if [ -f "$dir/ejected" ]; then
   mp=null
 else
-  mp='"$dir/mnt/FLEASTICK"'
+  mp='"$dir/mnt/PHILEMONSTICK"'
 fi
 cat <<JSON
 {"blockdevices":[
 {"name":"nvme0n1","label":null,"mountpoint":null,"rm":false,"size":"238.5G","type":"disk","model":"KBG40ZNS256G"},
 {"name":"sda","label":null,"mountpoint":null,"rm":true,"size":"116.1G","type":"disk","model":"USB Flash Disk",
-"children":[{"name":"sda1","label":"FLEASTICK","mountpoint":\$mp,"rm":true,"size":"116.1G","type":"part","model":null}]}]}
+"children":[{"name":"sda1","label":"PHILEMONSTICK","mountpoint":\$mp,"rm":true,"size":"116.1G","type":"part","model":null}]}]}
 JSON
 EOS
     chmod +x "$dir/bin/lsblk"
@@ -4969,10 +4969,10 @@ EOS
     # bin/, mnt/ and gio.log are the stubs' own fixture entries beside the two files under test.
     wait_listing 5
     for _attempt in $(seq 1 100); do
-        [[ "$(ipc deviceEntries)" == *"FLEASTICK|device|volume|true" ]] && break
+        [[ "$(ipc deviceEntries)" == *"PHILEMONSTICK|device|volume|true" ]] && break
         sleep 0.05
     done
-    [[ "$(ipc deviceEntries)" == *"FLEASTICK|device|volume|true" ]] \
+    [[ "$(ipc deviceEntries)" == *"PHILEMONSTICK|device|volume|true" ]] \
         || fail "eject: the stub volume never appeared live, got $(ipc deviceEntries)"
     # The hostname prefix makes the disk row's label the box's own, so the shape is asserted, not the text.
     [[ "$(ipc deviceEntries | grep -c '|device|disk|true')" == "1" ]] \
@@ -5009,9 +5009,9 @@ EOS
     # mounted, so the sentence must refuse. A verdict read off the exit code would say safe here.
     key -k Return >/dev/null
     settle
-    grep -q "^mount -e $dir/mnt/FLEASTICK\$" "$gio_log" \
+    grep -q "^mount -e $dir/mnt/PHILEMONSTICK\$" "$gio_log" \
         || fail "eject: the menu row did not run gio mount -e on the mount point, log is: $(cat "$gio_log")"
-    local refusal="FLEASTICK could not be ejected; it is still mounted, close anything using it and try again."
+    local refusal="PHILEMONSTICK could not be ejected; it is still mounted, close anything using it and try again."
     local seen=""
     for _attempt in $(seq 1 250); do
         seen=$(ipc lastMessage)
@@ -5031,7 +5031,7 @@ EOS
     click_rail_row "$volume_row" right
     settle
     key -k Return >/dev/null
-    wait_message "Ejected FLEASTICK, it is safe to unplug."
+    wait_message "Ejected PHILEMONSTICK, it is safe to unplug."
     printf 'EJECT really entries=%q\n' "$(ipc deviceEntries)"
     shot eject-safe
 
@@ -5052,7 +5052,7 @@ EOS
         || fail "eject: expected exactly two ejects, log is: $(cat "$gio_log")"
 
     printf 'EJECT menu=ok internal-disk-offers-nothing=ok exit-code-is-not-the-verdict=ok listing-is=ok no-force=ok\n'
-    kill_flea
+    kill_philemon
     sandbox_remove "$fixture_home"
 }
 
@@ -5197,7 +5197,7 @@ EOS
     printf 'Mount(0): isos on 192.168.1.10 -> smb://192.168.1.10/isos/\n' > "$dir/bin/gio-out"
     printf 'RENAME poll-survives=ok swap-closes=ok\n'
 
-    kill_flea
+    kill_philemon
 
     # Persistence across a real relaunch: the whole point of writing to the bookmarks file at all.
     export HOME="$fixture_home"
@@ -5215,7 +5215,7 @@ EOS
         || fail "rename: the label did not survive a relaunch, got $(ipc networkEntries)"
 
     printf 'RENAME relabel=ok escape=ok empty=ok create-bookmark=ok persists=ok\n'
-    kill_flea
+    kill_philemon
     sandbox_remove "$fixture_home"
 }
 
@@ -5307,7 +5307,7 @@ case_taildrop() {
         || fail "taildrop: the dispatch message is wrong, got $(ipc lastMessage)"
     sleep 2
     shot taildrop-sent
-    kill_flea
+    kill_philemon
 
     # A stubbed tailscale, the logged-out shape (BackendState NeedsLogin, no peers at all).
     cat > "$dir/bin/tailscale" <<'EOS'
@@ -5343,14 +5343,14 @@ EOS
             ln -s "$f" "$stub_bin/$base"
         done
     done
-    kill_flea
-    cat "$flea_log" >> "$run_log" 2>/dev/null || true
-    : > "$flea_log"
+    kill_philemon
+    cat "$philemon_log" >> "$run_log" 2>/dev/null || true
+    : > "$philemon_log"
     # The renderer is stated because src/gui.rs owns that choice and a direct qs launch never runs it.
-    QSG_RHI_BACKEND="${QSG_RHI_BACKEND:-vulkan}" PATH="$stub_bin" FLEA_PATH="$dir" FLEA_BIN="$flea_bin" \
-        setsid nohup qs -p "$flea_ui" >"$flea_log" 2>&1 </dev/null &
-    omarchy-drive wait window flea --timeout 15 >/dev/null
-    omarchy-drive focus flea >/dev/null
+    QSG_RHI_BACKEND="${QSG_RHI_BACKEND:-vulkan}" PATH="$stub_bin" PHILEMON_PATH="$dir" PHILEMON_BIN="$philemon_bin" \
+        setsid nohup qs -p "$philemon_ui" >"$philemon_log" 2>&1 </dev/null &
+    omarchy-drive wait window philemon --timeout 15 >/dev/null
+    omarchy-drive focus philemon >/dev/null
     assert_window
     wait_listing 3
     click_row 2 right
@@ -5358,14 +5358,14 @@ EOS
     [[ "$(ipc contextMenuEntries)" != *"Send with Taildrop"* ]] \
         || fail "taildrop: a PATH with no tailscale at all still offered the entry, got $(ipc contextMenuEntries)"
     shot taildrop-absent
-    grep -q 'Command: QList("tailscale", "status", "--json")' "$flea_log" \
+    grep -q 'Command: QList("tailscale", "status", "--json")' "$philemon_log" \
         || fail "taildrop: no PATH miss was ever logged for tailscale, the absence was not real"
     # Expected and asserted above: scrubbed so it does not trip the suite's own generic log check.
-    grep -v 'Command: QList("tailscale", "status", "--json")' "$flea_log" > "$flea_log.tmp" \
-        && mv "$flea_log.tmp" "$flea_log"
+    grep -v 'Command: QList("tailscale", "status", "--json")' "$philemon_log" > "$philemon_log.tmp" \
+        && mv "$philemon_log.tmp" "$philemon_log"
 
     printf 'TAILDROP directory-hides=ok menu=ok real-send=ok logged-out-hides=ok absent-hides=ok\n'
-    kill_flea
+    kill_philemon
     sandbox_remove "$stub_bin"
 }
 
@@ -5463,13 +5463,13 @@ case_renamelife() {
     [[ -e "$dir/f001.txt" ]] || fail "renamelife: f001.txt was renamed by a whitespace submit"
 
     printf 'RENAMELIFE arms=ok view=ok scroll=ok navigate=ok whitespace=ok\n'
-    kill_flea
+    kill_philemon
 }
 
 # The settings panel: its doors, its three control groups, and the one thing a settings window
 # has to do that a menu does not, which is outlive the process that wrote it. XDG_STATE_HOME and
 # XDG_CONFIG_HOME both point inside the fixture root for the whole case, so nothing here can write
-# the operator's own ~/.local/state/flea/ui.json; hard rule 9 covers writes and not only deletes.
+# the operator's own ~/.local/state/philemon/ui.json; hard rule 9 covers writes and not only deletes.
 case_settings() {
     local dir="$fixture_root/settings"
     local config="$fixture_root/settings-config"
@@ -5483,10 +5483,10 @@ case_settings() {
     local real_state="${XDG_STATE_HOME-}"
     export XDG_CONFIG_HOME="$config"
     export XDG_STATE_HOME="$state"
-    local stored="$state/flea/ui.json"
+    local stored="$state/philemon/ui.json"
 
     # Seeded through the same CLI the window writes through: a column set the header menu owns, two
-    # keys the backend owns and no control in this panel writes, and one key only a newer Flea knows.
+    # keys the backend owns and no control in this panel writes, and one key only a newer Philemon knows.
     # What keeps them below is src/uistate.rs's merge, not a copy the window happened to be holding.
     settings_seed "$state" "$config" "$stored"
 
@@ -5516,12 +5516,12 @@ case_settings() {
     # stored vocabulary rather than two that would have to be kept in step.
     ! grep -q 'uiScale' "$stored" || fail "settings: the state file still carries an interface-scale multiplier"
     ! grep -q '"px"' "$stored" || fail "settings: the state file still carries 0.1.3's override shape"
-    [[ ! -e "$config/flea/view.json" ]] \
-        || fail "settings: a second settings file was written at $config/flea/view.json"
+    [[ ! -e "$config/philemon/view.json" ]] \
+        || fail "settings: a second settings file was written at $config/philemon/view.json"
 
     settings_assert_backend "$state" "$config" "$pinned_base"
 
-    kill_flea
+    kill_philemon
     launch "$dir"
     wait_listing 2
     [[ "$(token_of baseSize)" == "$pinned_base" ]] \
@@ -5563,27 +5563,27 @@ case_settings() {
     printf 'SETTINGS doors=ok display=ok menus=ok keys=ok restart=ok backend=ok refused=ok unread=ok\n'
     if [[ -n "$real_config" ]]; then export XDG_CONFIG_HOME="$real_config"; else unset XDG_CONFIG_HOME; fi
     if [[ -n "$real_state" ]]; then export XDG_STATE_HOME="$real_state"; else unset XDG_STATE_HOME; fi
-    kill_flea
+    kill_philemon
 }
 
-# The state this case starts from, laid down through flea --ui-state so the schema sees it too. The
+# The state this case starts from, laid down through philemon --ui-state so the schema sees it too. The
 # unknown key goes in by hand afterwards, because the CLI refuses a key this build does not know.
 settings_seed() {
     local state="$1" config="$2" stored="$3"
-    env XDG_STATE_HOME="$state" XDG_CONFIG_HOME="$config" "$flea_bin" --ui-state \
+    env XDG_STATE_HOME="$state" XDG_CONFIG_HOME="$config" "$philemon_bin" --ui-state \
         '{"columns":["name","size"],"places":{"sidebarWidth":240},"sort":{"key":"size"}}' >/dev/null \
-        || fail "settings: the seeding write through flea --ui-state failed"
-    jq '. + {fromANewerFlea: {aKeyThisBuildHasNeverHeardOf: true}}' "$stored" > "$stored.seed" \
-        || fail "settings: the newer-Flea key could not be added to the seed"
+        || fail "settings: the seeding write through philemon --ui-state failed"
+    jq '. + {fromANewerPhilemon: {aKeyThisBuildHasNeverHeardOf: true}}' "$stored" > "$stored.seed" \
+        || fail "settings: the newer-Philemon key could not be added to the seed"
     mv "$stored.seed" "$stored"
 }
 
-# flea --ui-state with no patch is the read half of the one shared path, so this reads the panel's
+# philemon --ui-state with no patch is the read half of the one shared path, so this reads the panel's
 # own three settings back out of the backend, and every key beside them that nobody here writes.
 settings_assert_backend() {
     local state="$1" config="$2" pinned_base="$3" doc
-    doc=$(env XDG_STATE_HOME="$state" XDG_CONFIG_HOME="$config" "$flea_bin" --ui-state) \
-        || fail "settings: flea --ui-state could not read the state file back"
+    doc=$(env XDG_STATE_HOME="$state" XDG_CONFIG_HOME="$config" "$philemon_bin" --ui-state) \
+        || fail "settings: philemon --ui-state could not read the state file back"
     settings_backend_holds "$doc" ".display.textSize.mode == $pinned_base" "the ${pinned_base}px stop"
     settings_backend_holds "$doc" '.keys == "windows"' "the Windows preset"
     settings_backend_holds "$doc" '.menu.hidden | index("paste")' "the hidden Paste action"
@@ -5591,12 +5591,12 @@ settings_assert_backend() {
     # value beside it here would be a value that could disagree with the set the menus actually read.
     settings_backend_holds "$doc" '.menu | has("basic") | not' "menu.hidden alone, with no stored master"
     # The preservation half, and the whole point of one store: four settings writes are four merges,
-    # so the retained view state, the backend's own keys and a newer Flea's key are all still here.
+    # so the retained view state, the backend's own keys and a newer Philemon's key are all still here.
     settings_backend_holds "$doc" '.columns == ["name","size"]' "the stored column set"
     settings_backend_holds "$doc" '.places.sidebarWidth == 240' "places.sidebarWidth"
     settings_backend_holds "$doc" '.sort.key == "size"' "sort.key"
-    settings_backend_holds "$doc" '.fromANewerFlea.aKeyThisBuildHasNeverHeardOf == true' \
-        "the key only a newer Flea knows"
+    settings_backend_holds "$doc" '.fromANewerPhilemon.aKeyThisBuildHasNeverHeardOf == true' \
+        "the key only a newer Philemon knows"
 }
 
 settings_backend_holds() {
@@ -5612,7 +5612,7 @@ settings_read_refused() {
     local stored="$1" dir="$2" before_sha before_ino
     # Before the reading, because the window this case has been driving still owns a writer, and a
     # patch that landed between the sha below and the chmod would read as this block's own damage.
-    kill_flea
+    kill_philemon
     before_sha=$(sha256sum "$stored" | cut -d' ' -f1)
     before_ino=$(stat -c '%i' "$stored")
     chmod 000 "$stored" || fail "settings: the state file could not be made unreadable"
@@ -5626,7 +5626,7 @@ settings_read_refused() {
     settle
     [[ "$(ipc lastMessage)" == "That setting could not be saved." ]] \
         || fail "settings: a save onto an unreadable state file was not reported, the status bar says $(ipc lastMessage)"
-    kill_flea
+    kill_philemon
     chmod 600 "$stored" || fail "settings: the state file could not be made readable again"
     [[ "$(sha256sum "$stored" | cut -d' ' -f1)" == "$before_sha" ]] \
         || fail "settings: a save onto an unreadable state file spent the operator's bytes"
@@ -5636,11 +5636,11 @@ settings_read_refused() {
 
 # A failed write is reported, never swallowed. The state directory is made unwritable, so the temp
 # file src/uistore.rs renames into place cannot be created at all, and the panel's next change is a
-# change the file does not have. The user is told that in the one place Flea says things.
+# change the file does not have. The user is told that in the one place Philemon says things.
 settings_write_refused() {
     local state="$1" pinned_base="$2" before refused_base retried_base
-    before=$(cat "$state/flea/ui.json")
-    chmod 500 "$state/flea" || fail "settings: the state directory could not be made read-only"
+    before=$(cat "$state/philemon/ui.json")
+    chmod 500 "$state/philemon" || fail "settings: the state directory could not be made read-only"
     key , >/dev/null
     settle
     # The stop row is Display's, and the panel reopens on whatever section the last block left it on.
@@ -5654,10 +5654,10 @@ settings_write_refused() {
         || fail "settings: the refused step did not move the size on screen, still $refused_base"
     [[ "$(ipc lastMessage)" == "That setting could not be saved." ]] \
         || fail "settings: a refused write was not reported, the status bar says $(ipc lastMessage)"
-    chmod 700 "$state/flea" || fail "settings: the state directory could not be made writable again"
-    [[ "$(cat "$state/flea/ui.json")" == "$before" ]] \
+    chmod 700 "$state/philemon" || fail "settings: the state directory could not be made writable again"
+    [[ "$(cat "$state/philemon/ui.json")" == "$before" ]] \
         || fail "settings: a refused write changed the state file anyway"
-    grep -q "\"mode\": $pinned_base" "$state/flea/ui.json" \
+    grep -q "\"mode\": $pinned_base" "$state/philemon/ui.json" \
         || fail "settings: the state file did not keep the stop the refusal could not replace"
     # The book must not have believed the refusal: the next step still writes, and lands.
     key h >/dev/null
@@ -5665,7 +5665,7 @@ settings_write_refused() {
     retried_base=$(token_of baseSize)
     (( retried_base < refused_base )) \
         || fail "settings: the step after a refusal did not move the size, still $retried_base"
-    grep -q "\"mode\": $retried_base" "$state/flea/ui.json" \
+    grep -q "\"mode\": $retried_base" "$state/philemon/ui.json" \
         || fail "settings: the step after a refusal never reached the state file"
     key -k Escape >/dev/null
     settle
@@ -5712,7 +5712,7 @@ settings_doors() {
 }
 
 # The Display section, whose consumer is ui/Theme.qml. The board rules that Omarchy owns the size
-# until Flea is told otherwise, that an override takes one of seven stops and not a free number, and
+# until Philemon is told otherwise, that an override takes one of seven stops and not a free number, and
 # that the monitor scale is read-only. Every stop is walked and its whole token row is read back off
 # the live seam against the board's own layout table, because the table is the contract.
 settings_display() {
@@ -5728,7 +5728,7 @@ settings_display() {
     [[ "$(ipc settingsRows)" == *"fact|Scale|"* ]] \
         || fail "settings: the Display section draws no monitor scale, got $(ipc settingsRows)"
     [[ "$(ipc settingsRows)" != *"choice|Scale|"* ]] \
-        || fail "settings: the monitor scale is a control, and the board says Flea never steps it"
+        || fail "settings: the monitor scale is a control, and the board says Philemon never steps it"
     assert_monitor_scale_row
     shot settings-text-follow
 
@@ -5824,7 +5824,7 @@ settings_walk_to_stop() {
         || fail "settings: seven steps did not reach the ${want}px stop, stopped at $(token_of baseSize)"
 }
 
-# One key of Theme.tokens(), which is the live seam tools/flea-metrics-gate diffs.
+# One key of Theme.tokens(), which is the live seam tools/philemon-metrics-gate diffs.
 token_of() {
     ipc tokens | grep "^$1=" | cut -d= -f2-
 }
@@ -6021,7 +6021,7 @@ declare -a wanted=("$@")
 [[ ${#wanted[@]} -eq 0 ]] && wanted=(cursor terminal open rows click menu background hidden selection watch select colour lifted icons thumbs hashcache stale nosweep oem header overflow focus preview network netmark networkauth networktimeout gvfs sharebrowser unmount eject rename renamelife taildrop grid columns operations tabs openterminal renderer settings hangshare)
 
 : > "$run_log"
-: > "$flea_log"
+: > "$philemon_log"
 failures=0
 # A refusal and an assertion failure mean different things: a failure says a test is wrong, a refusal
 # says the environment is unsafe and every case after it is running against that. Every case runs in
@@ -6052,10 +6052,10 @@ for name in "${wanted[@]}"; do
 done
 
 # launch() rolled every earlier case into the run log, so this adds the last case's share.
-cat "$flea_log" >> "$run_log" 2>/dev/null || true
+cat "$philemon_log" >> "$run_log" 2>/dev/null || true
 
 # The last case's backend is reaped here and not only by the trap, so a wedge lands in the tally like any other check.
-if ! ( kill_flea ); then
+if ! ( kill_philemon ); then
     printf 'FAIL drain\n'
     failures=$((failures + 1))
 fi

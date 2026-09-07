@@ -9,36 +9,36 @@ use std::process::Command;
 pub fn exec_qs(ui: &Path, start: Option<&str>, select: Option<&str>) -> i32 {
     let mut cmd = qs_command(ui.to_path_buf());
     if let Some(path) = start {
-        cmd.env("FLEA_PATH", path);
+        cmd.env("PHILEMON_PATH", path);
     }
     if let Some(target) = select {
-        cmd.env("FLEA_SELECT", target);
+        cmd.env("PHILEMON_SELECT", target);
     }
     exec(cmd)
 }
 
-// flea --pick <reply>: the picker window tools/flea-portal opens for one portal request. Same shell
+// philemon --pick <reply>: the picker window tools/philemon-portal opens for one portal request. Same shell
 // and the same renderer choice, on a second entry point, so a chooser is not a second application.
 pub fn pick(reply: &str) -> i32 {
     // Empty is absent, the rule paths::has_display() applies: a wrapper's unset variable is not a request.
-    if !std::env::var_os("FLEA_PICKER").is_some_and(|value| !value.is_empty()) {
-        eprintln!("flea: --pick needs FLEA_PICKER, the portal request tools/flea-portal puts in the environment");
+    if !std::env::var_os("PHILEMON_PICKER").is_some_and(|value| !value.is_empty()) {
+        eprintln!("philemon: --pick needs PHILEMON_PICKER, the portal request tools/philemon-portal puts in the environment");
         return 2;
     }
     if reply.is_empty() {
-        eprintln!("flea: --pick needs the reply file tools/flea-portal names, and it was empty");
+        eprintln!("philemon: --pick needs the reply file tools/philemon-portal names, and it was empty");
         return 2;
     }
     if !paths::has_display() {
-        eprintln!("flea: there is no graphical session to open a file chooser in");
+        eprintln!("philemon: there is no graphical session to open a file chooser in");
         return 2;
     }
     let Some(ui) = paths::ui_dir() else {
-        eprintln!("flea: the shell config is missing, set FLEA_UI or install /usr/share/flea/ui");
+        eprintln!("philemon: the shell config is missing, set PHILEMON_UI or install /usr/share/philemon/ui");
         return 2;
     };
     let mut cmd = qs_command(ui.join("picker.qml"));
-    cmd.env("FLEA_PICKER_REPLY", reply);
+    cmd.env("PHILEMON_PICKER_REPLY", reply);
     exec(cmd)
 }
 
@@ -48,21 +48,21 @@ fn qs_command(target: PathBuf) -> Command {
     let mut cmd = Command::new("qs");
     cmd.arg("-p").arg(target);
     if let Ok(binary) = std::env::current_exe() {
-        cmd.env("FLEA_BIN", binary);
+        cmd.env("PHILEMON_BIN", binary);
     }
     // Empty is absent, the rule paths::has_display() applies: a wrapper's unset variable is not a choice.
     if std::env::var_os("QSG_RHI_BACKEND").is_some_and(|value| !value.is_empty()) {
         // An explicit choice is the operator's, so it is neither replaced nor offered a retry.
-        cmd.env_remove("FLEA_RENDERER_AUTOMATIC");
+        cmd.env_remove("PHILEMON_RENDERER_AUTOMATIC");
     } else if let Err(reason) = vulkan::usable() {
         // A silent downgrade hides a 2.4x memory regression, so the reason the probe found is said once.
-        eprintln!("flea: Vulkan is unusable, {reason}, so the shell starts on OpenGL");
+        eprintln!("philemon: Vulkan is unusable, {reason}, so the shell starts on OpenGL");
         cmd.env("QSG_RHI_BACKEND", "opengl");
-        cmd.env_remove("FLEA_RENDERER_AUTOMATIC");
+        cmd.env_remove("PHILEMON_RENDERER_AUTOMATIC");
     } else {
         // Vulkan is the measured fast path, and the marker is what permits the QML arm its one retry.
         cmd.env("QSG_RHI_BACKEND", "vulkan");
-        cmd.env("FLEA_RENDERER_AUTOMATIC", "1");
+        cmd.env("PHILEMON_RENDERER_AUTOMATIC", "1");
     }
     cmd
 }
@@ -72,6 +72,6 @@ fn exec(mut cmd: Command) -> i32 {
     thp::disable();
     // exec() only returns on failure; the reason is elided, never shown raw.
     let _ = cmd.exec();
-    eprintln!("flea: could not start the shell, qs is not on PATH or failed to run");
+    eprintln!("philemon: could not start the shell, qs is not on PATH or failed to run");
     1
 }

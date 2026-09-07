@@ -18,7 +18,7 @@ pub fn open(path: &str) -> i32 {
         Some(p) => p,
         // The reason is elided, never shown raw, and the path is the user's own input.
         None => {
-            eprintln!("flea: that file could not be opened, check that it still exists");
+            eprintln!("philemon: that file could not be opened, check that it still exists");
             return FAILED;
         }
     };
@@ -35,18 +35,18 @@ pub fn open(path: &str) -> i32 {
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        // Its own process group, so nothing that later kills Flea's group reaches the opened program.
+        // Its own process group, so nothing that later kills Philemon's group reaches the opened program.
         .process_group(0)
         .status();
     match finished {
         Ok(status) if status.success() => 0,
         // A launcher that refused, which a spawn nobody waited on used to report as a clean handoff.
         Ok(_) => {
-            eprintln!("flea: gio open refused that file, so no application on this system took it");
+            eprintln!("philemon: gio open refused that file, so no application on this system took it");
             FAILED
         }
         Err(_) => {
-            eprintln!("flea: nothing on this system could be asked to open that file");
+            eprintln!("philemon: nothing on this system could be asked to open that file");
             FAILED
         }
     }

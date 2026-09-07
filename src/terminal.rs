@@ -19,12 +19,12 @@ pub fn open_terminal(path: &str) -> i32 {
         Some(p) => p,
         // The reason is elided, never shown raw, and the path is the user's own input.
         None => {
-            eprintln!("flea: that directory could not be opened in a terminal, check that it still exists");
+            eprintln!("philemon: that directory could not be opened in a terminal, check that it still exists");
             return FAILED;
         }
     };
     if !target.is_dir() {
-        eprintln!("flea: that directory could not be opened in a terminal, check that it still exists");
+        eprintln!("philemon: that directory could not be opened in a terminal, check that it still exists");
         return FAILED;
     }
     // The setting is inherited across exec, so this is the last point that can hand it back.
@@ -39,13 +39,13 @@ pub fn open_terminal(path: &str) -> i32 {
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
-        // Its own process group, so nothing that later kills Flea's group reaches the terminal.
+        // Its own process group, so nothing that later kills Philemon's group reaches the terminal.
         .process_group(0)
         .spawn();
     match started {
         Ok(_) => 0,
         Err(_) => {
-            eprintln!("flea: nothing on this system could be asked to open a terminal there");
+            eprintln!("philemon: nothing on this system could be asked to open a terminal there");
             FAILED
         }
     }

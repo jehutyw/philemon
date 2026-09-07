@@ -1,8 +1,8 @@
 [package]
-name = "flea"
+name = "philemon"
 version = "0.1.5"
 edition = "2021"
-# src/vulkan.rs uses c"..." literals, stabilised in 1.77; without this the error names rustc, not flea.
+# src/vulkan.rs uses c"..." literals, stabilised in 1.77; without this the error names rustc, not philemon.
 rust-version = "1.77"
 
 [dependencies]

@@ -364,8 +364,8 @@ Component qs::io::ipc::IpcHandler
 
 The callable surface is not in the `.qmltypes`: an `IpcHandler` exposes whatever
 `function name(): type { ... }` declarations its QML body holds, and the return type
-annotation is what the caller receives as text. Flea declares exactly one handler, with
-`target: "flea"`.
+annotation is what the caller receives as text. Philemon declares exactly one handler, with
+`target: "philemon"`.
 
 ## Quickshell (singleton)
 

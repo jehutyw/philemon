@@ -15,7 +15,7 @@ function pane(sent, picked, rows) {
 }
 
 function run(check) {
-    var rows = [{ n: "omarchy", d: true }, { n: "flea", d: true }, { n: "a.txt", d: false }, { n: "b.txt", d: false }]
+    var rows = [{ n: "omarchy", d: true }, { n: "philemon", d: true }, { n: "a.txt", d: false }, { n: "b.txt", d: false }]
 
     // The selection when the pressed row is in it, the row alone when it is not.
     check("a drag from a selected row carries the whole selection",
@@ -57,7 +57,7 @@ function run(check) {
     check("and the clipboard was never part of it", mover.clipboard, "untouched")
     var copied = []
     Drag.drop(pane(copied, [], rows), [2], 1, true)
-    check("under ctrl it is a copy", copied.length === 1 ? copied[0].op + " " + copied[0].dest : "nothing sent", "copy /d/flea")
+    check("under ctrl it is a copy", copied.length === 1 ? copied[0].op + " " + copied[0].dest : "nothing sent", "copy /d/philemon")
     var refused = []
     check("a drop of a folder onto itself sends nothing", Drag.drop(pane(refused, [], rows), [0, 2], 0, false), false)
     check("and nothing went out", refused.length, 0)
@@ -94,7 +94,7 @@ function run(check) {
           Drag.dropExternal(pane(extRefused, [], rows), ["https://example.com/a.txt"], 0), false)
     check("and nothing went out from any of them", extRefused.length, 0)
 
-    // What the drag puts on the wire, and the marker that tells Flea's own drag from a foreign one.
+    // What the drag puts on the wire, and the marker that tells Philemon's own drag from a foreign one.
     check("a path becomes a file URI", Drag.uriFor("/d/a.txt"), "file:///d/a.txt")
     check("a space is percent encoded", Drag.uriFor("/d/a b.txt"), "file:///d/a%20b.txt")
     check("and so is a hash, which encodeURI would leave alone", Drag.uriFor("/d/a#b.txt"), "file:///d/a%23b.txt")
@@ -122,12 +122,12 @@ function run(check) {
     check("a fully resolvable selection still offers both",
           Drag.mimeFor(pane([], [], rows), [0, 2], false).hasOwnProperty("text/uri-list"), true)
 
-    // The marker names the application; the instance mime names this process. Another Flea window is
+    // The marker names the application; the instance mime names this process. Another Philemon window is
     // a different process whose row indices mean nothing here, so it must not take the internal path.
     check("a drag from this window is recognised as its own",
           Drag.isOwnDrag(Drag.markerPayload([0, 2], false)), true)
-    check("a drag from another Flea window is not",
-          Drag.isOwnDrag("some-other-flea\n0,2"), false)
+    check("a drag from another Philemon window is not",
+          Drag.isOwnDrag("some-other-philemon\n0,2"), false)
     check("and neither is something carrying no marker at all",
           Drag.isOwnDrag(""), false)
     check("the marker names the sender before the rows",
@@ -154,7 +154,7 @@ function run(check) {
           Drag.line(1, "omarchy", Drag.verbFor(true, false, 56, 56) === "copy"),
           "Move 1 item to omarchy · ctrl at lift copies")
 
-    // The lift's ctrl rides the marker because the drop event cannot carry it any more: Flea now
+    // The lift's ctrl rides the marker because the drop event cannot carry it any more: Philemon now
     // advertises Qt.CopyAction alone, so Chromium stops reporting dropEffect move, and Qt clamps
     // a DragEvent's proposedAction to what the source advertised. Measured on Qt 6.11.2: the
     // receiver read proposedAction 2 of supported 3 under copy|move and 1 of 1 under copy alone.
@@ -165,7 +165,7 @@ function run(check) {
     check("a marked copy reads back as one", Drag.markerCopying(Drag.markerPayload([2], true)), true)
     check("a marked move reads back as one", Drag.markerCopying(Drag.markerPayload([2], false)), false)
     check("a marker carrying no modifier field is not a copy",
-          Drag.markerCopying("some-other-flea\n0,2"), false)
+          Drag.markerCopying("some-other-philemon\n0,2"), false)
     check("and neither is a drag carrying no marker at all", Drag.markerCopying(""), false)
 
     // The round trip the DropArea makes: what mimeFor put on the wire is what verbFor reads back.
@@ -179,12 +179,12 @@ function run(check) {
           Drag.verbFor(Drag.isOwnDrag(heldWire), Drag.markerCopying(heldWire), 56, 56), "copy")
     check("and across two volumes the marker cannot make it a move",
           Drag.verbFor(Drag.isOwnDrag(plainWire), Drag.markerCopying(plainWire), 56, 32), "copy")
-    check("a marked drag from another Flea window still copies, whatever its marker says",
-          Drag.verbFor(Drag.isOwnDrag("some-other-flea\n0,2\nmove"),
-                       Drag.markerCopying("some-other-flea\n0,2\nmove"), 56, 56), "copy")
+    check("a marked drag from another Philemon window still copies, whatever its marker says",
+          Drag.verbFor(Drag.isOwnDrag("some-other-philemon\n0,2\nmove"),
+                       Drag.markerCopying("some-other-philemon\n0,2\nmove"), 56, 56), "copy")
 
-    var fromOtherFlea = []
-    Drag.dropExternal(pane(fromOtherFlea, [], rows), ["file:///x/a.txt"], 0)
-    check("a drop from another Flea window copies, like any other foreign source",
-          fromOtherFlea.length === 1 ? fromOtherFlea[0].op : "nothing sent", "copy")
+    var fromOtherPhilemon = []
+    Drag.dropExternal(pane(fromOtherPhilemon, [], rows), ["file:///x/a.txt"], 0)
+    check("a drop from another Philemon window copies, like any other foreign source",
+          fromOtherPhilemon.length === 1 ? fromOtherPhilemon[0].op : "nothing sent", "copy")
 }

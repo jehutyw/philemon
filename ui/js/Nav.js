@@ -110,7 +110,7 @@ function refresh(pane, selectPath) {
     pane.openWithoutHistory(pane.path)
 }
 
-// A change another program made under the open listing, unlike refresh() above which follows Flea's
+// A change another program made under the open listing, unlike refresh() above which follows Philemon's
 // own write. The rows are read again and the cursor is put back on the file it was on by name,
 // because a create above it renumbers every row below and a listing that jumped back to the top
 // would move the user while they were reading it. Returns the anchor applyAnchor() resolves, or null.
@@ -182,7 +182,7 @@ function applyPendingSelect(pane) {
     }
 }
 
-// Enter on the cursor row: a directory navigates, an archive opens Flea's own view, anything else
+// Enter on the cursor row: a directory navigates, an archive opens Philemon's own view, anything else
 // goes to the opener. The in-flight guard is what stops a second Enter queueing a second listing.
 function openCursor(pane, opener) {
     if (pane.listInFlight) {

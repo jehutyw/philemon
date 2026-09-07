@@ -1,5 +1,5 @@
 import QtQuick
-import "." as Flea
+import "." as Philemon
 import "js/Format.js" as Format
 import "js/Picker.js" as Picker
 
@@ -52,7 +52,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         spacing: Theme.spacing.hairline * 4
 
-        Flea.DialogField {
+        Philemon.DialogField {
             id: field
             width: parent.width
             label: "Filename"

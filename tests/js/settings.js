@@ -59,7 +59,7 @@ function runInventory(check) {
 }
 
 // The Display state ui/SettingsPanel.qml passes in: the stored mode, the size ui/Theme.qml resolved
-// from it, and the two numbers Flea reads off the compositor and never writes.
+// from it, and the two numbers Philemon reads off the compositor and never writes.
 function displayState(textSize, baseSize, monitorScale) {
     return { textSize: textSize, baseSize: baseSize,
              monitorScale: monitorScale === undefined ? 1 : monitorScale, cornerRadius: 8 }
@@ -121,7 +121,7 @@ function runMaster(check) {
 function runRows(check) {
     var display = Settings.rows("display", displayState(TextSize.follow(), 14))
     // The board's Display card: the text-size mode over its effective size, then the compositor's
-    // two read-only facts. No monitor-scale control, because Flea does not step or cycle that one.
+    // two read-only facts. No monitor-scale control, because Philemon does not step or cycle that one.
     check("the Display section is text size, then Scale, then Appearance",
           kinds(display), "group|choice|ruler|hint|group|fact|hint|group|fact")
     check("its one control opens on Follow Omarchy", find(display, "textMode").value,
@@ -143,8 +143,8 @@ function runRows(check) {
     check("and an unanswered query says so rather than claiming 1x",
           Settings.rows("display", displayState(TextSize.follow(), 14, 0))[5].value, "not reported")
     check("its hint is the board's own sentence, so no reader expects a control",
-          display[6].label, "Flea follows the compositor value and does not step or cycle it.")
-    check("the rounding Flea mirrors is drawn beside it", display[8].value, "rounding 8")
+          display[6].label, "Philemon follows the compositor value and does not step or cycle it.")
+    check("the rounding Philemon mirrors is drawn beside it", display[8].value, "rounding 8")
 
     // Switching to Override adds the stop row, and nothing else about the section moves.
     var pinned = Settings.rows("display", displayState({ mode: 16 }, 16))

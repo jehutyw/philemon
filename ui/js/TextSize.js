@@ -1,12 +1,12 @@
 .pragma library
 
-// Flea's text size, which is the Display section's one control. The SettingsScale board rules the
+// Philemon's text size, which is the Display section's one control. The SettingsScale board rules the
 // shape: Omarchy owns the size by default, and an override pins one stop from Omarchy's own range
 // rather than a free number or a multiplier of its own. The monitor scale beside it belongs to the
 // compositor, which is why nothing here steps or cycles one.
 
 // The board's seven documented stops, in px, read off its own layout table. They are not
-// contiguous: 13, 15, 17, 18 and 19 are not stops. The range is the OEM one, 9 to 20, so Flea
+// contiguous: 13, 15, 17, 18 and 19 are not stops. The range is the OEM one, 9 to 20, so Philemon
 // offers no size Omarchy does not.
 var STOPS = [9, 10, 11, 12, 14, 16, 20]
 
@@ -41,7 +41,7 @@ function nearest(px) {
     return best
 }
 
-// The size Flea actually draws at: Omarchy's own while following, the stored stop while overriding.
+// The size Philemon actually draws at: Omarchy's own while following, the stored stop while overriding.
 function effective(stored, omarchyBase) {
     return following(stored) ? omarchyBase : nearest(Number(stored.mode))
 }

@@ -97,10 +97,10 @@ function run(check) {
           '{"display":{"textSize":{"mode":16},"hidden":["paste"]}}')
 
     // The two documents differ, and that is the point of running the rebuild over both. A sub-key a
-    // newer Flea left in `display` stays in what this window DRAWS, and never enters the patch: this
-    // Flea has no rule for it, and src/uistate.rs refuses a whole patch that names one.
+    // newer Philemon left in `display` stays in what this window DRAWS, and never enters the patch: this
+    // Philemon has no rule for it, and src/uistate.rs refuses a whole patch that names one.
     var read = { display: { textSize: { mode: "system" }, aKeyThisBuildHasNeverHeardOf: true } }
-    check("the document keeps a newer Flea's own sub-key",
+    check("the document keeps a newer Philemon's own sub-key",
           JSON.stringify(UiState.withGroup(read, "display", { textSize: { mode: 16 } })),
           '{"display":{"textSize":{"mode":16},"aKeyThisBuildHasNeverHeardOf":true}}')
     check("and the patch beside it never carries one", JSON.stringify(owed).indexOf("NeverHeardOf"), -1)

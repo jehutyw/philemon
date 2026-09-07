@@ -1,21 +1,21 @@
-// The Hyprland config Flea writes: the two Omarchy file-manager keys for flea --default, and the
-// picker's floating treatment for flea --picker, each one additive block in ~/.config/hypr/bindings.lua.
+// The Hyprland config Philemon writes: the two Omarchy file-manager keys for philemon --default, and the
+// picker's floating treatment for philemon --picker, each one additive block in ~/.config/hypr/bindings.lua.
 use crate::userfile::{config_home, replace_file};
 use std::fs;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
 // Markers at line start, so the inverse finds the block whatever the user wrote after it.
-const BEGIN: &str = "-- flea --default: begin. Written by `flea --default`; `flea --default off` removes the block whole.";
-const END: &str = "-- flea --default: end.";
-const FLOAT_BEGIN: &str = "-- flea --picker: begin. Written by `flea --picker`; `flea --picker off` removes the block whole.";
-const FLOAT_END: &str = "-- flea --picker: end.";
+const BEGIN: &str = "-- philemon --default: begin. Written by `philemon --default`; `philemon --default off` removes the block whole.";
+const END: &str = "-- philemon --default: end.";
+const FLOAT_BEGIN: &str = "-- philemon --picker: begin. Written by `philemon --picker`; `philemon --picker off` removes the block whole.";
+const FLOAT_END: &str = "-- philemon --picker: end.";
 // The picker's own app id, ui/picker.qml's AppId pragma, which is not the window's.
-const PICKER_APP_ID: &str = "com.thisisgm.flea.picker";
+const PICKER_APP_ID: &str = "com.thisisgm.philemon.picker";
 // Omarchy binds both to Nautilus in default/hypr/bindings/applications.lua; the cwd one opens on the active terminal's directory.
 const BINDS: [(&str, &str, &str); 2] = [
-    ("SUPER + SHIFT + F", "File manager", "flea --gui"),
-    ("SUPER + ALT + SHIFT + F", "File manager (cwd)", "flea --gui \"$(omarchy-cmd-terminal-cwd)\""),
+    ("SUPER + SHIFT + F", "File manager", "philemon --gui"),
+    ("SUPER + ALT + SHIFT + F", "File manager (cwd)", "philemon --gui \"$(omarchy-cmd-terminal-cwd)\""),
 ];
 // hyprctl binds reports a chord as a mask: SUPER is 64, ALT is 8, SHIFT is 1.
 const MODMASKS: [u32; 2] = [65, 73];
@@ -24,7 +24,7 @@ pub fn claim() -> Result<String, String> {
     let path = bindings_path()?;
     let text = read(&path)?;
     if has_block(&text) {
-        return Ok(format!("keys: already Flea's, the flea --default block is in {}", path.display()));
+        return Ok(format!("keys: already Philemon's, the philemon --default block is in {}", path.display()));
     }
     if let Some(errors) = configerrors().filter(|e| !e.is_empty()) {
         return Err(format!("hyprctl configerrors already reports a problem, fix that first so a change here can be told apart from it: {}", errors));
@@ -34,7 +34,7 @@ pub fn claim() -> Result<String, String> {
     let keys = format!("{} and {}", BINDS[0].0, BINDS[1].0);
     if !reload() {
         return Ok(format!(
-            "keys: {} open Flea, {}; block appended to {}, not reloaded because hyprctl could not be reached, so run hyprctl reload inside the session",
+            "keys: {} open Philemon, {}; block appended to {}, not reloaded because hyprctl could not be reached, so run hyprctl reload inside the session",
             keys, were, path.display()
         ));
     }
@@ -44,14 +44,14 @@ pub fn claim() -> Result<String, String> {
         reload();
         return Err(format!("the block broke the Hyprland config and was removed again; hyprctl configerrors said: {}", errors));
     }
-    Ok(format!("keys: {} open Flea, {}; block appended to {} and reloaded", keys, were, path.display()))
+    Ok(format!("keys: {} open Philemon, {}; block appended to {} and reloaded", keys, were, path.display()))
 }
 
 pub fn release() -> Result<String, String> {
     let path = bindings_path()?;
     let text = read(&path)?;
     let Some(without) = without_block(&text)? else {
-        return Ok(format!("keys: nothing to undo, no flea --default block in {}", path.display()));
+        return Ok(format!("keys: nothing to undo, no philemon --default block in {}", path.display()));
     };
     replace_file(&path, &without)?;
     if !reload() {
@@ -63,14 +63,14 @@ pub fn release() -> Result<String, String> {
     Ok(format!("keys: block removed from {} and reloaded, so Omarchy's own bindings are back", path.display()))
 }
 
-// flea --picker's half: Omarchy tags xdg-desktop-portal-gtk's windows "+floating-window" because
+// philemon --picker's half: Omarchy tags xdg-desktop-portal-gtk's windows "+floating-window" because
 // prompts belong in the floating treatment, and its own tag rules then float, centre and size them.
 // A chooser is that same kind of window, so this asks for the same tag rather than inventing a size.
 pub fn float_claim() -> Result<String, String> {
     let path = bindings_path()?;
     let text = read(&path)?;
     if begin_at(&text, FLOAT_BEGIN).is_some() {
-        return Ok(format!("window: already floating, the flea --picker block is in {}", path.display()));
+        return Ok(format!("window: already floating, the philemon --picker block is in {}", path.display()));
     }
     if let Some(errors) = configerrors().filter(|e| !e.is_empty()) {
         return Err(format!("hyprctl configerrors already reports a problem, fix that first so a change here can be told apart from it: {}", errors));
@@ -95,7 +95,7 @@ pub fn float_release() -> Result<String, String> {
     let path = bindings_path()?;
     let text = read(&path)?;
     let Some(without) = cut(&text, FLOAT_BEGIN, FLOAT_END)? else {
-        return Ok(format!("window: nothing to undo, no flea --picker block in {}", path.display()));
+        return Ok(format!("window: nothing to undo, no philemon --picker block in {}", path.display()));
     };
     replace_file(&path, &without)?;
     reload();
@@ -243,11 +243,11 @@ mod tests {
     #[test]
     fn the_float_block_asks_for_omarchys_own_tag_and_names_only_the_picker() {
         let b = float_block();
-        assert!(b.contains("o.window(\"com.thisisgm.flea.picker\", { tag = \"+floating-window\" })"));
+        assert!(b.contains("o.window(\"com.thisisgm.philemon.picker\", { tag = \"+floating-window\" })"));
         // The window's own app id is a prefix of the picker's, so a rule naming it would take both.
-        assert!(!b.contains("\"com.thisisgm.flea\""));
+        assert!(!b.contains("\"com.thisisgm.philemon\""));
         assert_eq!(b.matches("o.window(").count(), 1);
-        // Its own markers, so flea --picker off cannot take flea --default's block with it.
+        // Its own markers, so philemon --picker off cannot take philemon --default's block with it.
         assert!(b.contains(FLOAT_BEGIN) && b.contains(FLOAT_END) && !b.contains(BEGIN));
     }
 
@@ -271,8 +271,8 @@ mod tests {
         assert_eq!(b.matches("hl.unbind(").count(), 2);
         assert_eq!(b.matches("o.bind(").count(), 2);
         // The same launcher Omarchy's own { launch = } bindings use, and the cwd one reads the terminal's directory.
-        assert!(b.contains("{ launch = 'flea --gui' }"));
-        assert!(b.contains("{ launch = 'flea --gui \"$(omarchy-cmd-terminal-cwd)\"' }"));
+        assert!(b.contains("{ launch = 'philemon --gui' }"));
+        assert!(b.contains("{ launch = 'philemon --gui \"$(omarchy-cmd-terminal-cwd)\"' }"));
     }
 
     #[test]

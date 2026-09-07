@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Convert.js" as Convert
 
 // The one popup in the whole design. Every other operation answers in the status bar; this one asks
@@ -114,7 +114,7 @@ Item {
 
             Repeater {
                 model: root.formats
-                delegate: Flea.MenuRow {
+                delegate: Philemon.MenuRow {
                     required property string modelData
                     required property int index
                     width: body.width
@@ -151,7 +151,7 @@ Item {
                     border.width: Theme.spacing.hairline * 2
                     border.color: root.strip ? Theme.color.accent : Theme.color.muted
 
-                    Flea.Glyph {
+                    Philemon.Glyph {
                         anchors.fill: parent
                         visible: root.strip
                         name: "check"
@@ -195,12 +195,12 @@ Item {
                 anchors.rightMargin: Theme.spacing.rowPaddingX
                 spacing: Theme.spacing.gap
 
-                Flea.DialogButton {
+                Philemon.DialogButton {
                     label: "Cancel"
                     onActivated: root.close()
                 }
 
-                Flea.DialogButton {
+                Philemon.DialogButton {
                     label: "Convert"
                     primary: true
                     onActivated: root.commit()

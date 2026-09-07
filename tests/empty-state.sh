@@ -2,7 +2,7 @@
 set -eu
 cd "$(dirname "$0")/.." || exit 1
 
-ui_dir=${FLEA_EMPTY_STATE_UI_DIR:-ui}
+ui_dir=${PHILEMON_EMPTY_STATE_UI_DIR:-ui}
 shell_file="$ui_dir/shell.qml"
 column_file="$ui_dir/ColumnPane.qml"
 tip='Press Ctrl+Shift+N for a new folder.'

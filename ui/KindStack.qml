@@ -1,5 +1,5 @@
 import QtQuick
-import "." as Flea
+import "." as Philemon
 
 // The marks a multi-selection stacks in the preview frame, one per kind, front-most first. The
 // canvas offsets 44 unit marks 11 across and 4 down, a quarter of the mark and an eleventh of it;
@@ -23,7 +23,7 @@ Item {
     Repeater {
         model: root.marks
 
-        delegate: Flea.Glyph {
+        delegate: Philemon.Glyph {
             required property string modelData
             required property int index
             // Model order paints back to front, so the front mark has to claim its own z.

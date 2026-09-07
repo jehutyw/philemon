@@ -9,7 +9,7 @@ import "js/Contrast.js" as Contrast
 import "js/Palette.js" as Palette
 import "js/TextSize.js" as TextSize
 
-// Flea is its own process, so it plays the role shell.qml plays for the bar: it feeds Color and Style.
+// Philemon is its own process, so it plays the role shell.qml plays for the bar: it feeds Color and Style.
 Singleton {
     id: root
 
@@ -18,7 +18,7 @@ Singleton {
     // True only once colors.toml parsed to a palette, so a test can tell one from a fallback.
     property bool ready: false
 
-    // The size Flea draws at: Omarchy's own unless the Display section pinned an override stop.
+    // The size Philemon draws at: Omarchy's own unless the Display section pinned an override stop.
     readonly property int baseSize: TextSize.effective(ViewState.textSize, Style.font.baseSize)
     readonly property bool overridden: !TextSize.following(ViewState.textSize)
     // One while following, so every OEM token below is Omarchy's own until an override moves it,
@@ -31,7 +31,7 @@ Singleton {
 
     // A property and not a Motion.js var: a plain library var notifies nothing, so every Behavior
     // reading it would keep whatever it was built with when the compositor's answer arrives.
-    property bool reducedMotion: Quickshell.env("FLEA_REDUCED_MOTION") === "1"
+    property bool reducedMotion: Quickshell.env("PHILEMON_REDUCED_MOTION") === "1"
 
     // The only literal colours in the UI. Color models five roles; surface, symlink and executable
     // have no counterpart, and the other two are read here before Color.loadColors has run.
@@ -198,7 +198,7 @@ Singleton {
     }
 
     // The metrics contract as the app resolves it, one key=value per line in the Blueprint board's
-    // order; ui/shell.qml serves it as tokens() and tools/flea-metrics-gate diffs it. family is the
+    // order; ui/shell.qml serves it as tokens() and tools/philemon-metrics-gate diffs it. family is the
     // resolved face, never the "monospace" alias, so the gate cannot pass on a box without the font.
     function tokens() {
         var t = {
@@ -249,7 +249,7 @@ Singleton {
         var bg = Palette.pick(found, ["background"], root.fallbackColor.background);
         var surface = Palette.pick(found, Palette.SURFACE_KEYS, root.fallbackColor.surface);
         root.color.surface = surface;
-        // Omarchy palettes are not authored to AA. Flea keeps the hex system and walks L until 4.5:1.
+        // Omarchy palettes are not authored to AA. Philemon keeps the hex system and walks L until 4.5:1.
         root.color.muted = Contrast.ensureRatio(
             Contrast.ensureRatio(Palette.pick(found, ["muted"], root.fallbackColor.muted), bg, 4.5), surface, 4.5);
         root.color.symlink = Contrast.ensureRatio(
@@ -323,7 +323,7 @@ Singleton {
         }
     }
 
-    // Read once, not watched: the Display section reports the compositor's scale and Flea owns no
+    // Read once, not watched: the Display section reports the compositor's scale and Philemon owns no
     // control that could change it, so there is nothing here for a poll to keep in step with.
     // The guard is this fork's: off Hyprland there is no hyprctl to answer, and the failed spawn
     // buys nothing that applyMonitorScale's own catch does not already cover.
@@ -338,15 +338,15 @@ Singleton {
         }
     }
 
-    // Flea agrees with the compositor rather than carrying its own switch, the rule the corner
-    // radius already follows; FLEA_REDUCED_MOTION is the test override and skips the ask.
+    // Philemon agrees with the compositor rather than carrying its own switch, the rule the corner
+    // radius already follows; PHILEMON_REDUCED_MOTION is the test override and skips the ask.
     // Two forms below look like mistakes and are not: Quickshell.env returns null and not "" for
     // an unset variable, so the guard is a truthiness test, and StdioCollector text is a property
     // whose call throws. The query is Commons/Style.qml's own decoration:rounding shape.
     Process {
         id: motionQuery
         // The second half of the guard is this fork's, for the same reason as the monitor read.
-        running: !Quickshell.env("FLEA_REDUCED_MOTION") && !!Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
+        running: !Quickshell.env("PHILEMON_REDUCED_MOTION") && !!Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE")
         command: ["hyprctl", "-j", "getoption", "animations:enabled"]
         stdout: StdioCollector {
             waitForEnd: true

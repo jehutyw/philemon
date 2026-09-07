@@ -148,7 +148,7 @@ function rows(section, state) {
     return keyRows(state)
 }
 
-// The SettingsScale board's own division: Flea owns its text override and Omarchy owns the rest.
+// The SettingsScale board's own division: Philemon owns its text override and Omarchy owns the rest.
 // The size follows the desktop until one of TextSize's seven stops is pinned, and the monitor
 // scale and the corner rounding are the compositor's, drawn as the read-only facts they are.
 function displayRows(state) {
@@ -173,7 +173,7 @@ function displayRows(state) {
     out.push({ kind: "fact", label: "Scale", glyph: "maximize",
                value: scaleLabel(state.monitorScale) })
     out.push({ kind: "hint",
-               label: "Flea follows the compositor value and does not step or cycle it." })
+               label: "Philemon follows the compositor value and does not step or cycle it." })
     out.push({ kind: "group", label: "Appearance" })
     out.push({ kind: "fact", label: "Hyprland-aware corners",
                value: "rounding " + Math.round(state.cornerRadius) })

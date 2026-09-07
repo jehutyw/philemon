@@ -207,7 +207,7 @@ function sendTaildrop(pane, taildrop, peerId) {
         return
     }
     taildrop.send(peerId, [pane.join(pane.path, row.n)])
-    // The dispatch is the only result Flea itself ever knows; success or failure is the OEM script's
+    // The dispatch is the only result Philemon itself ever knows; success or failure is the OEM script's
     // own desktop notification, see the operations design section 4.1.
     pane.message("Sending " + row.n + " to " + taildrop.labelFor(peerId) + ".", false)
 }

@@ -3,12 +3,12 @@
 set -u
 set -o pipefail
 # Hard rule 9's guard, which owns FIXTURE_ROOT and every create and delete below.
-. "$(dirname "$0")/../tools/flea-sandbox-guard"
+. "$(dirname "$0")/../tools/philemon-sandbox-guard"
 cd "$(dirname "$0")/.." || exit 1
 
-BIN=./target/debug/flea
-FIXTURE="${FLEA_MEDIA_DIR:-$FIXTURE_ROOT/flea-media-btrfs}"
-D="$FIXTURE_ROOT/flea-media-test-$$"
+BIN=./target/debug/philemon
+FIXTURE="${PHILEMON_MEDIA_DIR:-$FIXTURE_ROOT/philemon-media-btrfs}"
+D="$FIXTURE_ROOT/philemon-media-test-$$"
 # src/backend/mediaprobe.rs PROBE_LIMIT is 5 s; this is that plus the slack a spawn and a debug build cost.
 PROBE_DEADLINE=8
 # That same PROBE_LIMIT less one: $SECONDS counts whole seconds, so a wait starting mid-second reads one lower.

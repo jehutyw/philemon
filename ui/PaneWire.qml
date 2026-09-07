@@ -1,5 +1,5 @@
 import QtQuick
-import "." as Flea
+import "." as Philemon
 import "js/DirSizes.js" as DirSizes
 import "js/Errors.js" as Errors
 import "js/Nav.js" as Nav
@@ -38,7 +38,7 @@ Item {
     readonly property alias shareLink: shareLink
     readonly property alias taildrop: taildrop
 
-    Flea.Opener {
+    Philemon.Opener {
         id: opener
         // A dropped request is the app being busy, not a failure, so it takes the plain role.
         onBusy: function (path) { pane.message("Still opening the last file; try again in a moment.", false) }
@@ -49,13 +49,13 @@ Item {
         onTerminalFailed: function (path) { pane.message("That directory could not be opened in a terminal; nothing on this system took it.", true) }
     }
 
-    Flea.ShareLink {
+    Philemon.ShareLink {
         id: shareLink
         onCopied: pane.message("Share link copied to the clipboard.", false)
         onFailed: pane.message("Dropbox could not make a share link for that file.", true)
     }
 
-    Flea.Taildrop {
+    Philemon.Taildrop {
         id: taildrop
         // Fetched once per session start, not per right click: peers change on the scale of
         // minutes, not the scale of opening a context menu, and refreshing on open would make
@@ -340,7 +340,7 @@ Item {
         }
     }
 
-    // flea --ui-state is a reply from outside the window too. A refused patch, or a state file it
+    // philemon --ui-state is a reply from outside the window too. A refused patch, or a state file it
     // could not write, means the change is on screen and the file does not have it; nothing else
     // would ever say so, because the window's own read is taken once before the first frame.
     Connections {

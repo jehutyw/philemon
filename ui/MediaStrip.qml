@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Format.js" as Format
 
 // The transport the canvas draws under a media frame: a play/pause mark, a hairline seek with a
@@ -70,7 +70,7 @@ Item {
         Accessible.name: root.playing ? "Pause" : "Play"
         Accessible.onPressAction: { root.touched(); root.toggled() }
 
-        Flea.Glyph {
+        Philemon.Glyph {
             anchors.centerIn: parent
             width: Theme.font.bodySmall
             height: Theme.font.bodySmall

@@ -1,4 +1,4 @@
-// flea --default: the per-user steps pacman cannot own, see docs/install.md "Make Flea the default".
+// philemon --default: the per-user steps pacman cannot own, see docs/install.md "Make Philemon the default".
 use crate::hyprkeys;
 use crate::userfile::{config_home, create_file, data_file, data_home, replace_file};
 use std::fs;
@@ -6,21 +6,21 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 // The entry packaging/ installs; the desktop resolves the id to that file, so a missing file is a claim on nothing.
-pub const DESKTOP_ID: &str = "com.thisisgm.flea.desktop";
+pub const DESKTOP_ID: &str = "com.thisisgm.philemon.desktop";
 // Directories only: the entry registers nothing else, and a file manager that takes image or archive types is a bad citizen.
 const MIME: &str = "inode/directory";
 // The bus name a desktop's "Show in folder" calls, which nautilus, dolphin, thunar and nemo each register for too.
 const BUS_NAME: &str = "org.freedesktop.FileManager1";
-// Flea's own packaged registration, read for its Exec so this never invents an install path.
-const PACKAGED_SERVICE: &str = "dbus-1/services/com.thisisgm.flea.FileManager1.service";
-// The provenance line, and the test for whether a file already there is Flea's to rewrite or remove.
-const MARK: &str = "# Written by `flea --default`; `flea --default off` removes it.";
+// Philemon's own packaged registration, read for its Exec so this never invents an install path.
+const PACKAGED_SERVICE: &str = "dbus-1/services/com.thisisgm.philemon.FileManager1.service";
+// The provenance line, and the test for whether a file already there is Philemon's to rewrite or remove.
+const MARK: &str = "# Written by `philemon --default`; `philemon --default off` removes it.";
 
-// flea --default
+// philemon --default
 pub fn claim() -> i32 {
     if installed_entry().is_none() {
         eprintln!(
-            "flea: {} is not installed in any applications directory, so there is nothing to make the default; install the package first",
+            "philemon: {} is not installed in any applications directory, so there is nothing to make the default; install the package first",
             DESKTOP_ID
         );
         return 1;
@@ -36,7 +36,7 @@ pub fn claim() -> i32 {
     report(claim_mime(), claim_service(), keys)
 }
 
-// flea --default off
+// philemon --default off
 pub fn release() -> i32 {
     let keys = if is_omarchy() {
         hyprkeys::release()
@@ -62,7 +62,7 @@ fn report(mime: Result<String, String>, reveal: Result<String, String>, keys: Re
         match half {
             Ok(line) => println!("{}", line),
             Err(why) => {
-                eprintln!("flea: {}", why);
+                eprintln!("philemon: {}", why);
                 status = 1;
             }
         }
@@ -80,7 +80,7 @@ fn claim_mime() -> Result<String, String> {
     let now = query_default()?;
     if now != DESKTOP_ID {
         return Err(format!(
-            "xdg-mime default exited 0 but {} still resolves to {}; the desktop skips an entry whose Exec is not on PATH, so check that flea is",
+            "xdg-mime default exited 0 but {} still resolves to {}; the desktop skips an entry whose Exec is not on PATH, so check that philemon is",
             MIME,
             handler_name(&now)
         ));
@@ -108,7 +108,7 @@ fn release_mime() -> Result<String, String> {
     };
     replace_file(&path, &without)?;
     let now = query_default()?;
-    Ok(format!("{}: now {}, Flea's line removed from {}", MIME, handler_name(&now), path.display()))
+    Ok(format!("{}: now {}, Philemon's line removed from {}", MIME, handler_name(&now), path.display()))
 }
 
 // D-Bus keeps the FIRST registration for a name it reads, and it reads the data home before every
@@ -121,13 +121,13 @@ fn claim_service() -> Result<String, String> {
     };
     let want = service_text(&packaged_exec(&packaged)?);
     match fs::read_to_string(&path) {
-        Ok(held) if held == want => Ok(format!("{}: already Flea's, in {}", BUS_NAME, path.display())),
+        Ok(held) if held == want => Ok(format!("{}: already Philemon's, in {}", BUS_NAME, path.display())),
         Ok(held) if held.starts_with(MARK) => {
             replace_file(&path, &want)?;
-            Ok(format!("{}: Flea's, {} rewritten because the packaged registration changed", BUS_NAME, path.display()))
+            Ok(format!("{}: Philemon's, {} rewritten because the packaged registration changed", BUS_NAME, path.display()))
         }
         Ok(_) => Err(format!(
-            "{} is already there and Flea did not write it, so it was left alone; remove it yourself to let Flea answer {}",
+            "{} is already there and Philemon did not write it, so it was left alone; remove it yourself to let Philemon answer {}",
             path.display(),
             BUS_NAME
         )),
@@ -136,7 +136,7 @@ fn claim_service() -> Result<String, String> {
             fs::create_dir_all(&dir).map_err(|e| format!("{} could not be created ({:?})", dir.display(), e.kind()))?;
             create_file(&path, &want)?;
             Ok(format!(
-                "{}: Flea, written to {}; the data home is read before every system directory, so this outranks nautilus, dolphin, thunar and nemo",
+                "{}: Philemon, written to {}; the data home is read before every system directory, so this outranks nautilus, dolphin, thunar and nemo",
                 BUS_NAME,
                 path.display()
             ))
@@ -155,7 +155,7 @@ fn release_service() -> Result<String, String> {
         Err(e) => return Err(format!("{} could not be read ({:?})", path.display(), e.kind())),
     };
     if !text.starts_with(MARK) {
-        return Ok(format!("{}: nothing to undo, Flea did not write {}", BUS_NAME, path.display()));
+        return Ok(format!("{}: nothing to undo, Philemon did not write {}", BUS_NAME, path.display()));
     }
     fs::remove_file(&path).map_err(|e| format!("{} could not be removed ({:?})", path.display(), e.kind()))?;
     // Only the two directories the claim itself may have created: remove_dir refuses a directory
@@ -163,7 +163,7 @@ fn release_service() -> Result<String, String> {
     let dir = service_dir()?;
     let pruned = fs::remove_dir(&dir).is_ok() && dir.parent().is_some_and(|up| fs::remove_dir(up).is_ok());
     let tail = if pruned { ", and the directories it created went with it" } else { "" };
-    Ok(format!("{}: Flea's registration removed from {}{}", BUS_NAME, path.display(), tail))
+    Ok(format!("{}: Philemon's registration removed from {}{}", BUS_NAME, path.display(), tail))
 }
 
 // Whatever the installed registration names, never a path written down here.
@@ -177,7 +177,7 @@ fn packaged_exec(packaged: &Path) -> Result<String, String> {
 // The packaged registration, of which only the Exec is copied:
 //   [D-BUS Service]
 //   Name=org.freedesktop.FileManager1
-//   Exec=/usr/lib/flea/flea-filemanager1
+//   Exec=/usr/lib/philemon/philemon-filemanager1
 fn exec_line(text: &str) -> Option<&str> {
     text.lines()
         .find_map(|line| line.strip_prefix("Exec="))
@@ -236,9 +236,9 @@ fn installed_entry() -> Option<PathBuf> {
 
 // The per-user file xdg-mime writes, of which only the [Default Applications] section is ours to touch:
 //   [Default Applications]
-//   inode/directory=com.thisisgm.flea.desktop
+//   inode/directory=com.thisisgm.philemon.desktop
 //   image/png=imv.desktop
-// Returns the file without Flea's claim on `mime`, or None when the file makes no such claim.
+// Returns the file without Philemon's claim on `mime`, or None when the file makes no such claim.
 pub fn drop_default(text: &str, mime: &str, id: &str) -> Option<String> {
     let mut out = String::with_capacity(text.len());
     let mut in_defaults = false;
@@ -278,13 +278,13 @@ pub fn drop_default(text: &str, mime: &str, id: &str) -> Option<String> {
 mod tests {
     use super::*;
 
-    const OMARCHY_SHAPE: &str = "[Default Applications]\ninode/directory=com.thisisgm.flea.desktop\nimage/png=imv.desktop\n\n[Added Associations]\ninode/directory=com.thisisgm.flea.desktop;\n";
+    const OMARCHY_SHAPE: &str = "[Default Applications]\ninode/directory=com.thisisgm.philemon.desktop\nimage/png=imv.desktop\n\n[Added Associations]\ninode/directory=com.thisisgm.philemon.desktop;\n";
 
-    const PACKAGED: &str = "[D-BUS Service]\nName=org.freedesktop.FileManager1\nExec=/usr/lib/flea/flea-filemanager1\n";
+    const PACKAGED: &str = "[D-BUS Service]\nName=org.freedesktop.FileManager1\nExec=/usr/lib/philemon/philemon-filemanager1\n";
 
     #[test]
     fn the_exec_is_copied_from_the_packaged_registration_and_never_written_down_here() {
-        assert_eq!(exec_line(PACKAGED), Some("/usr/lib/flea/flea-filemanager1"));
+        assert_eq!(exec_line(PACKAGED), Some("/usr/lib/philemon/philemon-filemanager1"));
         // A registration this cannot read an Exec out of is refused rather than guessed at.
         assert_eq!(exec_line("[D-BUS Service]\nName=org.freedesktop.FileManager1\n"), None);
         assert_eq!(exec_line("[D-BUS Service]\nExec=\n"), None);
@@ -296,39 +296,39 @@ mod tests {
         let text = service_text(exec_line(PACKAGED).expect("the packaged Exec"));
         assert_eq!(
             text,
-            "# Written by `flea --default`; `flea --default off` removes it.\n[D-BUS Service]\nName=org.freedesktop.FileManager1\nExec=/usr/lib/flea/flea-filemanager1\n"
+            "# Written by `philemon --default`; `philemon --default off` removes it.\n[D-BUS Service]\nName=org.freedesktop.FileManager1\nExec=/usr/lib/philemon/philemon-filemanager1\n"
         );
-        // The first line is what tells Flea's file from somebody else's, so release reads it too.
+        // The first line is what tells Philemon's file from somebody else's, so release reads it too.
         assert!(text.starts_with(MARK));
         assert!(!PACKAGED.starts_with(MARK));
     }
 
     #[test]
-    fn drop_default_removes_only_fleas_line_in_the_default_section() {
-        let out = drop_default(OMARCHY_SHAPE, MIME, DESKTOP_ID).expect("the file names Flea");
-        assert_eq!(out, "[Default Applications]\nimage/png=imv.desktop\n\n[Added Associations]\ninode/directory=com.thisisgm.flea.desktop;\n");
+    fn drop_default_removes_only_philemons_line_in_the_default_section() {
+        let out = drop_default(OMARCHY_SHAPE, MIME, DESKTOP_ID).expect("the file names Philemon");
+        assert_eq!(out, "[Default Applications]\nimage/png=imv.desktop\n\n[Added Associations]\ninode/directory=com.thisisgm.philemon.desktop;\n");
     }
 
     #[test]
-    fn drop_default_leaves_a_file_that_does_not_name_flea_alone() {
+    fn drop_default_leaves_a_file_that_does_not_name_philemon_alone() {
         assert_eq!(drop_default("[Default Applications]\ninode/directory=thunar.desktop\n", MIME, DESKTOP_ID), None);
-        assert_eq!(drop_default("inode/directory=com.thisisgm.flea.desktop\n", MIME, DESKTOP_ID), None);
+        assert_eq!(drop_default("inode/directory=com.thisisgm.philemon.desktop\n", MIME, DESKTOP_ID), None);
         assert_eq!(drop_default("", MIME, DESKTOP_ID), None);
     }
 
     #[test]
     fn drop_default_keeps_the_rest_of_a_list_value() {
         // gio writes a trailing semicolon where xdg-mime writes none; both are one claim.
-        assert_eq!(drop_default("[Default Applications]\ninode/directory=com.thisisgm.flea.desktop;\n", MIME, DESKTOP_ID), Some("[Default Applications]\n".to_string()));
+        assert_eq!(drop_default("[Default Applications]\ninode/directory=com.thisisgm.philemon.desktop;\n", MIME, DESKTOP_ID), Some("[Default Applications]\n".to_string()));
         assert_eq!(
-            drop_default("[Default Applications]\ninode/directory=com.thisisgm.flea.desktop;thunar.desktop;\n", MIME, DESKTOP_ID),
+            drop_default("[Default Applications]\ninode/directory=com.thisisgm.philemon.desktop;thunar.desktop;\n", MIME, DESKTOP_ID),
             Some("[Default Applications]\ninode/directory=thunar.desktop\n".to_string())
         );
     }
 
     #[test]
     fn drop_default_keeps_a_last_line_with_no_newline_intact() {
-        let out = drop_default("[Default Applications]\ninode/directory=com.thisisgm.flea.desktop\nimage/png=imv.desktop", MIME, DESKTOP_ID);
+        let out = drop_default("[Default Applications]\ninode/directory=com.thisisgm.philemon.desktop\nimage/png=imv.desktop", MIME, DESKTOP_ID);
         assert_eq!(out, Some("[Default Applications]\nimage/png=imv.desktop".to_string()));
     }
 }

@@ -1,6 +1,6 @@
 .import "../../ui/js/TextSize.js" as TextSize
 
-// Flea's text size. The stop list, the two modes and the two font ratios all come off the
+// Philemon's text size. The stop list, the two modes and the two font ratios all come off the
 // SettingsScale board, and the board's own layout table is reproduced here row by row, because a
 // list that reads fine is exactly the kind of thing that is wrong by one stop or one pixel.
 
@@ -40,7 +40,7 @@ function runStops(check) {
           TextSize.STOPS.length, 7)
     check("and they are the board's list, gaps and all", TextSize.STOPS.join(","),
           "9,10,11,12,14,16,20")
-    check("the range is the OEM one, so Flea offers no size Omarchy does not",
+    check("the range is the OEM one, so Philemon offers no size Omarchy does not",
           TextSize.STOPS[0] + "-" + TextSize.STOPS[TextSize.STOPS.length - 1], "9-20")
     // The list is not contiguous, and a stepper written against a range would silently invent these.
     check("13 is not a stop", TextSize.STOPS.indexOf(13), -1)
@@ -66,7 +66,7 @@ function runModes(check) {
 
     check("following draws at Omarchy's own size",
           TextSize.effective(TextSize.follow(), 14), 14)
-    check("and a later omarchy display text size moves it with no write of Flea's own",
+    check("and a later omarchy display text size moves it with no write of Philemon's own",
           TextSize.effective(TextSize.follow(), 16), 16)
     check("an override draws at its stop and ignores Omarchy's",
           TextSize.effective({ mode: 20 }, 14), 20)

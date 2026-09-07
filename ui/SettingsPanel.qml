@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Keymap.js" as Keymap
 import "js/Settings.js" as Settings
 
@@ -224,7 +224,7 @@ Item {
                     Accessible.name: "Close settings"
                     Accessible.onPressAction: root.close()
 
-                    Flea.Glyph {
+                    Philemon.Glyph {
                         anchors.centerIn: parent
                         width: Theme.chromeMarkSize
                         height: Theme.chromeMarkSize
@@ -263,7 +263,7 @@ Item {
                 }
             }
 
-            Flea.SettingsRail {
+            Philemon.SettingsRail {
                 id: rail
                 anchors.left: parent.left
                 anchors.top: chrome.bottom
@@ -308,7 +308,7 @@ Item {
                         id: rowItems
                         model: root.rows
 
-                        delegate: Flea.SettingsRow {
+                        delegate: Philemon.SettingsRow {
                             required property var modelData
                             required property int index
                             width: pane.width

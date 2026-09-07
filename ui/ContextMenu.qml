@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Keymap.js" as Keymap
 import "js/Menu.js" as Menu
 
@@ -241,7 +241,7 @@ Item {
     }
 
     // One row off the model, only so the two heights above are read from MenuRow rather than repeated here.
-    Flea.MenuRow {
+    Philemon.MenuRow {
         id: separatorProbe
         visible: false
         entry: ({ separator: true })
@@ -274,7 +274,7 @@ Item {
             Repeater {
                 id: menuRows
                 model: root.entries
-                delegate: Flea.MenuRow {
+                delegate: Philemon.MenuRow {
                     id: row
                     required property var modelData
                     required property int index
@@ -314,7 +314,7 @@ Item {
 
             Repeater {
                 model: root.submenuEntries
-                delegate: Flea.MenuRow {
+                delegate: Philemon.MenuRow {
                     id: subRow
                     required property var modelData
                     required property int index

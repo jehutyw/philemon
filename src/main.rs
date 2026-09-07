@@ -32,24 +32,24 @@ fn claim_both() -> i32 {
     if handler != 0 {
         return handler;
     }
-    // A source build has no flea.portal to prefer, which is the picker's precondition, not a failure here.
+    // A source build has no philemon.portal to prefer, which is the picker's precondition, not a failure here.
     let status = if chooser::backend_installed() {
         chooser::claim()
     } else {
-        eprintln!("flea: no portal backend is installed, so the file chooser step was skipped");
+        eprintln!("philemon: no portal backend is installed, so the file chooser step was skipped");
         0
     };
     // The one undo line this invocation ends on: --default off releases both halves it just claimed.
-    println!("undo both with: flea --default off");
+    println!("undo both with: philemon --default off");
     status
 }
 
-// flea --picker on its own, so it owns the undo line --default must not print for it.
+// philemon --picker on its own, so it owns the undo line --default must not print for it.
 fn claim_picker() -> i32 {
     let installed = chooser::backend_installed();
     let status = chooser::claim();
     if installed {
-        println!("undo both with: flea --picker off");
+        println!("undo both with: philemon --picker off");
     }
     status
 }
@@ -61,12 +61,12 @@ fn release_both() -> i32 {
 }
 
 fn usage(message: &str) -> ! {
-    eprintln!("flea: {}", message);
-    eprintln!("usage: flea [--tui|--gui] [--select <uri|path>] [path]");
-    eprintln!("       flea --default [off]");
-    eprintln!("       flea --picker [off]");
-    eprintln!("       flea --ui-state [<json patch>]");
-    eprintln!("       flea --version");
+    eprintln!("philemon: {}", message);
+    eprintln!("usage: philemon [--tui|--gui] [--select <uri|path>] [path]");
+    eprintln!("       philemon --default [off]");
+    eprintln!("       philemon --picker [off]");
+    eprintln!("       philemon --ui-state [<json patch>]");
+    eprintln!("       philemon --version");
     exit(2)
 }
 
@@ -81,13 +81,13 @@ fn select_target(raw: &str) -> Option<(PathBuf, PathBuf)> {
     Some((parent, path))
 }
 
-// flea --ui-state, the one path both front ends reach the state file through: no argument reads it,
+// philemon --ui-state, the one path both front ends reach the state file through: no argument reads it,
 // one JSON object merges that patch through the lock. Either way the resulting document is printed.
 fn ui_state(args: &[String]) -> i32 {
     let store = match uistore::Store::user() {
         Ok(store) => store,
         Err(e) => {
-            eprintln!("flea: {}", e);
+            eprintln!("philemon: {}", e);
             return 2;
         }
     };
@@ -103,7 +103,7 @@ fn ui_state(args: &[String]) -> i32 {
             match merged {
                 Ok(next) => next,
                 Err(e) => {
-                    eprintln!("flea: {}", e);
+                    eprintln!("philemon: {}", e);
                     return 2;
                 }
             }
@@ -118,13 +118,13 @@ fn main() {
     let args: Vec<String> = match std::env::args_os().map(|a| a.into_string()).collect() {
         Ok(v) => v,
         Err(bad) => {
-            eprintln!("flea: {} is not valid UTF-8, and Flea takes text paths", bad.to_string_lossy());
+            eprintln!("philemon: {} is not valid UTF-8, and Philemon takes text paths", bad.to_string_lossy());
             exit(2);
         }
     };
 
     // Bare, so a script can read it without parsing. Checked before every other mode: the only
-    // way to tell which Flea is installed is to ask it, and updates here are a manual git pull.
+    // way to tell which Philemon is installed is to ask it, and updates here are a manual git pull.
     if args.len() == 2 && args[1] == "--version" {
         println!("{}", env!("CARGO_PKG_VERSION"));
         exit(0);
@@ -138,7 +138,7 @@ fn main() {
         exit(backend::run::run());
     }
 
-    // flea --prewarm <path> <count> <dest>
+    // philemon --prewarm <path> <count> <dest>
     if args.len() == 5 && args[1] == "--prewarm" {
         let first: usize = args[3].parse().unwrap_or(0);
         match launcher::prewarm::write_prewarm(&args[2], first, &PathBuf::from(&args[4])) {
@@ -153,7 +153,7 @@ fn main() {
         usage("--prewarm takes a path, a first index and a destination");
     }
 
-    // flea --open <path>
+    // philemon --open <path>
     if args.len() == 3 && args[1] == "--open" {
         exit(open::open(&args[2]));
     }
@@ -161,7 +161,7 @@ fn main() {
         usage("--open takes one path");
     }
 
-    // flea --terminal <dir>
+    // philemon --terminal <dir>
     if args.len() == 3 && args[1] == "--terminal" {
         exit(terminal::open_terminal(&args[2]));
     }
@@ -169,7 +169,7 @@ fn main() {
         usage("--terminal takes one directory");
     }
 
-    // flea --default [off]: both per-user steps pacman cannot own, see docs/install.md.
+    // philemon --default [off]: both per-user steps pacman cannot own, see docs/install.md.
     if args.len() == 2 && args[1] == "--default" {
         exit(claim_both());
     }
@@ -188,7 +188,7 @@ fn main() {
         usage("--youleftmeforstrata takes nothing");
     }
 
-    // flea --picker [off]: the chooser routing, the other per-user step, see docs/install.md.
+    // philemon --picker [off]: the chooser routing, the other per-user step, see docs/install.md.
     if args.len() == 2 && args[1] == "--picker" {
         exit(claim_picker());
     }
@@ -199,7 +199,7 @@ fn main() {
         usage("--picker takes nothing, or off");
     }
 
-    // flea --pick <reply>: one portal request's picker window, opened by tools/flea-portal.
+    // philemon --pick <reply>: one portal request's picker window, opened by tools/philemon-portal.
     if args.len() == 3 && args[1] == "--pick" {
         exit(gui::pick(&args[2]));
     }
@@ -207,7 +207,7 @@ fn main() {
         usage("--pick takes one reply file");
     }
 
-    // flea --ui-state [<json patch>]: the shared ui.json read and update path, see AGENTS.md "The state file".
+    // philemon --ui-state [<json patch>]: the shared ui.json read and update path, see AGENTS.md "The state file".
     if args.get(1).map(String::as_str) == Some("--ui-state") {
         exit(ui_state(&args));
     }
@@ -260,15 +260,15 @@ fn main() {
     let interactive = std::io::stdin().is_terminal() && std::io::stdout().is_terminal();
     if want_tui {
         if !interactive {
-            eprintln!("flea: the terminal interface needs a terminal on stdin and stdout");
+            eprintln!("philemon: the terminal interface needs a terminal on stdin and stdout");
             exit(2);
         }
-        eprintln!("flea: the terminal interface is not built yet, use --gui");
+        eprintln!("philemon: the terminal interface is not built yet, use --gui");
         exit(2);
     }
 
     if !paths::has_display() {
-        eprintln!("flea: there is no graphical session to open a window in");
+        eprintln!("philemon: there is no graphical session to open a window in");
         exit(2);
     }
     match paths::ui_dir() {
@@ -277,12 +277,12 @@ fn main() {
             // state file"; it can fail or decline, and the window then opens on a file it did not touch.
             match uistore::Store::user().and_then(|store| store.settle()) {
                 Ok(()) => {}
-                Err(e) => eprintln!("flea: the view state was not settled ({})", e),
+                Err(e) => eprintln!("philemon: the view state was not settled ({})", e),
             }
             exit(gui::exec_qs(&ui, open_path.as_deref(), select_path.as_deref()))
         }
         None => {
-            eprintln!("flea: the shell config is missing, set FLEA_UI or install /usr/share/flea/ui");
+            eprintln!("philemon: the shell config is missing, set PHILEMON_UI or install /usr/share/philemon/ui");
             exit(2);
         }
     }

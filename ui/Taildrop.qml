@@ -22,7 +22,7 @@ Item {
     }
 
     // argv-direct and detached: the script owns its own success/failure notification, see
-    // docs/superpowers/specs/2026-08-31-flea-operations-design.md "4.1 Taildrop".
+    // docs/superpowers/specs/2026-08-31-philemon-operations-design.md "4.1 Taildrop".
     function send(peerId, paths) {
         var peer = TaildropJs.byId(root.peers, peerId)
         if (!peer)

@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Facts.js" as Facts
 import "js/Format.js" as Format
 import "js/Icons.js" as Icons
@@ -115,7 +115,7 @@ Item {
                 spacing: Theme.spacing.gap
                 visible: !root.thumbShown && root.glyphState()
 
-                Flea.Glyph {
+                Philemon.Glyph {
                     anchors.horizontalCenter: parent.horizontalCenter
                     // A kind standing in for a missing thumbnail is a pane state, not a row mark: PreviewColumn.dc.html draws 40 on its Video tile.
                     maxSize: Theme.stateMarkSize
@@ -140,14 +140,14 @@ Item {
 
             // A multi-selection is a count, so the frame stacks the kinds it holds rather than
             // picking one of them; the front mark is the kind the Kinds row below names first.
-            Flea.KindStack {
+            Philemon.KindStack {
                 anchors.centerIn: parent
                 visible: root.previewState === Facts.MULTI && root.multiMarks.length > 0
                 marks: root.multiMarks
             }
 
             // The file's own first lines, which is the frame's whole content for text and code.
-            Flea.PreviewLines {
+            Philemon.PreviewLines {
                 id: lines
                 anchors.fill: parent
                 anchors.margins: Theme.spacing.hairline
@@ -182,7 +182,7 @@ Item {
                 spacing: Theme.spacing.gap
                 visible: root.previewState === Facts.PDF && root.pdfPages > 1
 
-                Flea.ChromeButton {
+                Philemon.ChromeButton {
                     id: pagePrev
                     glyph: "chevron-left"
                     enabled: root.pdfPage() > 0
@@ -198,7 +198,7 @@ Item {
                     textFormat: Text.PlainText
                 }
 
-                Flea.ChromeButton {
+                Philemon.ChromeButton {
                     id: pageNext
                     glyph: "chevron-right"
                     enabled: root.pdfPage() + 1 < root.pdfPages
@@ -207,14 +207,14 @@ Item {
             }
 
             // The canvas's Archive tile: the first entries by name, then the count it could not show.
-            Flea.PreviewArchive {
+            Philemon.PreviewArchive {
                 anchors.fill: parent
                 anchors.margins: Theme.spacing.gap
                 visible: root.previewState === Facts.ARCHIVE && root.meta !== null
                 meta: root.meta
             }
 
-            Flea.LoadingState {
+            Philemon.LoadingState {
                 anchors.fill: parent
                 visible: root.previewState === Facts.LOADING
             }
@@ -225,7 +225,7 @@ Item {
                 visible: root.previewState === Facts.ERROR || root.previewState === Facts.UNSUPPORTED
                 spacing: Theme.spacing.gap
 
-                Flea.Glyph {
+                Philemon.Glyph {
                     anchors.horizontalCenter: parent.horizontalCenter
                     // A failure mark stands alone, so it takes the pane-state ceiling; the board draws 32 here and 36 for unsupported, and 40 is the one token for both.
                     maxSize: Theme.stateMarkSize
@@ -267,7 +267,7 @@ Item {
             elide: Text.ElideRight
         }
 
-        Flea.FactsTable {
+        Philemon.FactsTable {
             width: parent.width
             rows: root.factRows
         }
@@ -302,7 +302,7 @@ Item {
                 }
             }
 
-            Flea.MediaStrip {
+            Philemon.MediaStrip {
                 id: strip
                 anchors.fill: parent
                 playing: transport.playing

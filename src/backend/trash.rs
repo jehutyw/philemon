@@ -1,5 +1,5 @@
 // gio trash is the freedesktop trash this box already shares with every GTK app; nothing about the spec is written here, only an argv and a result.
-use crate::error::FleaError;
+use crate::error::PhilemonError;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -82,7 +82,7 @@ fn newest_entry_for(before: &[Entry], after: &[Entry], path: &Path) -> Option<En
         .cloned()
 }
 
-pub fn restore(entry: &Entry) -> Result<(), FleaError> {
+pub fn restore(entry: &Entry) -> Result<(), PhilemonError> {
     if entry.uri.is_empty() {
         return Err(err("this item was trashed without a trash entry, so it cannot be restored"));
     }
@@ -96,8 +96,8 @@ pub fn restore(entry: &Entry) -> Result<(), FleaError> {
     }
 }
 
-fn err(msg: &str) -> FleaError {
-    FleaError { where_: "undo".to_string(), path: String::new(), msg: msg.to_string() }
+fn err(msg: &str) -> PhilemonError {
+    PhilemonError { where_: "undo".to_string(), path: String::new(), msg: msg.to_string() }
 }
 
 #[cfg(test)]

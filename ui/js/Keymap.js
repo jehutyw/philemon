@@ -1,6 +1,6 @@
 .pragma library
 
-// Generated from keys.toml by tools/flea-keymap-gen. Do not edit.
+// Generated from keys.toml by tools/philemon-keymap-gen. Do not edit.
 // The selected keybinding preset. A .pragma library holds one copy per QML engine, so
 // ui/ViewState.qml sets it once and every caller of lookup() below follows without a
 // second wire; it is also the validator, resolving a stored name this build does not

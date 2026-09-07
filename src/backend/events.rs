@@ -2,7 +2,7 @@
 // std has no select, so each blocking source is a thread and the loop only ever waits on the receiver.
 use crate::backend::opsreq::OpMsg;
 use crate::backend::thumbs::Done;
-use crate::error::{from_io, FleaError};
+use crate::error::{from_io, PhilemonError};
 use std::io::{self, BufRead};
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
@@ -16,7 +16,7 @@ pub enum Event {
     // The watch descriptor that saw it, so a burst belonging to the directory the client has already
     // left is dropped rather than answered for the new one; see src/backend/watch.rs.
     Changed(i32),
-    ReadError(FleaError),
+    ReadError(PhilemonError),
     Closed,
 }
 

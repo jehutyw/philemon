@@ -91,7 +91,7 @@ function dropExternal(pane, urls, index) {
     if (paths.length === 0) {
         return false
     }
-    // Always a copy, including from another Flea window, which for v0.1.0 is a foreign source like
+    // Always a copy, including from another Philemon window, which for v0.1.0 is a foreign source like
     // any other. A move here would need exactly one side to remove the source, and the drag's own
     // action cannot decide it: Qt answered Qt::IgnoreAction while the receiver had demonstrably taken
     // the file, so a source deleting on that answer destroys a file it never delivered.
@@ -99,19 +99,19 @@ function dropExternal(pane, urls, index) {
     return true
 }
 
-// The type Flea's own drag carries alongside the uri-list. The compositor hands a window's own
+// The type Philemon's own drag carries alongside the uri-list. The compositor hands a window's own
 // platform drag back to that window's own DropAreas, so without a marker an internal move would be
 // indistinguishable from a foreign drop, take the always-copy path below, and leave the source behind
 // while still looking like it worked.
-var ROWS_MIME = "application/x-flea-rows"
+var ROWS_MIME = "application/x-philemon-rows"
 
-// A value unique to this running Flea. ROWS_MIME names the application, and two Flea windows are two
+// A value unique to this running Philemon. ROWS_MIME names the application, and two Philemon windows are two
 // processes: a drag from the other one carries row indices that mean nothing in this listing, so the
 // instance has to be identifiable on its own or the receiver takes the internal path against a
 // selection it never made and the drop does nothing at all.
 var INSTANCE = String(Date.now()) + "-" + String(Math.floor(Math.random() * 1000000000))
 
-// The marker's payload: which Flea sent it, the rows it carries, then the modifier the lift read.
+// The marker's payload: which Philemon sent it, the rows it carries, then the modifier the lift read.
 // One marker rather than a second mime type, because two types are two things to keep in agreement
 // and a drop carrying one but not the other is a state nobody would have written a branch for.
 // The modifier rides here because Drag.supportedActions is the only field another application ever
@@ -127,7 +127,7 @@ function markerCopying(payload) {
 }
 
 // Whether a marked drag began in this very window. An unmarked drag has no payload and answers false,
-// which is the right answer: something that is not Flea is not this Flea.
+// which is the right answer: something that is not Philemon is not this Philemon.
 function isOwnDrag(payload) {
     return String(payload).split("\n")[0] === INSTANCE
 }
@@ -142,7 +142,7 @@ function uriFor(path) {
     return "file://" + parts.join("/")
 }
 
-// What the drag puts on the wire: the marker naming this drag as Flea's own, which the backend
+// What the drag puts on the wire: the marker naming this drag as Philemon's own, which the backend
 // resolves by index and which therefore always carries the whole selection, plus a CRLF-separated
 // uri-list for every other application.
 //
@@ -151,7 +151,7 @@ function uriFor(path) {
 // paths here at all; pushing only the rows that happen to be realised is the defect Ops.js records as
 // "a wide move relocated a few files and abandoned the rest", and here it would hand another
 // application a subset while the bar named the whole count. No list at all is refusable and visible.
-// Whether the key is present is also what tells the bar the drag cannot leave Flea.
+// Whether the key is present is also what tells the bar the drag cannot leave Philemon.
 function mimeFor(pane, rows, copy) {
     var mime = {}
     mime[ROWS_MIME] = markerPayload(rows, copy)

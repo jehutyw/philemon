@@ -4,7 +4,7 @@ import "js/Drag.js" as DragOps
 import "js/Format.js" as Format
 import "js/Icons.js" as Icons
 import "js/Match.js" as Match
-import "." as Flea
+import "." as Philemon
 
 Item {
     id: root
@@ -29,7 +29,7 @@ Item {
     property real leadingSlot: 0
     // The picker's second difference: SendPicker.html's narrow date column and its compact form.
     property bool compactDate: false
-    // The window's own third: only FleaWindow.html and Search.html end a directory name with a slash.
+    // The window's own third: only PhilemonWindow.html and Search.html end a directory name with a slash.
     property bool dirSuffix: false
     readonly property int dateWidth: root.compactDate ? Theme.column.pickerDate : Theme.column.date
     // The picker's third: it hides the columns its own board does not draw, and the window's own set stays ViewState's.
@@ -43,7 +43,7 @@ Item {
     readonly property string displayName: root.row ? (root.searching ? Match.base(root.row.n) : root.row.n) : ""
     // The name, then this surface's directory slash, then a link's target; never both, a link's d is false.
     readonly property string dirMark: root.dirSuffix && root.row && root.row.d ? "/" : ""
-    // FleaWindow.html and ThemeRoles.html both spell it "shell -> /usr/share/omarchy".
+    // PhilemonWindow.html and ThemeRoles.html both spell it "shell -> /usr/share/omarchy".
     readonly property string linkMark: root.row && root.row.l ? " -> " + root.row.l : ""
     readonly property string decoratedName: root.displayName + root.dirMark + root.linkMark
     readonly property string locationText: root.searching ? Match.location(root.row.n) : ""
@@ -160,7 +160,7 @@ Item {
     signal renameAbandoned()
 
     // The editor takes the name column's own box, so the row does not change shape when it opens.
-    Flea.RenameField {
+    Philemon.RenameField {
         id: editor
         visible: root.renaming
         anchors.left: icon.right

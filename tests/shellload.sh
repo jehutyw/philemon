@@ -1,7 +1,7 @@
 #!/bin/bash
 # Loads the real shell the way a launch does, and fails on any QML error. Nothing else headless does
 # this: an assignment to a property that no longer exists is a load error for the WHOLE shell, so
-# Flea opens no window at all, and 0.1.4 reached a benchmark in that state with qmllint reporting 0
+# Philemon opens no window at all, and 0.1.4 reached a benchmark in that state with qmllint reporting 0
 # regressions, tests/run-all.sh green across 22 suites, and cargo clean of warnings.
 set -u
 cd "$(dirname "$0")/.." || exit 1

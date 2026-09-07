@@ -3,7 +3,7 @@ import Quickshell
 import Quickshell.Io
 import qs.Commons
 import qs.Ui
-import "." as Flea
+import "." as Philemon
 import "js/Mounts.js" as Mounts
 import "js/Protocols.js" as Protocols
 import "js/Motion.js" as Motion
@@ -316,7 +316,7 @@ Item {
                     width: parent.width
                     spacing: Theme.spacing.gap
 
-                    Flea.Glyph {
+                    Philemon.Glyph {
                         width: Theme.font.caption
                         height: Theme.font.caption
                         name: "alert"
@@ -336,17 +336,17 @@ Item {
 
                 // Network.dc.html draws the accept pair right-aligned and reading Cancel then Save,
                 // in the same hairline treatment ui/ConvertDialog.qml already uses; the stock Button
-                // that stood here painted OEM chrome instead of the palette Flea reads from colors.toml.
+                // that stood here painted OEM chrome instead of the palette Philemon reads from colors.toml.
                 Row {
                     anchors.right: parent.right
                     spacing: Theme.spacing.gap
 
-                    Flea.DialogButton {
+                    Philemon.DialogButton {
                         label: "Cancel"
                         onActivated: root.close()
                     }
 
-                    Flea.DialogButton {
+                    Philemon.DialogButton {
                         label: root.formAction()
                         primary: true
                         onActivated: root.submitLocation()
@@ -366,7 +366,7 @@ Item {
 
                 // Nothing left to install is an unavailable action, not a live control that answers
                 // nothing: the label states the fact and the ink says the press will not be taken.
-                Flea.DialogButton {
+                Philemon.DialogButton {
                     label: root.dropboxInstalled ? "Dropbox is already installed" : "Install Dropbox"
                     available: !root.dropboxInstalled
                     onActivated: root.installDropbox()

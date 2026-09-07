@@ -1,5 +1,5 @@
 import QtQuick
-import "." as Flea
+import "." as Philemon
 import "js/DirSizes.js" as DirSizes
 import "js/Tap.js" as Tap
 import "js/Thumbs.js" as Thumbs
@@ -34,7 +34,7 @@ GridView {
     boundsBehavior: Flickable.StopAtBounds
     reuseItems: true
 
-    delegate: Flea.GridTile {
+    delegate: Philemon.GridTile {
         required property int index
         width: root.cellWidth
         height: root.cellHeight

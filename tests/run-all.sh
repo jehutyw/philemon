@@ -14,9 +14,9 @@ set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
 
 # Both profiles unconditionally, seven suites driving the debug binary and thumbs.sh the release one: an `[ ! -x <path> ]` guard is satisfied by a stale binary from an older commit, and measured on 2026-09-05 the debug and release hashes were unchanged across a whole run-all over edited source.
-printf 'run-all: building target/debug/flea, seven suites need it\n'
+printf 'run-all: building target/debug/philemon, seven suites need it\n'
 cargo build -q || { printf 'run-all: cargo build failed, nothing else was run\n' >&2; exit 1; }
-printf 'run-all: building target/release/flea, thumbs.sh needs it\n'
+printf 'run-all: building target/release/philemon, thumbs.sh needs it\n'
 cargo build -q --release || { printf 'run-all: release build failed, nothing else was run\n' >&2; exit 1; }
 
 headless="js keymap-gen charts budget empty-state sandbox capability-ownership gio-auth gvfs ops modes protocol portal archive thumbs network-open-share mount-listing uistate uiwriter media filemanager1 dragwire shellload"
@@ -43,11 +43,11 @@ done
 # Named, not run: each needs something this script cannot assume it has. One list, read twice: it
 # is printed here and it is what the audit below checks, so a suite cannot be quietly excluded.
 not_run="
-ui|needs the display, and refuses beside a Flea it did not start
+ui|needs the display, and refuses beside a Philemon it did not start
 drag|needs the display and a real pointer through uinput
 bench|is a separate headless benchmark-contract suite
-package|needs a real makepkg archive in FLEA_PACKAGE_FILE
-picker|needs the display, a session bus, and Flea activatable as the FileChooser backend
+package|needs a real makepkg archive in PHILEMON_PACKAGE_FILE
+picker|needs the display, a session bus, and Philemon activatable as the FileChooser backend
 network-live|needs live share credentials and the approved runtime bundle, controller only
 "
 

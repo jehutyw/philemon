@@ -92,7 +92,7 @@ mod tests {
     use std::os::unix::fs::PermissionsExt;
 
     fn fixture(tag: &str) -> String {
-        let d = format!("/tmp/flea-dirsize-{}-{}", tag, std::process::id());
+        let d = format!("/tmp/philemon-dirsize-{}-{}", tag, std::process::id());
         let _ = fs::remove_dir_all(&d);
         fs::create_dir_all(&d).unwrap();
         d
@@ -168,7 +168,7 @@ mod tests {
 
     #[test]
     fn a_missing_directory_answers_zero_and_partial_rather_than_a_panic() {
-        let result = walk(Path::new("/definitely/not/here/flea-dirsize-test"));
+        let result = walk(Path::new("/definitely/not/here/philemon-dirsize-test"));
         assert_eq!(result.bytes, 0);
         assert!(result.partial);
     }

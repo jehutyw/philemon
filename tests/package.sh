@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Verifies a clean package install supplies every backend Flea advertises.
+# Verifies a clean package install supplies every backend Philemon advertises.
 set -u
 cd "$(dirname "$0")/.." || exit 1
 
@@ -11,7 +11,7 @@ cleanup_extract() {
     [ -n "$extract_root" ] || return
     [ "$extract_root" != / ] || return
     [ "${extract_root#/}" != "$extract_root" ] || return
-    [ -f "$extract_root/.flea-package-test-owned" ] || return
+    [ -f "$extract_root/.philemon-package-test-owned" ] || return
     rm -rf -- "$extract_root"
 }
 trap cleanup_extract EXIT
@@ -33,9 +33,9 @@ for package in "${required_packages[@]}"; do
     fi
 done
 
-helper_path=usr/lib/flea/flea-gio-auth
+helper_path=usr/lib/philemon/philemon-gio-auth
 helper_sha=b8b519d96e2a219ee28588732807083b6556a88f705992d6847fdd645c9b2113
-package_file=${FLEA_PACKAGE_FILE:-}
+package_file=${PHILEMON_PACKAGE_FILE:-}
 if [ -z "$package_file" ] && command -v makepkg >/dev/null 2>&1; then
     mapfile -t package_files < <(makepkg --packagelist)
     if [ "${#package_files[@]}" -eq 1 ]; then
@@ -44,7 +44,7 @@ if [ -z "$package_file" ] && command -v makepkg >/dev/null 2>&1; then
 fi
 
 if [ -z "$package_file" ] || [ ! -f "$package_file" ]; then
-    printf 'FAIL package archive is absent; set FLEA_PACKAGE_FILE to a built makepkg archive\n'
+    printf 'FAIL package archive is absent; set PHILEMON_PACKAGE_FILE to a built makepkg archive\n'
     failed=$((failed + 1))
 else
     package_info=$(bsdtar -xOf "$package_file" .PKGINFO 2>/dev/null || true)
@@ -65,7 +65,7 @@ else
         failed=$((failed + 1))
     fi
 
-    # bsdtar -tvf: -rwxr-xr-x  0 root root 1327 Sep 04 12:00 usr/lib/flea/flea-gio-auth
+    # bsdtar -tvf: -rwxr-xr-x  0 root root 1327 Sep 04 12:00 usr/lib/philemon/philemon-gio-auth
     member_metadata=$(bsdtar -tvf "$package_file" 2>/dev/null | grep -F " $helper_path" || true)
     if [[ "$member_metadata" =~ ^-rwxr-xr-x[[:space:]]+[0-9]+[[:space:]]+root[[:space:]]+root[[:space:]].*[[:space:]]$helper_path$ ]]; then
         printf 'PASS package helper metadata root:root 0755\n'
@@ -79,7 +79,7 @@ else
         /*) : ;;
         *) printf 'FAIL package extraction root is not absolute\n'; exit 1 ;;
     esac
-    : > "$extract_root/.flea-package-test-owned" || exit 1
+    : > "$extract_root/.philemon-package-test-owned" || exit 1
     if bsdtar -xf "$package_file" -C "$extract_root" "$helper_path" 2>/dev/null \
         && [ -f "$extract_root/$helper_path" ] && [ -x "$extract_root/$helper_path" ]; then
         archived_sha=$(sha256sum "$extract_root/$helper_path" | cut -d' ' -f1)

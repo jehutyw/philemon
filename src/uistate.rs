@@ -11,7 +11,7 @@ pub fn from_file(text: &str) -> Json {
     }
 }
 
-// 0.1.3's $XDG_CONFIG_HOME/flea/view.json. hiddenCols named what was hidden, so this inverts it;
+// 0.1.3's $XDG_CONFIG_HOME/philemon/view.json. hiddenCols named what was hidden, so this inverts it;
 // uiScale is dropped on the operator's ruling, because the new design stores an Omarchy stop only.
 pub fn from_view_json(text: &str) -> Json {
     let mut out = defaults();
@@ -87,7 +87,7 @@ fn apply(current: &Json, patch: &Json, schema: &[(&str, Rule)]) -> Json {
     Json::Obj(out)
 }
 
-// Known keys first in the shipped order, then whatever a newer Flea left behind, kept as it was read.
+// Known keys first in the shipped order, then whatever a newer Philemon left behind, kept as it was read.
 fn merge(default: &Json, found: &Json, schema: &[(&str, Rule)]) -> Json {
     let found_pairs = match found.as_object() {
         Some(pairs) => pairs,
@@ -234,9 +234,9 @@ mod tests {
 
     #[test]
     fn an_unknown_key_is_kept_and_rewritten_untouched_at_both_levels() {
-        let merged = from_file(r#"{"fromANewerFlea":{"a":[1,"two"]},"places":{"newLeaf":7}}"#);
+        let merged = from_file(r#"{"fromANewerPhilemon":{"a":[1,"two"]},"places":{"newLeaf":7}}"#);
         assert_eq!(
-            text(merged.get("fromANewerFlea").expect("top-level unknown")),
+            text(merged.get("fromANewerPhilemon").expect("top-level unknown")),
             "{\n  \"a\": [\n    1,\n    \"two\"\n  ]\n}\n"
         );
         assert_eq!(merged.get("places").and_then(|p| p.get("newLeaf")).and_then(Json::as_f64), Some(7.0));
@@ -277,11 +277,11 @@ mod tests {
     }
 
     #[test]
-    fn a_patch_is_refused_whole_when_a_value_or_a_key_is_not_one_this_flea_knows() {
+    fn a_patch_is_refused_whole_when_a_value_or_a_key_is_not_one_this_philemon_knows() {
         let current = from_file("{}");
         for (patch, named) in [
             (r#"{"view":"miller"}"#, "view"),
-            // The dual group is stored for a newer Flea, but this one cannot draw that view.
+            // The dual group is stored for a newer Philemon, but this one cannot draw that view.
             (r#"{"view":"dual"}"#, "view"),
             (r#"{"places":{"sidebarWidth":"wide"}}"#, "places.sidebarWidth"),
             (r#"{"notAKey":1}"#, "notAKey"),
@@ -322,7 +322,7 @@ mod tests {
     // keys.toml holds 48 unique action ids and 32 of them are camelCase, so a hideable row named
     // like one of those has to survive a read rather than take the whole array down with it.
     #[test]
-    fn a_camel_case_action_id_is_a_menu_row_this_flea_can_keep_hidden() {
+    fn a_camel_case_action_id_is_a_menu_row_this_philemon_can_keep_hidden() {
         let merged = from_file(r#"{"menu":{"hidden":["delete","newFolder","copy-path","copy_path"]}}"#);
         let hidden: Vec<&str> = merged
             .get("menu").and_then(|m| m.get("hidden")).and_then(Json::as_array).expect("menu.hidden")

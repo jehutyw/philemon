@@ -142,7 +142,7 @@ mod tests {
     // The error names the call that refused, so this can no longer pass from the dlopen or dlsym branch.
     #[test]
     fn a_required_extension_no_loader_offers_reads_unusable() {
-        let absent = c"VK_KHR_flea_probe_extension_that_cannot_exist";
+        let absent = c"VK_KHR_philemon_probe_extension_that_cannot_exist";
         let alone = usable_with(&[absent]).unwrap_err();
         assert!(alone.starts_with("vkCreateInstance answered"), "{alone}");
         let beside = usable_with(&[SURFACE, absent]).unwrap_err();
@@ -152,11 +152,11 @@ mod tests {
     // A refusal the operator cannot read is the defect: every arm names the call or library that refused, and the two that asked for extensions name them.
     #[test]
     fn the_refusal_names_the_call_and_the_extension_it_was_asked_for() {
-        let absent = c"VK_KHR_flea_probe_extension_that_cannot_exist";
+        let absent = c"VK_KHR_philemon_probe_extension_that_cannot_exist";
         // corner: a working loader lands on the vkCreateInstance arm, so the other five cannot be reached from here.
         let reason = usable_with(&[SURFACE, absent]).unwrap_err();
         assert!(reason.contains("VK_KHR_surface"), "{reason}");
-        assert!(reason.contains("VK_KHR_flea_probe_extension_that_cannot_exist"), "{reason}");
+        assert!(reason.contains("VK_KHR_philemon_probe_extension_that_cannot_exist"), "{reason}");
     }
 
     // An exported-but-empty WAYLAND_DISPLAY is not a Wayland session, the rule paths::has_display() uses.

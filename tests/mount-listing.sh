@@ -3,10 +3,10 @@
 # text onStreamFinished cached, and that cache used to survive the poll that replaced it, so an
 # empty listing could be answered with the shares the poll before it found.
 set -u
-. "$(dirname "$0")/../tools/flea-sandbox-guard"
+. "$(dirname "$0")/../tools/philemon-sandbox-guard"
 cd "$(dirname "$0")/.." || exit 1
 
-test_root="$FIXTURE_ROOT/flea-mount-listing-$$"
+test_root="$FIXTURE_ROOT/philemon-mount-listing-$$"
 sandbox_make "$test_root"
 cleanup() { sandbox_remove "$test_root"; }
 trap cleanup EXIT
@@ -21,8 +21,8 @@ poll_count="$test_root/poll-count"
 cat > "$test_root/bin/gio" <<'EOS'
 #!/bin/sh
 [ "$1 $2" = "mount -l" ] || exit 64
-count=$(cat "$FLEA_TEST_POLL_COUNT" 2>/dev/null || echo 0)
-echo $((count + 1)) > "$FLEA_TEST_POLL_COUNT"
+count=$(cat "$PHILEMON_TEST_POLL_COUNT" 2>/dev/null || echo 0)
+echo $((count + 1)) > "$PHILEMON_TEST_POLL_COUNT"
 [ "$count" -eq 0 ] || exit 0
 cat <<'EOM'
 Drive(0): fixture
@@ -34,7 +34,7 @@ EOS
 chmod +x "$test_root/bin/gio"
 
 output=$(env \
-    FLEA_TEST_POLL_COUNT="$poll_count" \
+    PHILEMON_TEST_POLL_COUNT="$poll_count" \
     HOME="$test_root/home" \
     PATH="$test_root/bin:/usr/bin:/bin" \
     QT_QPA_PLATFORM=offscreen \

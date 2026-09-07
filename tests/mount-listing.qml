@@ -1,4 +1,4 @@
-//@ pragma ShellId flea-mount-listing-test
+//@ pragma ShellId philemon-mount-listing-test
 
 import QtQuick
 import Quickshell

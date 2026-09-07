@@ -1,4 +1,4 @@
-module flea
+module philemon
 singleton Theme 1.0 Theme.qml
 singleton ViewState 1.0 ViewState.qml
 Backend 1.0 Backend.qml
@@ -41,7 +41,7 @@ NetworkForm 1.0 NetworkForm.qml
 NetworkMounts 1.0 NetworkMounts.qml
 NetworkPlaces 1.0 NetworkPlaces.qml
 MountListing 1.0 MountListing.qml
-FleaMark 1.0 FleaMark.qml
+PhilemonMark 1.0 PhilemonMark.qml
 Opener 1.0 Opener.qml
 Preview 1.0 Preview.qml
 PreviewArchive 1.0 PreviewArchive.qml

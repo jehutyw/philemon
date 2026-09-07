@@ -1,6 +1,6 @@
 import QtQuick
 import Quickshell
-import "." as Flea
+import "." as Philemon
 import "js/DirSizes.js" as DirSizes
 import "js/Filter.js" as Filter
 import "js/Focus.js" as Focus
@@ -19,7 +19,7 @@ FocusScope {
 
     property var backend: null
     property string path: ""
-    // Set once by shell.qml from FLEA_SELECT; applied to the first `rows` this pane receives, then forgotten.
+    // Set once by shell.qml from PHILEMON_SELECT; applied to the first `rows` this pane receives, then forgotten.
     property string pendingSelect: ""
     property int total: 0
     property int cursorIndex: 0
@@ -225,7 +225,7 @@ FocusScope {
     // A path the caller already resolved, for the columns view's neighbour rows, which have no cursor.
     function openFile(path) { wire.opener.open(path) }
 
-    // A terminal in the directory being shown, through ui/Opener.qml's flea --terminal.
+    // A terminal in the directory being shown, through ui/Opener.qml's philemon --terminal.
     function openTerminal() { wire.opener.openTerminal(root.path) }
 
     function copyDirPath() { wire.opener.copyText(root.path) }
@@ -236,12 +236,12 @@ FocusScope {
         return base === "/" ? "/" + name : base + "/" + name
     }
 
-    Flea.PaneWire {
+    Philemon.PaneWire {
         id: wire
         pane: root
     }
 
-    Flea.Sidebar {
+    Philemon.Sidebar {
         id: sidebar
         anchors.left: parent.left
         anchors.top: parent.top
@@ -254,7 +254,7 @@ FocusScope {
         onRenameFinished: list.forceActiveFocus()
     }
 
-    Flea.Header {
+    Philemon.Header {
         id: header
         // Only the list view has columns to head, and neither the grid board nor the columns board
         // draws one; the strip collapses rather than hiding, so the view below starts at the top of
@@ -284,7 +284,7 @@ FocusScope {
     readonly property var columnsArea: columns
     readonly property int cursorStride: root.viewMode === "grid" ? grid.columns : 1
 
-    Flea.FilterStrip {
+    Philemon.FilterStrip {
         id: filterStrip
         anchors.top: header.bottom
         anchors.left: sidebar.right
@@ -292,7 +292,7 @@ FocusScope {
         pane: root
     }
 
-    Flea.ColumnsArea {
+    Philemon.ColumnsArea {
         id: columns
         visible: root.viewMode === "columns"
         focus: root.viewMode === "columns"
@@ -305,7 +305,7 @@ FocusScope {
         Keys.onPressed: function (event) { event.accepted = Focus.handleKey(event, root, sidebar) }
     }
 
-    Flea.GridArea {
+    Philemon.GridArea {
         id: grid
         visible: root.viewMode === "grid"
         // Both views default to focus true, so the one that is not up has to give it back explicitly:
@@ -326,7 +326,7 @@ FocusScope {
         Keys.onPressed: function (event) { event.accepted = Focus.handleKey(event, root, sidebar) }
     }
 
-    Flea.List {
+    Philemon.List {
         id: list
         visible: root.viewMode === "list"
         focus: root.viewMode === "list"
@@ -351,7 +351,7 @@ FocusScope {
     // opening a submenu that always no-ops; reactive on both the cursor and the held window.
     readonly property var cursorRow: root.rowFor(root.cursorIndex)
 
-    Flea.ContextMenu {
+    Philemon.ContextMenu {
         id: menu
         showHidden: root.showHidden
         taildropPeers: (root.cursorRow && !root.cursorRow.d) ? wire.taildrop.peers : []
@@ -383,7 +383,7 @@ FocusScope {
     // The keyboard's own entrance to the row menu; the placement itself is ui/js/Menu.js's.
     function openCursorMenu() { return Menu.openAtCursor(root, menu, Theme.spacing.rowPaddingX) }
 
-    Flea.StateMessage {
+    Philemon.StateMessage {
         anchors.fill: root.listArea
         anchors.leftMargin: Theme.spacing.rowPaddingX
         anchors.rightMargin: Theme.spacing.rowPaddingX

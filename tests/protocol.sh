@@ -2,11 +2,11 @@
 # Drives the real binary over stdin and asserts the exact stdout contract.
 set -u
 # Hard rule 9's guard, which owns FIXTURE_ROOT and every create and delete below.
-. "$(dirname "$0")/../tools/flea-sandbox-guard"
+. "$(dirname "$0")/../tools/philemon-sandbox-guard"
 
 cd "$(dirname "$0")/.." || exit 1
 
-BIN=${BIN:-./target/debug/flea}
+BIN=${BIN:-./target/debug/philemon}
 # A clean git archive export carries no target/, and without this the suite runs every case
 # against a missing binary and reports them as product failures.
 if [ ! -x "$BIN" ]; then
@@ -16,7 +16,7 @@ if [ ! -x "$BIN" ]; then
 fi
 # The sandbox is the parent and the listing is a directory inside it, because the guard's marker is
 # a real dotfile and this suite asserts what a hidden:true listing contains.
-SB="$FIXTURE_ROOT/flea-proto-test-$$"
+SB="$FIXTURE_ROOT/philemon-proto-test-$$"
 D="$SB/tree"
 # src/backend/thumbcache.rs honours XDG_CACHE_HOME, so this suite's thumbnails land inside its own
 # sandbox and the operator's real cache is never written to, read from, or cleaned up after.
@@ -107,7 +107,7 @@ check "the backend exits 0 even after an error" "0" "$?"
 out=$(printf 'total junk\n{"c":"quit"}\n' | $BIN --backend)
 check "junk produces no output and no crash" "" "$out"
 
-ND_SB="$FIXTURE_ROOT/flea-newline-test-$$"
+ND_SB="$FIXTURE_ROOT/philemon-newline-test-$$"
 ND="$ND_SB/tree"
 sandbox_make "$ND_SB"
 mkdir -p "$ND"
@@ -117,7 +117,7 @@ check "a newline in a real filename keeps the response on two lines" "2" "$(echo
 check "and the name is escaped in the row" "1" "$(echo "$out" | sed -n 2p | grep -c 'two\\nlines.txt')"
 sandbox_remove "$ND_SB"
 
-SD_SB="$FIXTURE_ROOT/flea-symlink-test-$$"
+SD_SB="$FIXTURE_ROOT/philemon-symlink-test-$$"
 SD="$SD_SB/tree"
 sandbox_make "$SD_SB"
 mkdir -p "$SD"
@@ -144,7 +144,7 @@ sandbox_remove "$SD_SB"
 # ungrouped gives 1 2 11, so a build with the grouping taken out fails this and only this shape can
 # tell them apart. Descending needs the whole order and not the first name: grouped gives 11 1 2 and
 # ungrouped gives 11 2 1, which share a first row.
-GR_SB="$FIXTURE_ROOT/flea-grouping-test-$$"
+GR_SB="$FIXTURE_ROOT/philemon-grouping-test-$$"
 GR="$GR_SB/tree"
 sandbox_make "$GR_SB"
 mkdir -p "$GR/1" "$GR/11"
@@ -224,7 +224,7 @@ check "a failed list leaves the previous listing intact" "sub" "$(echo "$out" | 
 check "and that listing still stats against its own directory" '"n":"three.txt","d":false,"s":3' "$(echo "$out" | sed -n 4p | grep -o '"n":"three.txt","d":false,"s":3')"
 
 setup
-PW="$FIXTURE_ROOT/flea-prewarm-test-$$.json"
+PW="$FIXTURE_ROOT/philemon-prewarm-test-$$.json"
 rm -f "$PW"
 $BIN --prewarm "$D" 2 "$PW"
 check "prewarm file exists" "0" "$([ -f "$PW" ] && echo 0 || echo 1)"
@@ -238,7 +238,7 @@ printf 'STALE\n' > "$PW"
 $BIN --prewarm /definitely/not/here 2 "$PW" >/dev/null 2>&1
 check "a failed prewarm exits non-zero" "1" "$?"
 
-TGT="$FIXTURE_ROOT/flea-prewarm-target-$$.txt"
+TGT="$FIXTURE_ROOT/philemon-prewarm-target-$$.txt"
 printf 'TARGET UNTOUCHED' > "$TGT"
 rm -f "$PW"
 ln -s "$TGT" "$PW"
@@ -277,7 +277,7 @@ check "an executable shared object still draws as an executable" "1" "$(echo "$o
 
 # Row order after setup plus the copy is sub, empty.txt, photo.jpg, three.txt, so the indices are 1, 3 and 4.
 setup
-cp "$FIXTURE_ROOT/flea-media-btrfs/photo_0.jpg" "$D/photo.jpg" 2>/dev/null || printf 'x' > "$D/photo.jpg"
+cp "$FIXTURE_ROOT/philemon-media-btrfs/photo_0.jpg" "$D/photo.jpg" 2>/dev/null || printf 'x' > "$D/photo.jpg"
 out=$(printf '{"c":"list","path":"%s","first":10}\n{"c":"quit"}\n' "$D" | $BIN --backend)
 check "a directory row cannot be thumbnailed" "false" "$(echo "$out" | sed -n 2p | grep -oE '"t":(true|false)' | sed -n 1p | cut -d: -f2)"
 check "a jpeg row can be thumbnailed" "true" "$(echo "$out" | sed -n 2p | grep -oE '"t":(true|false)' | sed -n 3p | cut -d: -f2)"
@@ -290,7 +290,7 @@ check "a closed stdin ends the loop without a quit" "rc=0" "$(echo "$out" | tail
 
 # Row order after setup plus the copy is sub, empty.txt, photo.jpg, three.txt, so row 2 is the jpeg.
 setup
-cp "$FIXTURE_ROOT/flea-media-btrfs/photo_0.jpg" "$D/photo.jpg"
+cp "$FIXTURE_ROOT/philemon-media-btrfs/photo_0.jpg" "$D/photo.jpg"
 out=$(printf '{"c":"list","path":"%s","first":10}\n{"c":"thumb","rows":[2]}\n{"c":"quit"}\n' "$D" | $BIN --backend)
 check "a thumb request answers a thumbed line" "thumbed" "$(echo "$out" | grep -oE '"t":"thumbed"' | head -1 | cut -d'"' -f4)"
 check "the thumbed line names its row" '"row":2' "$(echo "$out" | grep -o '"row":2' | head -1)"
@@ -336,7 +336,7 @@ dirsize_run() {
   ) | $BIN --backend
 }
 
-DZ_SB="$FIXTURE_ROOT/flea-dirsize-test-$$"
+DZ_SB="$FIXTURE_ROOT/philemon-dirsize-test-$$"
 DZ="$DZ_SB/tree"
 sandbox_make "$DZ_SB"
 mkdir -p "$DZ"
@@ -367,7 +367,7 @@ out=$(printf '{"c":"list","path":"%s","first":10}\n{"c":"dirsize","rows":[0]}\n{
 check "a row cancelled before it was walked is never answered" "0" "$(echo "$out" | grep -c '"t":"dirsized"')"
 
 # list and sort both reassign what a row index names, the same reason a list or a sort clears the thumbnail map, see docs/protocol.md "dirsized".
-SZ_SB="$FIXTURE_ROOT/flea-dirsize-sort-test-$$"
+SZ_SB="$FIXTURE_ROOT/philemon-dirsize-sort-test-$$"
 SZ="$SZ_SB/tree"
 sandbox_make "$SZ_SB"
 mkdir -p "$SZ"
@@ -386,7 +386,7 @@ check "row 0's answer after the sort is zzz's larger size, not aaa's stale cache
 sandbox_remove "$SZ_SB"; sandbox_remove "$DZ_SB"
 
 # A new folder: one mkdir(2), answered like rename and journaled so z removes it; see docs/protocol.md "mkdir".
-MK_SB="$FIXTURE_ROOT/flea-mkdir-test-$$"
+MK_SB="$FIXTURE_ROOT/philemon-mkdir-test-$$"
 MK="$MK_SB/tree"
 sandbox_make "$MK_SB"
 mkdir -p "$MK"
@@ -447,7 +447,7 @@ check "and no job was started for it" "0" "$(echo "$out" | grep -c '"t":"archive
 # Issue 68: the listed directory is watched, so a change made from outside answers a changed line.
 # The only unsolicited line on the wire, so every case here is driven by a real create, rename or
 # delete landing between two requests rather than by a request asking for it.
-WT_SB="$FIXTURE_ROOT/flea-watch-test-$$"
+WT_SB="$FIXTURE_ROOT/philemon-watch-test-$$"
 WT="$WT_SB/tree"
 OTHER="$WT_SB/other"
 sandbox_make "$WT_SB"

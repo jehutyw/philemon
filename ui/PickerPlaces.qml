@@ -1,6 +1,6 @@
 import Quickshell.Io
 import QtQuick
-import "." as Flea
+import "." as Philemon
 import "js/Icons.js" as Icons
 import "js/Picker.js" as Picker
 import "js/Places.js" as Places
@@ -57,7 +57,7 @@ Item {
 
         // index and modelData are required on ui/SidebarRow.qml itself, so the view fills them;
         // redeclaring them here left the delegate uninitialised and the rail drew nothing.
-        delegate: Flea.SidebarRow {
+        delegate: Philemon.SidebarRow {
             cursor: modelData.path === root.current
             focused: false
             onActivated: function (at) { root.chosen(root.entries[at].path) }

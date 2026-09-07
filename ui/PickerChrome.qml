@@ -1,6 +1,6 @@
 import QtQuick
 import qs.Commons
-import "." as Flea
+import "." as Philemon
 import "js/Format.js" as Format
 import "js/Picker.js" as Picker
 
@@ -61,7 +61,7 @@ Item {
             border.color: control.primary ? Theme.color.accent : root.edge
         }
 
-        Flea.Glyph {
+        Philemon.Glyph {
             anchors.centerIn: parent
             visible: control.glyph.length > 0
             width: Theme.chromeMarkSize
