@@ -9,6 +9,7 @@ mod json;
 mod jsondoc;
 mod jsonstring;
 mod launcher;
+mod notes;
 mod oflags;
 mod open;
 mod paths;
@@ -138,6 +139,11 @@ fn main() {
         exit(backend::run::run());
     }
 
+    // philemon --notes: the note workspace on its own, with no file window around it.
+    if args.len() == 2 && args[1] == "--notes" {
+        exit(notes::run());
+    }
+
     // philemon --prewarm <path> <count> <dest>
     if args.len() == 5 && args[1] == "--prewarm" {
         let first: usize = args[3].parse().unwrap_or(0);
@@ -159,6 +165,14 @@ fn main() {
     }
     if args.get(1).map(String::as_str) == Some("--open") {
         usage("--open takes one path");
+    }
+
+    // philemon --open-obsidian <path>: the same handoff, through an obsidian:// URI.
+    if args.len() == 3 && args[1] == "--open-obsidian" {
+        exit(open::obsidian(&args[2]));
+    }
+    if args.get(1).map(String::as_str) == Some("--open-obsidian") {
+        usage("--open-obsidian takes one path");
     }
 
     // philemon --terminal <dir>

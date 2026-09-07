@@ -43,7 +43,7 @@ ShellRoot {
         // Quickshell 0.3.1 has no exit API and Qt.quit() is a no-op, so the shell signals itself.
         // The backend is told first and answers when it has drained: a quit cancels the operation in
         // flight, and a cancelled copy removes its own partial, so closing never leaves a half file.
-        Connections { target: Quickshell; function onLastWindowClosed() { backend.quit() } }
+        Philemon.NoteCloseGuard { window: philemonWindow; workspace: notes; onQuitRequested: backend.quit() }
         Connections { target: backend; function onQuitReady() { Quickshell.execDetached(["kill", String(Quickshell.processId)]) } }
 
         // Issue 9's chords, aliased by keys.toml onto the Display section's own text size. The
@@ -92,6 +92,7 @@ ShellRoot {
             // the right. The path lives here, which is why the status bar below carries counts instead.
             Philemon.ChromeBar {
                 id: chrome
+                enabled: !notes.active
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
@@ -129,11 +130,14 @@ ShellRoot {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: chrome.bottom
+                anchors.topMargin: notes.stripHeight
+                visible: !notes.active && open
                 pane: pane
             }
 
             Philemon.Pane {
                 id: pane
+                enabled: !notes.active
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: tabBar.bottom
@@ -175,6 +179,17 @@ ShellRoot {
             }
 
             Philemon.Preview { id: preview; pane: pane }
+
+            Philemon.NoteWorkspace {
+                id: notes
+                anchors.top: chrome.bottom
+                anchors.bottom: bar.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                z: 10
+                onFilesRequested: pane.forceActiveFocus()
+                onActiveChanged: if (active) preview.close()
+            }
 
             Philemon.ConvertDialog {
                 id: convertDialog

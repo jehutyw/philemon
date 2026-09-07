@@ -26,12 +26,24 @@ Item {
     // for an Exec= handler but 0.32 to 0.75 s for a DBusActivatable one, which is what this box's
     // twenty-five archive types default to, so this guard drops a second Enter for that long and says so.
     function open(path) {
+        if (Obsidian.isNote(path)) {
+            Obsidian.openNote(path)
+            return
+        }
+        launch(path, "--open")
+    }
+
+    function openObsidian(path) {
+        launch(path, "--open-obsidian")
+    }
+
+    function launch(path, mode) {
         if (child.running) {
             root.busy(path)
             return
         }
         root.current = path
-        child.command = [Quickshell.env("PHILEMON_BIN") || "philemon", "--open", path]
+        child.command = [Quickshell.env("PHILEMON_BIN") || "philemon", mode, path]
         child.running = true
     }
 

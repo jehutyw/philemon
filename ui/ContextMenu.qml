@@ -29,6 +29,8 @@ Item {
     property string dropboxPath: ""
     // True when the cursor row already lives under ~/Dropbox, where a share link is the useful action.
     property bool rowInDropbox: false
+    // True when the cursor row is a Markdown note inside a known vault, which gates the Obsidian row.
+    property bool rowIsObsidianNote: false
     // False on a listing's empty space, where Menus.html's background column is what opens instead.
     // openBackground() is its only writer and openAt() puts it back, because one instance serves both.
     property bool hasRow: true
@@ -97,6 +99,7 @@ Item {
             archiveFormats: root.archiveFormats,
             rowIsArchive: root.rowIsArchive,
             rowIsImage: root.rowIsImage,
+            rowIsObsidianNote: root.rowIsObsidianNote,
             canConvert: root.canConvert,
             // The Menus settings section's stored set; ui/js/Menu.js applyHidden is what reads it.
             hiddenActions: ViewState.menuHidden

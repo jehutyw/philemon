@@ -29,6 +29,9 @@ function listingEntries(p) {
         return applyHidden(backgroundEntries(p), p.hiddenActions)
     var out = []
     out.push({ label: "Open", action: "open", glyph: "folder-open" })
+    // Directly under Open, because on a note it is the other half of the same choice.
+    if (p.rowIsObsidianNote)
+        out.push({ label: "Open in Obsidian", action: "obsidian", glyph: "file-text" })
     out.push({ label: "Copy path", action: "copypath", glyph: "file-text" })
     out.push({ separator: true })
     // SettingsMenus.html's six basic rows, in its own order. Cut, Copy and Paste were keyboard

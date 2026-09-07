@@ -18,6 +18,8 @@ import "keymap.js" as KeymapSuite
 import "match.js" as MatchSuite
 import "menu.js" as MenuSuite
 import "mounts.js" as MountsSuite
+import "notes.js" as NotesSuite
+import "obsidian.js" as ObsidianSuite
 import "external-devices.js" as ExternalDevicesSuite
 import "nav.js" as NavSuite
 import "network.js" as NetworkSuite
@@ -67,6 +69,7 @@ Item {
             ["keymap", KeymapSuite], ["match", MatchSuite], ["menu", MenuSuite],
             ["external-devices", ExternalDevicesSuite],
             ["mounts", MountsSuite], ["nav", NavSuite], ["network", NetworkSuite],
+            ["notes", NotesSuite], ["obsidian", ObsidianSuite],
             ["ops", OpsSuite],
             ["palette", PaletteSuite], ["pathbar", PathBarSuite], ["places", PlacesSuite],
             ["picker", PickerSuite],

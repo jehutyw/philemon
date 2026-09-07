@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Stands in for gio, which is what src/open.rs hands both routes to: "open" then the one target.
+test "$#" = 2 || exit 1
+test "$1" = open || exit 1
+printf '%s' "$2" > "$PHILEMON_OBSIDIAN_CAPTURE"

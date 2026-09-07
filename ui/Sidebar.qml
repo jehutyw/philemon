@@ -19,7 +19,8 @@ Item {
     // this tree took the keyboard away from the list, see ui/SidebarRow.qml's own note.
     property var menu: null
     property int cursorIndex: 0
-    property var favoriteEntries: []
+    property var baseFavorites: []
+    readonly property var favoriteEntries: Obsidian.favorites(root.baseFavorites)
     readonly property var networkEntries: mounts.entries
     // A changed rail is a changed row under any open editor, so the rename is void: the poll rebinds
     // its delegates in place, and an editor left standing came up empty over a different share.
@@ -111,7 +112,7 @@ Item {
     // merge and its first-position-wins rule are Places.favorites', which tests/js/places.js checks.
     function rebuild() {
         var home = Quickshell.env("HOME")
-        root.favoriteEntries = Places.favorites(home, userDirsFile.text(), bookmarksFile.text(), Icons.sidebarGlyphFor)
+        root.baseFavorites = Places.favorites(home, userDirsFile.text(), bookmarksFile.text(), Icons.sidebarGlyphFor)
     }
 
     // ui/NetworkDialog.qml writes this same file; a watch set up before its parent directory
