@@ -37,6 +37,7 @@ var LABELS = {
     trash: "Move to Trash", openTerminal: "Open in terminal", copypath: "Copy path",
     compress: "Compress", extract: "Extract",
     convert: "Convert", taildrop: "Send with Taildrop", dropbox: "Move to Dropbox",
+    protondrive: "Upload to Proton Drive",
     sharelink: "Copy share link", open: "Open", toggleHidden: "Show hidden files"
 }
 

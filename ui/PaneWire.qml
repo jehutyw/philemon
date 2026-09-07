@@ -4,6 +4,7 @@ import "js/DirSizes.js" as DirSizes
 import "js/Errors.js" as Errors
 import "js/Nav.js" as Nav
 import "js/Ops.js" as Ops
+import "js/ProtonDrive.js" as Drive
 import "js/Search.js" as Search
 import "js/Tabs.js" as Tabs
 import "js/Thumbs.js" as Thumbs
@@ -58,9 +59,15 @@ Item {
 
     Philemon.ProtonDrive {
         id: protonDrive
-        onStarted: function (name) { pane.message("Uploading " + name + " to Proton Drive.", false) }
-        onUploaded: function (name) { pane.message(name + " uploaded to Proton Drive.", false) }
-        onFailed: function (name) { pane.message(name + " could not be uploaded to Proton Drive.", true) }
+        // The destinations are fetched once per session, the way the Taildrop peers below are, so
+        // the flyout's own height never waits on a network reply the right click started.
+        Component.onCompleted: refresh()
+        // sticky, not message: the line holds in the status bar for the whole run and the progress
+        // frames rewrite it in place, which is what ui/js/Ops.js's own transfers do.
+        onStarted: function (count) { pane.sticky(Drive.progressText(0, count, -1)) }
+        onProgress: function (line) { pane.sticky(line) }
+        onUploaded: function (count) { pane.sticky(""); pane.message(Ops.items(count) + " uploaded to Proton Drive.", false) }
+        onFailed: function (count) { pane.sticky(""); pane.message(Ops.items(count) + " could not be uploaded to Proton Drive.", true) }
     }
 
     Philemon.Taildrop {

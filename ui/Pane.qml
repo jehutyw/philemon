@@ -360,7 +360,7 @@ FocusScope {
         rowIsArchive: root.cursorRow !== null && !root.cursorRow.d && Archive.isArchive(root.cursorRow.n)
         rowIsImage: root.cursorRow !== null && root.cursorRow.i === "image-x-generic"
         rowIsObsidianNote: root.cursorRow !== null && !root.cursorRow.d && Obsidian.isNote(root.join(root.path, root.cursorRow.n))
-        protonDriveReady: wire.protonDrive.ready
+        protonDriveFolders: wire.protonDrive.ready ? wire.protonDrive.folders : []
         dropboxPath: sidebar.dropboxReady ? root.home + "/Dropbox" : ""
         // The separator is part of the test, or /home/gm/DropboxBackup would count as inside Dropbox.
         rowInDropbox: root.path === root.home + "/Dropbox" || root.path.indexOf(root.home + "/Dropbox/") === 0
@@ -368,7 +368,7 @@ FocusScope {
             if (action.indexOf("taildrop:") === 0) { root.sendTaildrop(action.substring("taildrop:".length)); return }
             if (action === "copypath") { wire.opener.copyText(root.path + "/" + root.cursorRow.n); return }
             if (action === "obsidian" && root.cursorRow) { wire.opener.openObsidian(root.join(root.path, root.cursorRow.n)); return }
-            if (action === "protondrive" && root.cursorRow) { wire.protonDrive.upload(root.join(root.path, root.cursorRow.n), root.cursorRow.n); return }
+            if (action.indexOf("protondrive:") === 0) { wire.protonDrive.upload(Ops.targetPaths(root, Ops.targetIndices(root)), action.substring("protondrive:".length)); return }
             if (action.indexOf("col:") === 0) { ViewState.toggleColumn(action.substring("col:".length)); return }
             root.act(action)
         }

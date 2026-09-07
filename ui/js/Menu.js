@@ -62,8 +62,11 @@ function listingEntries(p) {
     // Moving a file into the folder it already lives in is not an action, so the row hides there.
     if (p.dropboxPath.length > 0 && !p.rowInDropbox)
         share.push({ label: "Move to Dropbox", action: "dropbox", mark: "dropbox" })
-    if (p.protonDriveReady)
-        share.push({ label: "Upload to Proton Drive", action: "protondrive", glyph: "arrow-up" })
+    // The destinations are the flyout: My files and the folders under it, so the row picks where
+    // it lands without a dialog. Empty means logged out, and the row hides entirely.
+    if (p.protonDriveFolders && p.protonDriveFolders.length > 0)
+        share.push({ label: "Upload to Proton Drive", action: "protondrive", glyph: "arrow-up",
+                     submenu: p.protonDriveFolders })
     // A share link is inherently per file, so it appears only for a row already in Dropbox.
     if (p.rowInDropbox)
         share.push({ label: "Copy share link", action: "sharelink", glyph: "network" })
@@ -120,6 +123,8 @@ function submenuGlyph(action) {
         return "server"
     if (action === "sort")
         return "sort"
+    if (action === "protondrive")
+        return "folder"
     return "archive"
 }
 

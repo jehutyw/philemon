@@ -28,6 +28,7 @@ import "palette.js" as PaletteSuite
 import "pathbar.js" as PathBarSuite
 import "picker.js" as PickerSuite
 import "places.js" as PlacesSuite
+import "protondrive.js" as ProtonDriveSuite
 import "protocols.js" as ProtocolsSuite
 import "railkeys.js" as RailKeysSuite
 import "recent.js" as RecentSuite
@@ -73,6 +74,7 @@ Item {
             ["ops", OpsSuite],
             ["palette", PaletteSuite], ["pathbar", PathBarSuite], ["places", PlacesSuite],
             ["picker", PickerSuite],
+            ["protondrive", ProtonDriveSuite],
             ["protocols", ProtocolsSuite], ["railkeys", RailKeysSuite],
             ["recent", RecentSuite],
             ["renderer", RendererSuite],

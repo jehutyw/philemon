@@ -178,22 +178,30 @@ function runBackground(check) {
           "Show hidden files")
 }
 
-// The Proton Drive row is gated on a login, not on the binary: proton-drive is a CLI with no synced
-// folder, so an upload offered to a logged-out box is a row that can only fail.
+// The Proton Drive row is gated on its destinations, not on the binary: proton-drive is a CLI with
+// no synced folder, and ui/ProtonDrive.qml leaves the list empty until a login answers, so an
+// upload is never offered to a box that could only fail it.
 function runProtonDrive(check) {
-    function labelsFor(ready) {
-        return labels(Menu.listingEntries({
+    function rowFor(folders) {
+        var rows = Menu.listingEntries({
             showHidden: false, hasRow: true, rowInDropbox: false, dropboxPath: "",
             taildropPeers: [], archiveFormats: [], rowIsArchive: false, rowIsImage: false,
-            canConvert: false, protonDriveReady: ready, hiddenActions: []
-        }))
+            canConvert: false, protonDriveFolders: folders, hiddenActions: []
+        })
+        for (var i = 0; i < rows.length; i++)
+            if (rows[i].action === "protondrive")
+                return rows[i]
+        return null
     }
-    check("a login puts the upload row in the share group",
-          labelsFor(true).indexOf("Upload to Proton Drive") >= 0, true)
-    check("no login and the row is absent, not disabled",
-          labelsFor(false).indexOf("Upload to Proton Drive") >= 0, false)
-    check("an absent flag reads as no login",
-          labelsFor(undefined).indexOf("Upload to Proton Drive") >= 0, false)
+    var dests = [{ id: "/my-files", label: "My files" }, { id: "/my-files/Backups", label: "Backups" }]
+    check("a login puts the upload row in the share group", rowFor(dests) !== null, true)
+    check("and the destinations are its flyout, so no dialog is needed",
+          Menu.hasSubmenu(rowFor(dests)), true)
+    check("the flyout is the destination list itself", rowFor(dests).submenu.length, 2)
+    check("no login and the row is absent, not disabled", rowFor([]), null)
+    check("an absent list reads as no login", rowFor(undefined), null)
+    // Its flyout mark would otherwise fall through to the archive one, which names a file.
+    check("the flyout draws a folder, not an archive", Menu.submenuGlyph("protondrive"), "folder")
 }
 
 // The Menus section's consumer. menu.hidden stores what is HIDDEN, so a row named there leaves the
