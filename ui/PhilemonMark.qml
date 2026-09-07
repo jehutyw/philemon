@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Shapes
 
-// Philemon's own mark: the Omarchy spiral redrawn as a 24-grid stroke glyph, per BrandMoments.dc.html's
-// "The mark" cell. It paints itself in from blank and then holds. The caller drives the repeat, so
+// Philemon's own mark: a Greek phi cut on the 24 grid, its bowl chamfered on one diagonal pair.
+// One continuous stroke, which is what lets the dash below draw it on in a single pass. It paints itself in from blank and then holds. The caller drives the repeat, so
 // the empty state's mark and its caption share one beat; the loading crawl (ui/Spinner.qml) stays a
 // separate gesture on purpose, continuous where this one arrives and rests.
 Item {
@@ -12,9 +12,10 @@ Item {
     // The mark draws on the same 24 unit grid as every Glyph, scaled to the slot.
     readonly property real grid: 24
     readonly property real markScale: Math.min(root.width, root.height) / root.grid
-    // The path below sums to this along its centreline: 18+18+18+14+14+10+10+6+6.
-    readonly property real markUnits: 114
-    // A brand mark, not a cut glyph: the spiral keeps the brand's 2 and is exempt from Theme.strokeWidth on purpose.
+    // The path below sums to this along its centreline: 5+3+3√2+7+9+3√2+7+6+15, the two
+    // chamfers being the only diagonals. Written as the sum so a path edit is checkable.
+    readonly property real markUnits: 52 + 6 * Math.SQRT2
+    // A brand mark, not a cut glyph: the phi keeps the brand's 2 and is exempt from Theme.strokeWidth on purpose.
     readonly property real brandStroke: 2
     // QML dash units are strokeWidth multiples, so the whole mark is this many dashes long.
     readonly property real markDashes: root.markUnits / root.brandStroke
@@ -45,7 +46,7 @@ Item {
             dashPattern: [root.markDashes, root.markDashes]
             // A whole mark of offset draws nothing; the animation walks that back to zero.
             dashOffset: root.markDashes
-            PathSvg { path: "M21 21H3V3h18v14H7V7h10v6h-6" }
+            PathSvg { path: "M12 2V7H15L18 10V17H9L6 14V7H12V22" }
         }
     }
 

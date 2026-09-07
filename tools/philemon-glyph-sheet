@@ -26,7 +26,7 @@ FONT = "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace"
 
 # The brand spiral is the header's mark and is deliberately not in PATHS: rows and menus never
 # draw it, so ui/Spinner.qml and ui/PhilemonMark.qml own it instead of the glyph table.
-SPIRAL = "M21 21H3V3h18v14H7V7h10v6h-6"
+PHI = "M12 2V7H15L18 10V17H9L6 14V7H12V22"
 
 # Tile field geometry, unchanged from the sheet this replaces.
 COLS = 8
@@ -111,7 +111,7 @@ def render(paths):
         '  <rect x="16" y="16" width="%d" height="%d" fill="%s" stroke="%s"/>'
         % (width - 32, HEADER_H, PANEL, LINE),
         '  <g transform="translate(34.0,34.0) scale(%.4f)" fill="none" stroke="%s" stroke-width="1.5" '
-        'stroke-linecap="square" stroke-linejoin="miter"><path d="%s"/></g>' % (44 / GRID, BRAND, SPIRAL),
+        'stroke-linecap="square" stroke-linejoin="miter"><path d="%s"/></g>' % (44 / GRID, BRAND, PHI),
         '  <text x="98" y="46" fill="%s" font-family="%s" font-size="13" font-weight="700">'
         "The Omarchy cut</text>" % (INK, FONT),
         '  <text x="98" y="64" fill="%s" font-family="%s" font-size="11">'

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
-  <!-- The canvas's own mark, BrandMoments.dc.html: the Omarchy spiral recut on the 24 grid, drawn by ui/PhilemonMark.qml and ui/Spinner.qml with the same path. A static file cannot read the live palette, so it takes the palette every artboard is drawn in. -->
+  <!-- Philemon's own mark: a Greek phi cut on the 24 grid, its bowl chamfered on one diagonal pair so the letter reads as a mark and not as type. Drawn by ui/PhilemonMark.qml and ui/Spinner.qml from this same path. A static file cannot read the live palette, so it takes the palette every artboard is drawn in. -->
   <rect width="24" height="24" fill="#1a1b26"/>
-  <path d="M21 21H3V3h18v14H7V7h10v6h-6" fill="none" stroke="#9ece6a" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/>
+  <path d="M12 2V7H15L18 10V17H9L6 14V7H12V22" fill="none" stroke="#9ece6a" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/>
 </svg>
