@@ -289,7 +289,6 @@ mod tests {
     }
 
     #[test]
-    #[test]
     fn newfile_creates_empty_copies_a_template_and_refuses_a_taken_name() {
         let d = TestDir::new("newfile");
         let (made, steps) = newfile(d.path(), "notes.md", "").unwrap();
@@ -313,6 +312,7 @@ mod tests {
         assert!(newfile(Path::new("relative"), "x", "").is_err());
     }
 
+    #[test]
     fn mkdir_makes_the_folder_and_records_the_step_that_removes_it() {
         let d = TestDir::new("mkdir");
         let (made, steps) = mkdir(d.path(), "photos").expect("mkdir");
