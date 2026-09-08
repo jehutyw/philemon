@@ -148,6 +148,11 @@ Item {
 
     // No name field: omitting it is what makes the backend take the first free "New Folder", so the
     // client needs no retry loop and no collision handling; see docs/protocol.md "mkdir".
+    // from empty is an empty file; otherwise the template whose bytes fill it, see docs/protocol.md.
+    function newfile(path, name, from) {
+        root.send({ c: "newfile", path: path, name: name, from: from })
+    }
+
     function mkdir(path) {
         root.send({ c: "mkdir", path: path })
     }

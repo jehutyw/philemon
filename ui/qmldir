@@ -6,6 +6,7 @@ NoteTabs 1.0 NoteTabs.qml
 NotePage 1.0 NotePage.qml
 NoteCloseGuard 1.0 NoteCloseGuard.qml
 ProtonDrive 1.0 ProtonDrive.qml
+singleton Templates 1.0 Templates.qml
 singleton Theme 1.0 Theme.qml
 singleton ViewState 1.0 ViewState.qml
 Backend 1.0 Backend.qml

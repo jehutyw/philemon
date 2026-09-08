@@ -52,9 +52,9 @@ function runInventory(check) {
               var mine = Settings.GLYPHS[id] !== undefined ? Settings.GLYPHS[id] : Settings.MARKS[id]
               return mine === undefined || mine !== builtMark[id]
           }).join(","), "")
-    // New folder is the one row this release's panel gives no switch, and the two locked ones are
+    // New folder and New file are the rows this release's panel gives no switch, and the two locked
     // drawn locked; anything else without a switch would be a row the section cannot reach.
-    var reachable = switched.concat(Settings.LOCKED).concat(["newFolder"])
+    var reachable = switched.concat(Settings.LOCKED).concat(["newFolder", "newFile"])
     check("and no row the menu builds is left without one",
           Object.keys(built).filter(function (id) { return reachable.indexOf(id) < 0 }).join(","), "")
 }

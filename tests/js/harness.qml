@@ -42,6 +42,7 @@ import "textsize.js" as TextSizeSuite
 import "trash.js" as TrashSuite
 import "tap.js" as TapSuite
 import "tabs.js" as TabsSuite
+import "templates.js" as TemplatesSuite
 import "thumbs.js" as ThumbsSuite
 import "uistate.js" as UiStateSuite
 import "watch.js" as WatchSuite
@@ -82,6 +83,7 @@ Item {
             ["selection", SelectionSuite], ["settings", SettingsSuite],
             ["sort", SortSuite], ["taildrop", TaildropSuite], ["textsize", TextSizeSuite],
             ["trash", TrashSuite], ["tap", TapSuite], ["tabs", TabsSuite],
+            ["templates", TemplatesSuite],
             ["thumbs", ThumbsSuite], ["uistate", UiStateSuite],
             ["watch", WatchSuite]
         ]

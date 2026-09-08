@@ -23,6 +23,8 @@ pub enum Request {
     Duplicate { path: String },
     // One new empty directory inside parent path; an empty name asks for the first free "New Folder".
     MkDir { path: String, name: String },
+    // The file half of MkDir; `from` empty is an empty file, otherwise a template whose bytes it copies.
+    NewFile { path: String, name: String, from: String },
     Undo,
     // Resolves row indices to absolute paths, which is what lets a client hold a clipboard for a
     // selection wider than the window it renders; see docs/protocol.md "paths".
@@ -91,6 +93,11 @@ pub fn parse_request(line: &str) -> Request {
         Some("mkdir") => Request::MkDir {
             path: field_str(line, "path").unwrap_or_default(),
             name: field_str(line, "name").unwrap_or_default(),
+        },
+        Some("newfile") => Request::NewFile {
+            path: field_str(line, "path").unwrap_or_default(),
+            name: field_str(line, "name").unwrap_or_default(),
+            from: field_str(line, "from").unwrap_or_default(),
         },
         Some("undo") => Request::Undo,
         Some("paths") => Request::Paths { rows: field_usize_array(line, "rows") },

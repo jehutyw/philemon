@@ -429,6 +429,28 @@ Copies one path to a free sibling name and answers one `duplicated` line. The na
 extension split the last dot only, so `backup.tar.zst` becomes `backup.tar copy.zst` and a dotfile keeps
 its whole name as the stem. A directory row duplicates its whole tree.
 
+### newfile
+
+`{"c":"newfile","path":"<string>","name":"<string>","from":"<string>"}`
+
+Example: `{"c":"newfile","path":"/home/gm","name":"notes.md","from":""}`
+Example: `{"c":"newfile","path":"/home/gm","name":"letter.odt","from":"/usr/share/templates/.source/soffice.odt"}`
+
+Makes one file inside `path` and answers one `made` line, the file half of `mkdir`. `path` and `name`
+carry exactly the rules `mkdir` states, and a refusal names `newfile` in `where`. There is no default
+name: unlike a folder, a file's name carries the suffix that decides what opens it, so an empty `name`
+is refused rather than guessed at.
+
+`from` empty creates an empty file. Otherwise it is an absolute path whose bytes are copied into the
+new file, which is how a desktop template becomes a document: `/usr/share/templates` ships the real
+document beside the `.desktop` that names it. Those shipped files are zero bytes on this box, which is
+what every desktop ships and what the applications expect; a template with content is copied whole.
+
+The file is created with `create_new`, so a name already taken is a collision and never a truncation
+of what is there. A `from` that cannot be read removes the file it had already created and answers an
+`error`, so a failed copy never leaves a half document to be opened later. The step recorded is
+`Created`, so `undo` removes the file.
+
 ### mkdir
 
 `{"c":"mkdir","path":"<string>","name":"<string>"}`

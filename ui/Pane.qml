@@ -189,18 +189,14 @@ FocusScope {
 
     // The list's own delegate, which is what every reader of a rendered row cell needs; only the
     // list draws those cells at all.
-    function itemFor(index) {
-        return list.itemAtIndex(index)
-    }
+    function itemFor(index) { return list.itemAtIndex(index) }
 
     // The delegate actually on screen, whichever view is showing. A coordinate taken off a hidden
     // view is a coordinate nothing can be clicked at, which is what the columns view used to return.
     // index is a listing row and every view's itemAtIndex wants a view position, which is a different
     // number under a filter: passing the listing row answered null for a row plainly on screen, and
     // once the match count passed it, the delegate at that position under an unrelated row.
-    function visibleItemFor(index) {
-        return root.listArea.itemAtIndex(Filter.viewOf(root.shown, index))
-    }
+    function visibleItemFor(index) { return root.listArea.itemAtIndex(Filter.viewOf(root.shown, index)) }
 
     // shell.qml's IPC thumbFile reader calls this; the lookup lives with the thumbnail machinery in ui/List.qml.
     function thumbFor(index) { return list.thumbFor(index) }
@@ -369,6 +365,7 @@ FocusScope {
             if (action === "copypath") { wire.opener.copyText(root.path + "/" + root.cursorRow.n); return }
             if (action === "obsidian" && root.cursorRow) { wire.opener.openObsidian(root.join(root.path, root.cursorRow.n)); return }
             if (action.indexOf("protondrive:") === 0) { wire.protonDrive.upload(Ops.targetPaths(root, Ops.targetIndices(root)), action.substring("protondrive:".length)); return }
+            if (action.indexOf("newFile:") === 0) { Templates.create(root, action.substring("newFile:".length)); return }
             if (action.indexOf("col:") === 0) { ViewState.toggleColumn(action.substring("col:".length)); return }
             root.act(action)
         }

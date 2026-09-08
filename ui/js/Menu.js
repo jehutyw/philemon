@@ -82,17 +82,25 @@ function listingEntries(p) {
     // being shown rather than the row, which is why it sits here and not above.
     out.push({ label: "Open in terminal", action: "openTerminal", glyph: "terminal" })
     out.push({ label: "New folder", action: "newFolder", glyph: "folder-plus" })
+    out.push(newFileRow(p))
     out.push(hiddenRow(p.showHidden))
     return applyHidden(out, p.hiddenActions)
 }
 
+// The New file flyout: the three built-ins plus whatever /usr/share/templates and ~/Templates
+// ship, which ui/Templates.qml reads. The list is never empty, so this row is never conditional.
+function newFileRow(p) {
+    return { label: "New file", action: "newFile", glyph: "file-plus",
+             submenu: p.templates && p.templates.length > 0 ? p.templates : [] }
+}
+
 // Menus.html's background column, drawn on a right click that landed on no row: the directory's
-// own actions, in the board's order and with its rules. Its New File row is not built, because
-// this release's backend has mkdir and no create-empty-file of any kind, and a row that cannot
-// work is not a row. The same hiddenActions set filters it, so a switch is never per menu.
+// own actions, in the board's order and with its rules. The same hiddenActions set filters it, so
+// a switch is never per menu.
 function backgroundEntries(p) {
     var out = []
     out.push({ label: "New folder", action: "newFolder", glyph: "folder-plus" })
+    out.push(newFileRow(p))
     out.push({ separator: true })
     out.push({ label: "Paste", action: "paste", glyph: "clipboard" })
     out.push({ label: "Select all", action: "selectAll", glyph: "check" })
@@ -125,6 +133,8 @@ function submenuGlyph(action) {
         return "sort"
     if (action === "protondrive")
         return "folder"
+    if (action === "newFile")
+        return "file-plus"
     return "archive"
 }
 

@@ -7,7 +7,7 @@ use crate::backend::archivereq::{formats_line, start_archive, start_convert};
 use crate::backend::convert;
 use crate::backend::peek::peek_line;
 use crate::backend::metareq::spawn as spawn_meta;
-use crate::backend::opsdispatch::{cancel_transfer, do_mkdir, do_rename, do_undo, report_op, resolve_rows, start_duplicate, start_trash, start_transfer, Ops};
+use crate::backend::opsdispatch::{cancel_transfer, do_mkdir, do_newfile, do_rename, do_undo, report_op, resolve_rows, start_duplicate, start_trash, start_transfer, Ops};
 use crate::backend::opsreq::OpMsg;
 use crate::backend::mime::Db;
 use crate::backend::dirsizereq::{queue_dirsizes, walk_one_dirsize};
@@ -273,6 +273,7 @@ fn handle_line(
         }
         Request::Rename { path, to } => do_rename(out, ops, &path, &to),
         Request::MkDir { path, name } => do_mkdir(out, ops, &path, &name),
+        Request::NewFile { path, name, from } => do_newfile(out, ops, &path, &name, &from),
         Request::Duplicate { path } => start_duplicate(out, ops, &path),
         Request::Undo => do_undo(out, ops),
         // Never touches st.listing, which is the whole point: a column is not the pane's own listing.

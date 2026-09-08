@@ -3,6 +3,7 @@ use crate::backend::copyfile::{copy_any, Progress};
 use crate::backend::renamecompat;
 use crate::backend::undo::Step;
 use crate::error::{from_io, PhilemonError};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::AtomicBool;
 
@@ -108,6 +109,47 @@ pub fn mkdir(parent: &Path, name: &str) -> Result<(PathBuf, Vec<Step>), Philemon
             Err(named("mkdir", &dir, "a folder or file with that name already exists"))
         }
         Err(e) => Err(from_io("mkdir", &dir.to_string_lossy(), &e)),
+    }
+}
+
+// The file half of mkdir. `from` empty creates an empty file; otherwise its bytes are copied, which
+// is how a template becomes a document: /usr/share/templates ships the real .odt beside the .desktop
+// that names it, so a LibreOffice file needs no ODF written here.
+pub fn newfile(parent: &Path, name: &str, from: &str) -> Result<(PathBuf, Vec<Step>), PhilemonError> {
+    if !parent.is_absolute() {
+        return Err(named("newfile", parent, "a parent must be an absolute path"));
+    }
+    if !valid_name(name) {
+        return Err(named("newfile", parent, "a name cannot be . or .., or contain a separator"));
+    }
+    let file = parent.join(name);
+    // create_new, so a name already taken is a collision and never a truncation of what is there.
+    match std::fs::OpenOptions::new().write(true).create_new(true).open(&file) {
+        Ok(mut handle) => {
+            if !from.is_empty() {
+                let source = Path::new(from);
+                // The template is read whole: these are kilobyte documents, and a partial write
+                // would leave a file that opens to an error rather than to an empty document.
+                match std::fs::read(source) {
+                    Ok(body) => {
+                        if let Err(e) = handle.write_all(&body) {
+                            // The file exists and is wrong, so it goes rather than being left behind.
+                            std::fs::remove_file(&file).ok();
+                            return Err(from_io("newfile", &file.to_string_lossy(), &e));
+                        }
+                    }
+                    Err(e) => {
+                        std::fs::remove_file(&file).ok();
+                        return Err(from_io("newfile", &source.to_string_lossy(), &e));
+                    }
+                }
+            }
+            Ok((file.clone(), vec![Step::Created { path: file }]))
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
+            Err(named("newfile", &file, "a folder or file with that name already exists"))
+        }
+        Err(e) => Err(from_io("newfile", &file.to_string_lossy(), &e)),
     }
 }
 
@@ -247,6 +289,30 @@ mod tests {
     }
 
     #[test]
+    #[test]
+    fn newfile_creates_empty_copies_a_template_and_refuses_a_taken_name() {
+        let d = TestDir::new("newfile");
+        let (made, steps) = newfile(d.path(), "notes.md", "").unwrap();
+        assert_eq!(std::fs::read(&made).unwrap(), Vec::<u8>::new());
+        assert!(matches!(steps[0], Step::Created { .. }));
+
+        // A template is copied whole, which is the whole reason a LibreOffice row can exist here.
+        let tpl = d.file("template.odt", "PK\u{3}\u{4}odf bytes");
+        let (doc, _) = newfile(d.path(), "letter.odt", &tpl.to_string_lossy()).unwrap();
+        assert_eq!(std::fs::read(&doc).unwrap(), std::fs::read(&tpl).unwrap());
+
+        // create_new, so an existing name is a collision and never a truncation of what is there.
+        assert!(newfile(d.path(), "notes.md", "").is_err());
+        assert_eq!(std::fs::read(&made).unwrap(), Vec::<u8>::new());
+
+        // A template that is not there leaves no half file behind to be opened later.
+        assert!(newfile(d.path(), "ghost.odt", "/nonexistent/template.odt").is_err());
+        assert!(!d.path().join("ghost.odt").exists());
+
+        assert!(newfile(d.path(), "../escape", "").is_err());
+        assert!(newfile(Path::new("relative"), "x", "").is_err());
+    }
+
     fn mkdir_makes_the_folder_and_records_the_step_that_removes_it() {
         let d = TestDir::new("mkdir");
         let (made, steps) = mkdir(d.path(), "photos").expect("mkdir");

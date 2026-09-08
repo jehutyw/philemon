@@ -147,6 +147,19 @@ pub(crate) fn do_mkdir(out: &mut impl Write, ops: &mut Ops, parent: &str, name: 
     out.flush().ok();
 }
 
+pub(crate) fn do_newfile(out: &mut impl Write, ops: &mut Ops, parent: &str, name: &str, from: &str) {
+    match ops::newfile(Path::new(parent), name, from) {
+        Ok((file, steps)) => {
+            ops.journal.push(Entry { op: "newfile".to_string(), steps });
+            writeln!(out, "{}", made_line(true, &file.to_string_lossy())).ok();
+        }
+        Err(e) => {
+            writeln!(out, "{}", error_line(&e)).ok();
+        }
+    }
+    out.flush().ok();
+}
+
 pub(crate) fn do_undo(out: &mut impl Write, ops: &mut Ops) {
     match ops.journal.undo() {
         Ok(op) => writeln!(out, "{}", undone_line(&op, true)).ok(),

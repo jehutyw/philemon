@@ -104,6 +104,7 @@ Item {
             rowIsImage: root.rowIsImage,
             rowIsObsidianNote: root.rowIsObsidianNote,
             protonDriveFolders: root.protonDriveFolders,
+            templates: Templates.entries,
             canConvert: root.canConvert,
             // The Menus settings section's stored set; ui/js/Menu.js applyHidden is what reads it.
             hiddenActions: ViewState.menuHidden

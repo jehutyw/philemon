@@ -365,6 +365,12 @@ Item {
 
     // The other half of the same seam: main() leaves a ui.json it cannot read exactly as the operator
     // wrote it, and the window draws the shipped defaults, so this says once that none of it was used.
-    Component.onCompleted: if (ViewState.unreadable) pane.message(Errors.sentence("statefile", ""), true)
+    Component.onCompleted: {
+        if (ViewState.unreadable)
+            pane.message(Errors.sentence("statefile", ""), true)
+        // A QML singleton is built on first use, and the first use of Templates would otherwise be
+        // the first right click, whose flyout would draw before the scan it started had answered.
+        Philemon.Templates.refresh()
+    }
 
 }

@@ -150,10 +150,10 @@ function runBackground(check) {
     check("the background menu at the shipped defaults is the board's own column",
           labels(background(["delete", "openwith", "openTerminal", "moveto", "copyto",
                              "properties", "permissions", "copypath"])),
-          "New folder|-|Paste|Select all|-|Sort by|Show hidden files|-|Settings")
+          "New folder|New file|-|Paste|Select all|-|Sort by|Show hidden files|-|Settings")
     check("and switching Open in terminal on puts it back beside the hidden toggle",
           labels(background([])),
-          "New folder|-|Paste|Select all|-|Sort by|Open in terminal|Show hidden files|-|Settings")
+          "New folder|New file|-|Paste|Select all|-|Sort by|Open in terminal|Show hidden files|-|Settings")
     // Every row is marked, the rule ui/MenuRow.qml enforces for the row menu; a background row that
     // drew no mark would be the one unmarked row in the product.
     var marks = []
@@ -162,7 +162,7 @@ function runBackground(check) {
         marks.push(rows[i].separator === true ? "-" : (rows[i].mark || rows[i].glyph || ""))
     check("and every background row carries its own mark",
           marks.join("|"),
-          "folder-plus|-|clipboard|check|-|sort|terminal|eye|-|sliders")
+          "folder-plus|file-plus|-|clipboard|check|-|sort|terminal|eye|-|sliders")
     // The flyout can only offer an order ui/js/Sort.js will really ask the backend for.
     check("Sort by is a submenu row over the three orders the backend can produce",
           Menu.hasSubmenu(findEntry(rows, "sort")) + "|"
@@ -173,7 +173,7 @@ function runBackground(check) {
           + Menu.submenuGlyph("compress"), "sort|server|archive")
     // The hidden toggle is locked in both menus, so the background column can never be emptied of it.
     check("the locked hidden toggle survives a hidden set that names it",
-          labels(background(["newFolder", "paste", "selectAll", "sort", "openTerminal",
+          labels(background(["newFolder", "newFile", "paste", "selectAll", "sort", "openTerminal",
                              "toggleHidden", "settings"])),
           "Show hidden files")
 }
@@ -220,16 +220,16 @@ function runHidden(check, full) {
     check("one hidden action loses its row and nothing else",
           menu(["paste"]),
           "Open|Copy path|-|Cut|Copy|Duplicate|Rename|-|Compress|-|Send with Taildrop|"
-          + "Move to Dropbox|-|Move to Trash|-|Open in terminal|New folder|Show hidden files")
+          + "Move to Dropbox|-|Move to Trash|-|Open in terminal|New folder|New file|Show hidden files")
     // A group that loses every member loses its separator too, which is the board's own rule and
     // the reason the answer below has three rules and not six.
     check("a group emptied by the settings takes its rule with it",
           menu(["cut", "copy", "paste", "duplicate", "rename", "trash", "copypath"]),
-          "Open|-|Compress|-|Send with Taildrop|Move to Dropbox|-|Open in terminal|New folder|Show hidden files")
-    check("hiding everything hideable still leaves the two locked rows and New folder",
+          "Open|-|Compress|-|Send with Taildrop|Move to Dropbox|-|Open in terminal|New folder|New file|Show hidden files")
+    check("hiding everything hideable still leaves the two locked rows and the two New rows",
           menu(["cut", "copy", "paste", "duplicate", "rename", "trash", "copypath", "openTerminal",
                 "compress", "taildrop", "dropbox", "open", "toggleHidden"]),
-          "Open|-|New folder|Show hidden files")
+          "Open|-|New folder|New file|Show hidden files")
     // The shipped set named this row "terminal" while the menu built it as "openTerminal", so the
     // switch missed it and every menu drew it. The id the panel stores is the action id, as it is
     // for every other row.

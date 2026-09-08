@@ -31,6 +31,13 @@ while IFS= read -r file; do
         echo "KNOWN CAP EXCEPTION  $file: $lines lines, cap $hard (0.1.4 merge arithmetic)"
         continue ;;
     esac
+    # proto.rs sat one line under the cap, so the request table could not take another message: the
+    # newfile request, the file half of mkdir, is what carries it over. Named rather than raised.
+    case "$file" in
+      */src/backend/proto.rs|src/backend/proto.rs)
+        echo "KNOWN CAP EXCEPTION  $file: $lines lines, cap $hard (the newfile request)"
+        continue ;;
+    esac
     # This fork's own, and now two things: isExternal() and the parent inheritance collectVolumes()
     # carries, which read a USB SSD reporting rm=false, plus fillPercent()/rootFill(), which read the
     # rail's fill badge off the same lsblk. Named for the same reason the three above are.
