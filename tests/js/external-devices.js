@@ -40,4 +40,36 @@ function run(check) {
     check("unpartitioned external SSD is a volume", rows([ssd])[0].device, "/dev/sdb")
     check("unpartitioned external SSD is not the internal disk", rows([ssd])[0].kind, "volume")
     check("internal SATA disk remains the system row", rows([internal])[0].kind, "disk")
+
+    // The fill reading, off the same one-shot lsblk the rail already runs. Captured from this box
+    // 2026-09-07: "/" is a LUKS mapper two levels under the disk, not one of its own children.
+    var box = {name: "sda", type: "disk", rm: false, tran: "sata", subsystems: "block:scsi:pci",
+               children: [
+                 {name: "sda1", type: "part", mountpoint: "/efi", "fsuse%": "6%"},
+                 {name: "sda2", type: "part", mountpoint: null, "fsuse%": null, children: [
+                    {name: "luks-2e23", type: "crypt", mountpoint: "/", "fsuse%": "92%"}]}]}
+    check("the disk row reports the root filesystem's fill from any depth", rows([box])[0].fill, 92)
+
+    var stick = {name: "sdb", type: "disk", rm: true, model: "USB", children: [
+        {name: "sdb1", type: "part", rm: true, label: "DATA", mountpoint: "/run/media/j/DATA",
+         "fsuse%": "43%"}]}
+    check("a mounted stick reports its own fill", rows([stick])[0].fill, 43)
+    // Nothing mounted means nothing measured; a 0 here would draw an empty bar claiming the stick
+    // is empty, which is a different statement from "not mounted".
+    stick.children[0].mountpoint = null
+    stick.children[0]["fsuse%"] = null
+    check("an unmounted stick reports no reading at all", rows([stick])[0].fill, -1)
+    stick.children[0]["fsuse%"] = "not a number"
+    check("a value lsblk did not shape as a percentage is no reading", rows([stick])[0].fill, -1)
+    stick.children[0]["fsuse%"] = "100%"
+    check("a full filesystem reads as full, not as overflow", rows([stick])[0].fill, 100)
+
+    // The rail only assigns a poll that differs, and a filling disk differs by nothing else: the
+    // mountpoint, label, device and glyph all hold while the number climbs.
+    var was = {path: "/", label: "d", group: "device", kind: "disk", device: "/dev/sda",
+               mounted: true, glyph: "drive", fill: 91}
+    var now = {path: "/", label: "d", group: "device", kind: "disk", device: "/dev/sda",
+               mounted: true, glyph: "drive", fill: 92}
+    check("a poll that only moved the fill is not the same poll", Mounts.sameEntries([was], [now]), false)
+    check("and an unchanged one still is", Mounts.sameEntries([was], [was]), true)
 }

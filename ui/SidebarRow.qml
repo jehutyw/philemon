@@ -29,6 +29,10 @@ Item {
         || (root.modelData.group === "device" && root.modelData.kind === "volume")
     // Small and fixed: a status dot is not part of the type or icon scale.
     readonly property int dotSize: 6
+    // -1 is "no reading": an unmounted stick, a partition table, a bookmark. Only a mounted
+    // filesystem reports one, so the slot stays empty rather than drawing a bar that claims zero.
+    readonly property int fill: root.modelData.fill === undefined ? -1 : root.modelData.fill
+    readonly property bool showsFill: root.fill >= 0 && !root.renaming
     // The canvas's own value for a bookmark nothing has mounted yet.
     readonly property real unmountedOpacity: 0.5
 
@@ -143,6 +147,20 @@ Item {
             color: root.modelData.mounted ? Theme.color.executable : Theme.color.muted
             opacity: root.modelData.mounted ? 1 : root.unmountedOpacity
         }
+    }
+
+    // The fill reading, in the same right-aligned slot the dot uses so the two share one centre
+    // line; a device row never draws a dot, so the two never contend for it.
+    Text {
+        visible: root.showsFill
+        anchors.right: parent.right
+        anchors.rightMargin: Style.spacing.rowPaddingX
+        anchors.verticalCenter: parent.verticalCenter
+        text: root.fill + "%"
+        font.family: Theme.font.family
+        font.pixelSize: Theme.font.caption
+        // Muted until it is nearly full, where the urgent role is the one that says so at a glance.
+        color: root.fill >= 90 ? Theme.color.urgent : Theme.color.muted
     }
 
     TapHandler {

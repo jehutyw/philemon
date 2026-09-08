@@ -129,7 +129,10 @@ function internalDisk(nodes) {
         // zram and loop devices are type "disk" too, and neither is a disk anyone browses.
         if (/^(zram|loop)/.test(String(n.name)))
             continue
-        return { kind: "disk", label: String(n.name), device: "/dev/" + n.name, path: "/", mounted: true }
+        // The disk row means "/", so its fill is the root filesystem's, which hangs off whichever
+        // child carries the mountpoint rather than off the disk node itself.
+        return { kind: "disk", label: String(n.name), device: "/dev/" + n.name, path: "/",
+                 mounted: true, fill: rootFill(n) }
     }
     return null
 }
@@ -172,10 +175,36 @@ function collectExternal(nodes, model, parentExternal, out) {
 }
 
 // The label ladder is the filesystem label, then the drive's product name, then the kernel name.
+// lsblk reports the fill as a string with the sign on it ("6%"), and null for a device with
+// nothing mounted, which is every unmounted stick and every partition table. -1 is "no reading",
+// which the rail draws as no badge rather than as an empty bar claiming zero.
+function fillPercent(n) {
+    var raw = n && n["fsuse%"]
+    if (!raw)
+        return -1
+    var pct = parseInt(String(raw), 10)
+    return isFinite(pct) && pct >= 0 && pct <= 100 ? pct : -1
+}
+
+// The root filesystem can sit at any depth under its disk: on this box it is a LUKS mapper two
+// levels down, measured 2026-09-07, so a scan of the disk's own children would have found nothing.
+function rootFill(node) {
+    var kids = (node && node.children) || []
+    for (var i = 0; i < kids.length; i++) {
+        if (String(kids[i].mountpoint || "") === "/")
+            return fillPercent(kids[i])
+        var deeper = rootFill(kids[i])
+        if (deeper >= 0)
+            return deeper
+    }
+    return -1
+}
+
 function volumeRow(n, model) {
     var path = n.mountpoint ? String(n.mountpoint) : ""
     var label = n.label ? String(n.label) : (model.length > 0 ? model : String(n.name))
-    return { kind: "volume", label: label, device: "/dev/" + n.name, path: path, mounted: path.length > 0 }
+    return { kind: "volume", label: label, device: "/dev/" + n.name, path: path,
+             mounted: path.length > 0, fill: fillPercent(n) }
 }
 
 // Sample input: two arrays of rail entries as ui/NetworkMounts.qml and ui/DeviceMounts.qml build
@@ -194,9 +223,12 @@ function sameEntries(a, b) {
 }
 
 // The two shapes differ only in uri against device, and an absent field is undefined on both sides.
+// fill is compared like the rest: it is the one field that moves without a mount or an unmount, so
+// leaving it out held the first reading on screen for the life of the window.
 function sameEntry(x, y) {
     return x.path === y.path && x.label === y.label && x.group === y.group && x.kind === y.kind
         && x.uri === y.uri && x.device === y.device && x.mounted === y.mounted && x.glyph === y.glyph
+        && x.fill === y.fill
 }
 
 // Sample input: one rail entry as ui/DeviceMounts.qml and ui/NetworkMounts.qml build them,
