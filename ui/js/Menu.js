@@ -33,6 +33,7 @@ function listingEntries(p) {
     if (p.rowIsObsidianNote)
         out.push({ label: "Open in Obsidian", action: "obsidian", glyph: "file-text" })
     out.push({ label: "Copy path", action: "copypath", glyph: "file-text" })
+    out.push({ label: "Properties", action: "properties", glyph: "table" })
     out.push({ separator: true })
     // SettingsMenus.html's six basic rows, in its own order. Cut, Copy and Paste were keyboard
     // only until the Menus section grew a switch for each of them, and a switch over a row no

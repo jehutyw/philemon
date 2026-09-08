@@ -74,6 +74,8 @@ FocusScope {
     signal sticky(string text)
     // The one popup, hosted in shell.qml beside the network dialog rather than inside the pane.
     signal convertRequested(string name)
+    // The row itself, not its index: the panel outlives the listing that answered it.
+    signal propertiesRequested(var row, var kinds, string dir)
     signal pathBarRequested()  // ":" and Ctrl+L; the bar is chrome, so shell.qml opens it as it does the popup above
     signal textSizeRequested(int direction)  // issue 9's zoom pair, +1, -1 or 0 to follow Omarchy again; the size is the window's
 
@@ -363,6 +365,7 @@ FocusScope {
         onChosen: function (action) {
             if (action.indexOf("taildrop:") === 0) { root.sendTaildrop(action.substring("taildrop:".length)); return }
             if (action === "copypath") { wire.opener.copyText(root.path + "/" + root.cursorRow.n); return }
+            if (action === "properties" && root.cursorRow) { root.propertiesRequested(root.cursorRow, root.kindNames, root.path); return }
             if (action === "obsidian" && root.cursorRow) { wire.opener.openObsidian(root.join(root.path, root.cursorRow.n)); return }
             if (action.indexOf("protondrive:") === 0) { wire.protonDrive.upload(Ops.targetPaths(root, Ops.targetIndices(root)), action.substring("protondrive:".length)); return }
             if (action.indexOf("newFile:") === 0) { Templates.create(root, action.substring("newFile:".length)); return }

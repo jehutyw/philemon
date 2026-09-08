@@ -22,7 +22,7 @@ var BASIC = ["cut", "copy", "paste", "duplicate", "rename", "trash"]
 // cannot draw is absent rather than switched off: a toggle over a row no menu has is a mock control.
 var MENU_GROUPS = [
     { label: "Basic file actions", master: true, ids: BASIC },
-    { label: "Open and inspect", master: false, ids: ["openTerminal", "copypath"] },
+    { label: "Open and inspect", master: false, ids: ["openTerminal", "copypath", "properties"] },
     { label: "Extras", master: false,
       ids: ["compress", "extract", "convert", "taildrop", "dropbox", "protondrive", "sharelink"] }
 ]
@@ -35,7 +35,7 @@ var LOCKED = ["open", "toggleHidden"]
 var LABELS = {
     cut: "Cut", copy: "Copy", paste: "Paste", duplicate: "Duplicate", rename: "Rename",
     trash: "Move to Trash", openTerminal: "Open in terminal", copypath: "Copy path",
-    compress: "Compress", extract: "Extract",
+    compress: "Compress", extract: "Extract", properties: "Properties",
     convert: "Convert", taildrop: "Send with Taildrop", dropbox: "Move to Dropbox",
     protondrive: "Upload to Proton Drive",
     sharelink: "Copy share link", open: "Open", toggleHidden: "Show hidden files"
@@ -51,7 +51,7 @@ var PRESET_LABELS = { "default": "Default", vim: "Vim", mac: "Mac", windows: "Wi
 var GLYPHS = {
     cut: "scissors", copy: "copy", paste: "clipboard", duplicate: "file-plus", rename: "rename",
     trash: "trash", openTerminal: "terminal", copypath: "file-text", compress: "archive",
-    extract: "archive-out",
+    extract: "archive-out", properties: "table",
     convert: "sliders", protondrive: "arrow-up", sharelink: "network", open: "folder-open",
     toggleHidden: "eye"
 }

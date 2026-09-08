@@ -10,14 +10,16 @@ Column {
 
     spacing: Theme.spacing.hairline * 3
 
-    // The widest label the twelve states use, by advanceWidth because width drops the trailing gutter space.
+    // The widest label the caller draws. The preview column's twelve states share "Points at ", and
+    // a table with longer labels passes its own; by advanceWidth because width drops the trailing space.
+    property string labelGuide: "Points at "
     readonly property int labelWidth: labelMetrics.advanceWidth
 
     TextMetrics {
         id: labelMetrics
         font.family: Theme.font.family
         font.pixelSize: Theme.font.caption
-        text: "Points at "
+        text: root.labelGuide
     }
 
     Repeater {

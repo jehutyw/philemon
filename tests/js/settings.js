@@ -175,7 +175,7 @@ function runRows(check) {
           find(menus, "paste").on, false)
     check("and an enabled one is checked", find(menus, "copy").on, true)
     check("every toggleable action the listing menu can build has a row, plus the hints row",
-          menus.filter(function (r) { return r.kind === "check" }).length, 16)
+          menus.filter(function (r) { return r.kind === "check" }).length, 17)
     // The one check that is not a menu action: it says how every row is drawn, not whether it is.
     check("the hints row is a check of its own, off until it is switched on",
           find(menus, "keyHints").label + "|" + find(menus, "keyHints").on,

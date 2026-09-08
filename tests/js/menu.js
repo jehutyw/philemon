@@ -219,16 +219,16 @@ function runHidden(check, full) {
     check("an undefined set is the same as an empty one", menu(undefined), labels(full))
     check("one hidden action loses its row and nothing else",
           menu(["paste"]),
-          "Open|Copy path|-|Cut|Copy|Duplicate|Rename|-|Compress|-|Send with Taildrop|"
+          "Open|Copy path|Properties|-|Cut|Copy|Duplicate|Rename|-|Compress|-|Send with Taildrop|"
           + "Move to Dropbox|-|Move to Trash|-|Open in terminal|New folder|New file|Show hidden files")
     // A group that loses every member loses its separator too, which is the board's own rule and
     // the reason the answer below has three rules and not six.
     check("a group emptied by the settings takes its rule with it",
           menu(["cut", "copy", "paste", "duplicate", "rename", "trash", "copypath"]),
-          "Open|-|Compress|-|Send with Taildrop|Move to Dropbox|-|Open in terminal|New folder|New file|Show hidden files")
+          "Open|Properties|-|Compress|-|Send with Taildrop|Move to Dropbox|-|Open in terminal|New folder|New file|Show hidden files")
     check("hiding everything hideable still leaves the two locked rows and the two New rows",
-          menu(["cut", "copy", "paste", "duplicate", "rename", "trash", "copypath", "openTerminal",
-                "compress", "taildrop", "dropbox", "open", "toggleHidden"]),
+          menu(["cut", "copy", "paste", "duplicate", "rename", "trash", "copypath", "properties",
+                "openTerminal", "compress", "taildrop", "dropbox", "open", "toggleHidden"]),
           "Open|-|New folder|New file|Show hidden files")
     // The shipped set named this row "terminal" while the menu built it as "openTerminal", so the
     // switch missed it and every menu drew it. The id the panel stores is the action id, as it is

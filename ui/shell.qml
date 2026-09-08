@@ -151,6 +151,7 @@ ShellRoot {
                 // A running operation's line, which stands until the operation replaces it; see ui/StatusBar.qml.
                 onSticky: function (text) { bar.sticky = text; bar.transfer = pane.transfer }
                 onConvertRequested: function (name) { convertDialog.open(name, pane) }
+                onPropertiesRequested: function (row, kinds, dir) { propertiesDialog.open(row, kinds, dir) }
                 onPathBarRequested: chrome.startEdit()
                 // Issue 9. ViewState persists the stop and Theme derives its own tokens from it, so
                 // the whole window follows without any surface reading the chord itself.
@@ -189,6 +190,12 @@ ShellRoot {
                 z: 10
                 onFilesRequested: pane.forceActiveFocus()
                 onActiveChanged: if (active) preview.close()
+            }
+
+            Philemon.PropertiesDialog {
+                id: propertiesDialog
+                anchors.fill: parent
+                focusHolder: pane
             }
 
             Philemon.ConvertDialog {
@@ -280,6 +287,7 @@ ShellRoot {
                 acceptedButtons: Qt.BackButton
                 onTapped: {
                     if (chrome.editing || convertDialog.opened || keymapSheet.opened
+                            || propertiesDialog.opened
                             || networkDialog.opened || shareBrowser.active || preview.active
                             || pane.renameEditor() !== null || pane.sidebar.renameEditor() !== null)
                         return
